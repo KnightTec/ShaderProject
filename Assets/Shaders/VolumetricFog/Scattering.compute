@@ -1,0 +1,32 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+RWTexture3D<half4> fogVolume;
+RWTexture3D<half4> accumulatedFogVolume;
+float sliceDepth;
+
+float4 accumulateScattering(float3 accumScattering, float accumOpticalDepth, float3 scattering, float opticalDepth) 
+{
+	float newOpticalDepth = accumOpticalDepth + opticalDepth * sliceDepth;
+	float3 newScattering = accumScattering + sliceDepth * scattering * exp(-newOpticalDepth);
+	return float4(newScattering, newOpticalDepth);
+}
+
+void writeOutput(uint3 position, float3 scattering, float transmittance) 
+{
+	accumulatedFogVolume[position] = float4(scattering, transmittance);
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	float4 currentValue = fogVolume[uint3(id.xy, 0)];
+	currentValue *= 0.5 * sliceDepth;
+	writeOutput(uint3(id.xy, 0), currentValue.xyz, exp(-currentValue.a));
+    for (int i = 1; i < 128; i++) 
+	{
+		float4 nextValue = fogVolume[uint3(id.xy, i)];
+		currentValue = accumulateScattering(currentValue.rgb, currentValue.a, nextValue.rgb, nextValue.a);
+		writeOutput(uint3(id.xy, i), currentValue.rgb, exp(-currentValue.a));
+	}
+}

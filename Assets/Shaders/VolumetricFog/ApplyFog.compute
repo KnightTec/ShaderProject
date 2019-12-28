@@ -1,0 +1,22 @@
+﻿#include "UnityCG.cginc"
+#pragma kernel CSMain
+
+Texture2D<float4> source;
+Texture2D<float> depth;
+Texture3D<half4> accumulatedFogVolume;
+RWTexture2D<float4> result;
+float4 resolution;
+
+SamplerState MyLinearClampSampler;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	float3 fogCoord = float3(id.xy * resolution.zw, Linear01Depth(depth[id.xy]));
+
+	half4 fogSample = accumulatedFogVolume.SampleLevel(MyLinearClampSampler, fogCoord, 0);
+	float3 sceneColor = source[id.xy].rgb;
+
+	float3 combinedColor = sceneColor * fogSample.a + fogSample.rgb;
+	result[id.xy] = float4(combinedColor, 1);
+}

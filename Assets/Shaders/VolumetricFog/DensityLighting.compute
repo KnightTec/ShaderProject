@@ -1,0 +1,88 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#define PI 3.14159
+
+struct DirLightData 
+{
+	float4x4 worldToShadow[4];
+	float4 lightSplitsNear;
+	float4 lightSplitsFar;
+	float4 lightColor;
+	float4 ambientColor;
+	float4 lightDirection;
+};
+RWStructuredBuffer<DirLightData> lightData;
+
+SamplerState MyPointClampSampler;
+
+Texture2D<float> cascadeShadowMap;
+RWTexture3D<half4> fogVolume;
+float4 cameraPosition;
+float nearPlane;
+float farPlane;
+float4 frustumRays[4];
+float scattering;
+float g;
+float fogHeight;
+float fogFalloff;
+
+float3 getCascadeShadowCoords(float3 worldPosition) 
+{
+	float distToCam = length(worldPosition - cameraPosition.xyz);
+	float4 near = float4 (distToCam >= lightData[0].lightSplitsNear); 
+	float4 far = float4 (distToCam < lightData[0].lightSplitsFar);
+	float4 weights = near * far;
+
+	float3 shadowCoord0 = mul(lightData[0].worldToShadow[0], float4(worldPosition, 1)).xyz; 
+	float3 shadowCoord1 = mul(lightData[0].worldToShadow[1], float4(worldPosition, 1)).xyz;
+	float3 shadowCoord2 = mul(lightData[0].worldToShadow[2], float4(worldPosition, 1)).xyz;
+	float3 shadowCoord3 = mul(lightData[0].worldToShadow[3], float4(worldPosition, 1)).xyz;
+	float3 coord = 
+		shadowCoord0 * weights.x + 
+		shadowCoord1 * weights.y +
+		shadowCoord2 * weights.z +
+		shadowCoord3 * weights.w;
+	return coord;
+}
+
+float3 getFrustumRay(float2 uv)
+{
+	float3 upperRay = lerp(frustumRays[1].xyz, frustumRays[2].xyz, uv.x);
+	float3 lowerRay = lerp(frustumRays[0].xyz, frustumRays[3].xyz, uv.x);
+	return lerp(lowerRay, upperRay, uv.y);
+}
+
+[numthreads(4,4,4)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	float3 resolution = float3(159, 89, 127);
+	
+	float3 volCoord = float3(float3(id) / resolution);
+	float z = volCoord.z * (farPlane - nearPlane) + nearPlane;
+	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
+
+	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
+	float shadowDepth = cascadeShadowMap.SampleLevel(MyPointClampSampler, shadowCoord.xy, 0);
+	float visibility = float(shadowDepth < shadowCoord.z);
+
+	scattering *= saturate(exp(-worldPosition.y * fogFalloff + fogHeight));
+
+	half4 result = half4(lightData[0].ambientColor.rgb, scattering);
+	float3 scatteredColor = lightData[0].lightColor.rgb * visibility;
+	//TODO: include transmittance from light to worldPosition
+
+	// Henyey-Greenstein phase function
+	float3 viewDir = normalize(worldPosition - cameraPosition);
+	float theta = dot(lightData[0].lightDirection, viewDir);
+	float phase = 1 - g * g;
+	phase /= 4 * PI * pow(1 + g * g - 2 * g * theta, 1.5);
+
+	result.rgb += scatteredColor * phase;
+	result.rgb *= scattering;
+	result.rgb *= PI;
+
+	fogVolume[id] = result;
+}
+
+
