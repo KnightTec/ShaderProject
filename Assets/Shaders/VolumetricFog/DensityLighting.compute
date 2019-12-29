@@ -53,6 +53,17 @@ float3 getFrustumRay(float2 uv)
 	return lerp(lowerRay, upperRay, uv.y);
 }
 
+float calcTransmittance(float3 position, float3 lightDirection)
+{
+	float dist = 100000;
+	// integrate optical depth along light ray
+	// https://iquilezles.org/www/articles/fog/fog.htm
+	float opticalDepth = exp(-fogFalloff * (position.y + dist * lightDirection.y) + fogHeight);
+	opticalDepth -= exp(-fogFalloff * position.y + fogHeight);
+	opticalDepth /= -fogFalloff * lightDirection.y;
+	return exp(-opticalDepth * scattering);
+}
+
 [numthreads(4,4,4)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
@@ -70,7 +81,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	half4 result = half4(lightData[0].ambientColor.rgb, scattering);
 	float3 scatteredColor = lightData[0].lightColor.rgb * visibility;
-	//TODO: include transmittance from light to worldPosition
+
+	// transmittance from directional light to worldPosition
+	float transmittance = calcTransmittance(worldPosition, lightData[0].lightDirection);
+	scatteredColor *= transmittance;
 
 	// Henyey-Greenstein phase function
 	float3 viewDir = normalize(worldPosition - cameraPosition);
