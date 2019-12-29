@@ -9,7 +9,7 @@ public class VolumetricFogRenderer : MonoBehaviour
 {
     [Range(0, 1)]
     public float scattering = 0.1f;
-    [Range(-1, 1)]
+    [Range(-0.99f, 0.99f)]
     public float anisotropy = 0;
     public float fogHeight;
     [Range(0.01f, 1)]
@@ -122,7 +122,6 @@ public class VolumetricFogRenderer : MonoBehaviour
         Matrix4x4 projMat = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true);
         viewProjectionMatrixInverse = projMat * viewMat;
         viewProjectionMatrixInverse = viewProjectionMatrixInverse.inverse;
-
         calculateFrustumRays();
 
         //TODO: use command buffers instead of OnRenderImage (performance??)

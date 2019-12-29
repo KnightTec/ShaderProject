@@ -517,7 +517,7 @@ Light:
   m_Enabled: 1
   serializedVersion: 9
   m_Type: 1
-  m_Color: {r: 1, g: 0.9730526, b: 0.8726415, a: 1}
+  m_Color: {r: 1, g: 0.9183217, b: 0.7783019, a: 1}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
@@ -563,7 +563,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 3e-45, z: NaN, w: 9e-44}
+  m_BoundingSphereOverride: {x: 0, y: 1.7e-44, z: 8.568e-42, w: 1.05e-43}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -738,7 +738,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.01
-  far clip plane: 50
+  far clip plane: 80
   field of view: 50.560867
   orthographic: 0
   orthographic size: 5
@@ -764,13 +764,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: -0.13732845, y: 0.7586199, z: 0.16971064, w: 0.61386895}
-  m_LocalPosition: {x: -28.2, y: 1, z: -0.92}
+  m_LocalRotation: {x: -0.13413003, y: 0.76270413, z: 0.16769138, w: 0.6100584}
+  m_LocalPosition: {x: -21.23, y: 1.3, z: -4.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: -25.22, y: 102.04101, z: 0}
+  m_LocalEulerAnglesHint: {x: -24.8, y: 102.69, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -783,10 +783,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e9bca6c17670f49ac8bfcf51d00799, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scattering: 0.1
-  anisotropy: 0.3
-  fogHeight: 2
-  fogFalloff: 0.112
+  scattering: 0.2
+  anisotropy: 0.6
+  fogHeight: 1
+  fogFalloff: 0.15
   directionalLightData: {fileID: 705507996}
   densityLightingShader: {fileID: 7200000, guid: 4ced60263f7811f4f808303e1930387c,
     type: 3}
@@ -1078,7 +1078,7 @@ Transform:
   m_GameObject: {fileID: 1178247872}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 28.48, y: 2.45, z: -26.53}
-  m_LocalScale: {x: 8.7578, y: 28.454094, z: 8.7578}
+  m_LocalScale: {x: 11.085624, y: 54.9072, z: 11.085624}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 17
