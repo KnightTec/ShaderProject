@@ -11,6 +11,8 @@ public class VolumetricFogRenderer : MonoBehaviour
     public float scattering = 0.1f;
     [Range(-0.99f, 0.99f)]
     public float anisotropy = 0;
+    [Range(0, 1)]
+    public float transmittance = 0;
     public float fogHeight;
     [Range(0.01f, 1)]
     public float fogFalloff;
@@ -144,6 +146,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloat("g", anisotropy);
         densityLightingShader.SetFloat("fogHeight", fogHeight);
         densityLightingShader.SetFloat("fogFalloff", fogFalloff);
+        densityLightingShader.SetFloat("transmittance", 1 - transmittance);
         densityLightingShader.Dispatch(densityLightingKernel, 40, 24, 32);
 
         scatteringShader.SetTexture(scatteringKernel, "accumulatedFogVolume", accumulatedFogVolume);
