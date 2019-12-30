@@ -17,6 +17,10 @@ RWStructuredBuffer<DirLightData> lightData;
 SamplerState MyPointClampSampler;
 
 Texture2D<float> cascadeShadowMap;
+
+//TODO: temporal supersampling
+RWTexture3D<half4> historyFogVolume;
+
 RWTexture3D<half4> fogVolume;
 float4 cameraPosition;
 float nearPlane;
@@ -26,6 +30,7 @@ float scattering;
 float g;
 float fogHeight;
 float fogFalloff;
+float transmittance;
 
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
@@ -61,7 +66,7 @@ float calcTransmittance(float3 position, float3 lightDirection)
 	float opticalDepth = exp(-fogFalloff * (position.y + dist * lightDirection.y) + fogHeight);
 	opticalDepth -= exp(-fogFalloff * position.y + fogHeight);
 	opticalDepth /= -fogFalloff * lightDirection.y;
-	return exp(-opticalDepth * scattering);
+	return exp(-opticalDepth * scattering * transmittance);
 }
 
 [numthreads(4,4,4)]
@@ -73,14 +78,27 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float z = volCoord.z * (farPlane - nearPlane) + nearPlane;
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
+
+	float texelSize = 1 / 1024.0f;
 	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
-	float shadowDepth = cascadeShadowMap.SampleLevel(MyPointClampSampler, shadowCoord.xy, 0);
-	float visibility = float(shadowDepth < shadowCoord.z);
+	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 0));
+	float4 visibility = float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 0));
+	visibility += float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 2));
+	visibility += float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 2));
+	visibility += float4(shadowDepth < shadowCoord.z);
+	
+	visibility.r = dot(visibility, 1/16.0f);
+	//float pointDepthExp = exp(shadowCoord.z * 80);
+	//float visibility = saturate(shadowDepthExp * pointDepthExp);
+	
 
 	scattering *= saturate(exp(-worldPosition.y * fogFalloff + fogHeight));
 
 	half4 result = half4(lightData[0].ambientColor.rgb, scattering);
-	float3 scatteredColor = lightData[0].lightColor.rgb * visibility;
+	float3 scatteredColor = lightData[0].lightColor.rgb * visibility.r;
 
 	// transmittance from directional light to worldPosition
 	float transmittance = calcTransmittance(worldPosition, lightData[0].lightDirection);
