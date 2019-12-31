@@ -6,17 +6,25 @@ Texture2D<float> depth;
 Texture3D<half4> accumulatedFogVolume;
 RWTexture2D<float4> result;
 float4 resolution;
+float nearPlane;
+float farPlane;
 
 SamplerState MyLinearClampSampler;
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-	float3 fogCoord = float3(id.xy * resolution.zw, Linear01Depth(depth[id.xy]));
+	float d = Linear01Depth(depth[id.xy]);
+	float3 fogCoord = float3(id.xy * resolution.zw, d);
 
+	float z = nearPlane + (farPlane - nearPlane) * d;
+	fogCoord.z = log(z / nearPlane) / log(farPlane / nearPlane);
+
+	//fogCoord = float3(id.x * resolution.z, 0.5, id.y * resolution.w);
 	half4 fogSample = accumulatedFogVolume.SampleLevel(MyLinearClampSampler, fogCoord, 0);
 	float3 sceneColor = source[id.xy].rgb;
 
 	float3 combinedColor = sceneColor * fogSample.a + fogSample.rgb;
 	result[id.xy] = float4(combinedColor, 1);
+	//result[id.xy] = float4(1,1,1, 1) * fogSample.a;
 }

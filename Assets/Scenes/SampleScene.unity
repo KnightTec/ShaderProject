@@ -518,7 +518,7 @@ Light:
   serializedVersion: 9
   m_Type: 1
   m_Color: {r: 1, g: 0.9183217, b: 0.7783019, a: 1}
-  m_Intensity: 1
+  m_Intensity: 1.5
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -830,8 +830,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.01
-  far clip plane: 80
+  near clip plane: 0.3
+  far clip plane: 300
   field of view: 50.560867
   orthographic: 0
   orthographic size: 5
@@ -876,11 +876,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e9bca6c17670f49ac8bfcf51d00799, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scattering: 0.025
-  anisotropy: 0.5
-  transmittance: 1
+  scattering: 0.05
+  anisotropy: 0.3
+  transmittance: 0
   fogHeight: 1
-  fogFalloff: 0.01
+  fogFalloff: 0.1
   directionalLightData: {fileID: 705507996}
   densityLightingShader: {fileID: 7200000, guid: 4ced60263f7811f4f808303e1930387c,
     type: 3}

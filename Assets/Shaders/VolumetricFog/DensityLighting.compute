@@ -31,6 +31,7 @@ float g;
 float fogHeight;
 float fogFalloff;
 float transmittance;
+float4 sliceDepths[32];
 
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
@@ -75,19 +76,18 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 resolution = float3(159, 89, 127);
 	
 	float3 volCoord = float3(float3(id) / resolution);
-	float z = volCoord.z * (farPlane - nearPlane) + nearPlane;
+	//float z = volCoord.z * (farPlane - nearPlane) + nearPlane;
+	float z = sliceDepths[id.z / 4][id.z % 4];
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
-
-	float texelSize = 1 / 1024.0f;
 	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
-	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 0));
+	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, 0));
 	float4 visibility = float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 0));
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 0));
 	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 2));
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, 2));
 	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 2));
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 2));
 	visibility += float4(shadowDepth < shadowCoord.z);
 	
 	visibility.r = dot(visibility, 1/16.0f);

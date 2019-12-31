@@ -33,8 +33,10 @@ public class VolumetricFogRenderer : MonoBehaviour
     private Matrix4x4 viewProjectionMatrixInverse;
     private Vector4 resolution;
     private RenderTexture fogVolume;
+    private RenderTexture historyFogVolume;
     private RenderTexture accumulatedFogVolume;
     private Vector4[] frustumRays;
+    private float[] sliceDepths;
 
     void OnEnable()
     {
@@ -50,6 +52,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogKernel = applyFogShader.FindKernel("CSMain");
         resolution = new Vector4();
         frustumRays = new Vector4[4];
+        sliceDepths = new float[128];
     }
 
     void OnDestroy()
@@ -64,6 +67,16 @@ public class VolumetricFogRenderer : MonoBehaviour
     private void OnPreRender()
     {
         directionalLightData.updateData();
+        updateSlideDepths();
+    }
+
+    private void updateSlideDepths()
+    {
+        float farOverNear = cam.farClipPlane / cam.nearClipPlane;
+        for (int i = 0; i < 128; i++)
+        {
+            sliceDepths[i] = cam.nearClipPlane * Mathf.Pow(farOverNear, i / 128.0f);
+        }
     }
 
     private void calculateFrustumRays()
@@ -105,10 +118,15 @@ public class VolumetricFogRenderer : MonoBehaviour
         if (fogVolume == null)
         {
             fogVolume = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
+            historyFogVolume = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
             fogVolume.enableRandomWrite = true;
+            historyFogVolume.enableRandomWrite = true;
             fogVolume.volumeDepth = 128;
+            historyFogVolume.volumeDepth = 128;
             fogVolume.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+            historyFogVolume.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
             fogVolume.Create();
+            historyFogVolume.Create();
         }
         if (accumulatedFogVolume == null)
         {
@@ -128,9 +146,10 @@ public class VolumetricFogRenderer : MonoBehaviour
 
         //TODO: use command buffers instead of OnRenderImage (performance??)
         //TODO: fix depth texture delay in forward
+        //TODO: temporal supersampling
 
         //TODO: shadow filtering: convert to exponential shadow maps
-        //TODO: logarithmic depth slice distribution (right now its linear)
+        //DONE: logarithmic depth slice distribution (right now its linear)
         // -> see formula one slide 5 http://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf
         //TODO: release buffers correctly (might be the reason for some crashes)
 
@@ -147,11 +166,13 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloat("fogHeight", fogHeight);
         densityLightingShader.SetFloat("fogFalloff", fogFalloff);
         densityLightingShader.SetFloat("transmittance", 1 - transmittance);
+        densityLightingShader.SetFloats("sliceDepths", sliceDepths);
         densityLightingShader.Dispatch(densityLightingKernel, 40, 24, 32);
 
         scatteringShader.SetTexture(scatteringKernel, "accumulatedFogVolume", accumulatedFogVolume);
         scatteringShader.SetTexture(scatteringKernel, "fogVolume", fogVolume);
         scatteringShader.SetFloat("sliceDepth", (cam.farClipPlane - cam.nearClipPlane) / 128.0f);
+        scatteringShader.SetFloats("sliceDepths", sliceDepths);
         scatteringShader.Dispatch(scatteringKernel, 20, 12, 1);
 
         applyFogShader.SetVector("resolution", resolution);
@@ -159,6 +180,8 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogShader.SetTexture(applyFogKernel, "source", source);
         applyFogShader.SetTexture(applyFogKernel, "result", tempDestination);
         applyFogShader.SetTexture(applyFogKernel, "accumulatedFogVolume", accumulatedFogVolume);
+        applyFogShader.SetFloat("nearPlane", cam.nearClipPlane);
+        applyFogShader.SetFloat("farPlane", cam.farClipPlane);
         applyFogShader.Dispatch(applyFogKernel, (tempDestination.width + 7) / 8, (tempDestination.height + 7) / 8, 1);
 
         //applyFogMaterial.SetTexture("mainTex", source);
