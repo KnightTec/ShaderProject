@@ -831,7 +831,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 300
+  far clip plane: 500
   field of view: 50.560867
   orthographic: 0
   orthographic size: 5
@@ -876,9 +876,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e9bca6c17670f49ac8bfcf51d00799, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scattering: 0.05
-  anisotropy: 0.3
-  transmittance: 0
+  scattering: 0.04
+  anisotropy: 0.2
+  transmittance: 1
   fogHeight: 1
   fogFalloff: 0.1
   directionalLightData: {fileID: 705507996}

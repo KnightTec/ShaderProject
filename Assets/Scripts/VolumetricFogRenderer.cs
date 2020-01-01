@@ -32,11 +32,17 @@ public class VolumetricFogRenderer : MonoBehaviour
     private Camera cam;
     private Matrix4x4 viewProjectionMatrixInverse;
     private Vector4 resolution;
-    private RenderTexture fogVolume;
+
+    private RenderTexture fogVolume0;
+    private RenderTexture fogVolume1;
+    private RenderTexture currentfogVolume;
     private RenderTexture historyFogVolume;
+
     private RenderTexture accumulatedFogVolume;
     private Vector4[] frustumRays;
     private float[] sliceDepths;
+    private float[][] jitteredSliceDepths;
+    private int jitterIndex = 0;
 
     void OnEnable()
     {
@@ -53,6 +59,8 @@ public class VolumetricFogRenderer : MonoBehaviour
         resolution = new Vector4();
         frustumRays = new Vector4[4];
         sliceDepths = new float[128];
+        jitteredSliceDepths = new float[7][];
+        calculateSliceDepths();
     }
 
     void OnDestroy()
@@ -64,24 +72,63 @@ public class VolumetricFogRenderer : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (jitterIndex % 2 == 0)
+        {
+            currentfogVolume = fogVolume0;
+            historyFogVolume = fogVolume1;
+        }
+        else
+        {
+            currentfogVolume = fogVolume1;
+            historyFogVolume = fogVolume0;
+        }
+        jitterIndex = (jitterIndex + 1) % 7;
+    }
+
     private void OnPreRender()
     {
         directionalLightData.updateData();
-        updateSlideDepths();
+    }
+    
+    private static float haltonSequence(int i, int b)
+    {
+        float f = 1;
+        float r = 0;
+        while (i > 0)
+        {
+            f /= b;
+            r += f * (i % b);
+            i /= b;
+        }
+        return r;
     }
 
-    private void updateSlideDepths()
+    private void calculateSliceDepths()
     {
         float farOverNear = cam.farClipPlane / cam.nearClipPlane;
         for (int i = 0; i < 128; i++)
         {
             sliceDepths[i] = cam.nearClipPlane * Mathf.Pow(farOverNear, i / 128.0f);
         }
+        float sliceProportion = 1 - Mathf.Pow(farOverNear, 1 / 128.0f);
+        jitteredSliceDepths[0] = new float[128];
+        for (int j = 0; j < 7; j++)
+        {
+            jitteredSliceDepths[j] = new float[128];
+            float offset = haltonSequence(j + 1, 2) - 0.5f;
+            for (int i = 0; i < 128; i++)
+            {
+                jitteredSliceDepths[j][i] = sliceDepths[i] * (1 + offset * sliceProportion);
+            }
+        }
     }
 
     private void calculateFrustumRays()
     {
         Vector3[] frustumRaysTmp = new Vector3[4];
+        frustumRays = new Vector4[4];
         cam.CalculateFrustumCorners(new Rect(0, 0, 1, 1), 1, Camera.MonoOrStereoscopicEye.Mono, frustumRaysTmp);
         for (int i = 0; i < 4; i++)
         {
@@ -115,18 +162,21 @@ public class VolumetricFogRenderer : MonoBehaviour
             resolution.z = 1.0f / source.width;
             resolution.w = 1.0f / source.height;
         }
-        if (fogVolume == null)
+        if (fogVolume0 == null)
         {
-            fogVolume = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
-            historyFogVolume = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
-            fogVolume.enableRandomWrite = true;
-            historyFogVolume.enableRandomWrite = true;
-            fogVolume.volumeDepth = 128;
-            historyFogVolume.volumeDepth = 128;
-            fogVolume.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-            historyFogVolume.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-            fogVolume.Create();
-            historyFogVolume.Create();
+            fogVolume0 = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
+            fogVolume1 = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
+            fogVolume0.enableRandomWrite = true;
+            fogVolume1.enableRandomWrite = true;
+            fogVolume0.volumeDepth = 128;
+            fogVolume1.volumeDepth = 128;
+            fogVolume0.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+            fogVolume1.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+            fogVolume0.Create();
+            fogVolume1.Create();
+
+            currentfogVolume = fogVolume0;
+            historyFogVolume = fogVolume1;
         }
         if (accumulatedFogVolume == null)
         {
@@ -157,7 +207,8 @@ public class VolumetricFogRenderer : MonoBehaviour
         directionalLightData.setComputeBuffer(densityLightingKernel, densityLightingShader);
         densityLightingShader.SetVector("cameraPosition", transform.position);
         densityLightingShader.SetTextureFromGlobal(densityLightingKernel, "cascadeShadowMap", "_CascadeShadowMapCopy");
-        densityLightingShader.SetTexture(densityLightingKernel, "fogVolume", fogVolume);
+        densityLightingShader.SetTexture(densityLightingKernel, "fogVolume", currentfogVolume);
+        densityLightingShader.SetTexture(densityLightingKernel, "historyFogVolume", historyFogVolume);
         densityLightingShader.SetVectorArray("frustumRays", frustumRays);
         densityLightingShader.SetFloat("nearPlane", cam.nearClipPlane);
         densityLightingShader.SetFloat("farPlane", cam.farClipPlane);
@@ -166,11 +217,11 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloat("fogHeight", fogHeight);
         densityLightingShader.SetFloat("fogFalloff", fogFalloff);
         densityLightingShader.SetFloat("transmittance", 1 - transmittance);
-        densityLightingShader.SetFloats("sliceDepths", sliceDepths);
+        densityLightingShader.SetFloats("sliceDepths", jitteredSliceDepths[jitterIndex]);
         densityLightingShader.Dispatch(densityLightingKernel, 40, 24, 32);
 
         scatteringShader.SetTexture(scatteringKernel, "accumulatedFogVolume", accumulatedFogVolume);
-        scatteringShader.SetTexture(scatteringKernel, "fogVolume", fogVolume);
+        scatteringShader.SetTexture(scatteringKernel, "fogVolume", currentfogVolume);
         scatteringShader.SetFloat("sliceDepth", (cam.farClipPlane - cam.nearClipPlane) / 128.0f);
         scatteringShader.SetFloats("sliceDepths", sliceDepths);
         scatteringShader.Dispatch(scatteringKernel, 20, 12, 1);

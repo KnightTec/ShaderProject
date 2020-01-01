@@ -17,10 +17,7 @@ RWStructuredBuffer<DirLightData> lightData;
 SamplerState MyPointClampSampler;
 
 Texture2D<float> cascadeShadowMap;
-
-//TODO: temporal supersampling
 RWTexture3D<half4> historyFogVolume;
-
 RWTexture3D<half4> fogVolume;
 float4 cameraPosition;
 float nearPlane;
@@ -93,7 +90,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	visibility.r = dot(visibility, 1/16.0f);
 	//float pointDepthExp = exp(shadowCoord.z * 80);
 	//float visibility = saturate(shadowDepthExp * pointDepthExp);
-	
 
 	scattering *= saturate(exp(-worldPosition.y * fogFalloff + fogHeight));
 
@@ -113,6 +109,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	result.rgb += scatteredColor * phase;
 	result.rgb *= scattering;
 	result.rgb *= PI;
+
+	// exponential moving average
+	result = 0.1 * result + 0.9 * historyFogVolume[id];
+	
+
+	//TODO: fix ghosting
 
 	fogVolume[id] = result;
 }
