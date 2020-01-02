@@ -171,6 +171,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: a80d2f95b9fb5984e979dbdfe4aa2e57, type: 2}
+  - {fileID: 2100000, guid: d044372fda522b64ca5f2ceade9f2e53, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -206,13 +207,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 10719964}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0.036592044, y: -0.1750738, z: -0.0065114447, w: 0.9838535}
+  m_LocalPosition: {x: 0.94, y: 0.3, z: 3.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -4.26, y: -20.18, z: 0}
 --- !u!1 &133307529
 GameObject:
   m_ObjectHideFlags: 0
@@ -323,14 +324,14 @@ Light:
   m_Enabled: 1
   serializedVersion: 9
   m_Type: 1
-  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  m_Intensity: 1
+  m_Color: {r: 1, g: 0.8392157, b: 0.96767074, a: 1}
+  m_Intensity: 1.3
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 2
+    m_Type: 1
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -380,10 +381,10 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 220142250}
-  m_LocalRotation: {x: 0.42203733, y: -0.14220902, z: 0.8928282, w: 0.06722179}
+  m_LocalRotation: {x: 0.836111, y: -0.1023827, z: 0.16707335, w: 0.51236963}
   m_LocalPosition: {x: -2.55, y: 5.03, z: 4.77}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 161.9, y: 1310.6, z: 0}
+  m_LocalEulerAnglesHint: {x: 117, y: 2137.4, z: 0}
