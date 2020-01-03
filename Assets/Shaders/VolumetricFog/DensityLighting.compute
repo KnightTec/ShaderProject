@@ -33,6 +33,21 @@ float logfarOverNearInv;
 float4 scatterColor;
 float time;
 
+float noiseIntensity;
+float noiseSize;
+float4 noiseDirection;
+float4 ambientLightColor;
+
+struct FogPointLight
+{
+	float4 position;
+    float4 color;
+    float range;
+    float intensity;
+};
+RWStructuredBuffer<FogPointLight> pointLights;
+int pointLightCount;
+
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
 	float distToCam = length(worldPosition - cameraPosition.xyz);
@@ -59,9 +74,8 @@ float3 getFrustumRay(float2 uv)
 	return lerp(lowerRay, upperRay, uv.y);
 }
 
-float calcTransmittance(float3 position, float3 lightDirection)
+float calcTransmittance(float3 position, float3 lightDirection, float dist)
 {
-	float dist = 100000;
 	// integrate optical depth along light ray
 	// https://iquilezles.org/www/articles/fog/fog.htm
 	float opticalDepth = exp(-fogFalloff * (position.y + dist * lightDirection.y) + fogHeight);
@@ -126,6 +140,16 @@ float perlinNoise(float3 value){
 	return noise;
 }
 
+float phaseFunction(float3 pointPosition, float3 lightDirection) 
+{
+	// Henyey-Greenstein phase function
+	float3 viewDir = normalize(pointPosition - cameraPosition);
+	float theta = dot(lightDirection, viewDir);
+	float phase = 1 - g * g;
+	phase /= 4 * PI * pow(1 + g * g - 2 * g * theta, 1.5);
+	return phase;
+}
+
 [numthreads(4,4,4)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
@@ -159,24 +183,36 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	//float pointDepthExp = exp(shadowCoord.z * 80);
 	//float visibility = saturate(shadowDepthExp * pointDepthExp);
 
-	float noise = saturate(perlinNoise((worldPosition + float3(24, 0, 0) * time) / 16)) * 0.9 + 0.1;
+	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) / noiseSize)) * noiseIntensity + (1 - noiseIntensity);
+	noise = noise * 0.8 + 0.2 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
 	//noise = 1;
 	scattering *= saturate(exp(-worldPosition.y * fogFalloff + fogHeight)) * noise;
 
-	half4 result = half4(lightData[0].ambientColor.rgb, scattering);
+	half4 result = half4(ambientLightColor.rgb * 0.1f, scattering);
 	float3 scatteredColor = lightData[0].lightColor.rgb * visibility.r;
 
 	// transmittance from directional light to worldPosition
-	float transmittance = calcTransmittance(worldPosition, lightData[0].lightDirection);
+	float transmittance = calcTransmittance(worldPosition, lightData[0].lightDirection, 100000);
 	scatteredColor *= transmittance;
 
-	// Henyey-Greenstein phase function
-	float3 viewDir = normalize(worldPosition - cameraPosition);
-	float theta = dot(lightData[0].lightDirection, viewDir);
-	float phase = 1 - g * g;
-	phase /= 4 * PI * pow(1 + g * g - 2 * g * theta, 1.5);
-
+	float phase = phaseFunction(worldPosition, lightData[0].lightDirection);
 	result.rgb += scatteredColor * phase;
+
+	// point light lighting
+	for (int i = 0; i < pointLightCount; i++) 
+	{
+		FogPointLight light = pointLights[i];
+		//inverse-square light attenuation
+		float3 lightVector = light.position.xyz - worldPosition;
+		float3 lightVecNorm = normalize(lightVector);
+		float lightDist = length(lightVector);
+		float attentuation = 1 / max(lightDist, 0.001);
+		attentuation *= attentuation;
+		phase = phaseFunction(worldPosition, lightVecNorm);
+		result.rgb += light.color.rgb * attentuation * phase 
+			* light.intensity * calcTransmittance(light.position, lightVecNorm, lightDist);
+	}
+
 	result.rgb *= scattering * scatterColor;
 	result.rgb *= PI;
 

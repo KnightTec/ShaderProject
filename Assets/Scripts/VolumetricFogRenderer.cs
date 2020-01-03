@@ -17,6 +17,11 @@ public class VolumetricFogRenderer : MonoBehaviour
     public float fogHeight;
     [Range(0.01f, 1)]
     public float fogFalloff;
+    [Range(0, 1)]
+    public float noiseIntensity = 1;
+    [Range(0.1f, 100)]
+    public float noiseSize = 8;
+    public Vector3 noiseDirection;
 
     public DirectionalLightData directionalLightData;
     public ComputeShader densityLightingShader;
@@ -25,6 +30,7 @@ public class VolumetricFogRenderer : MonoBehaviour
     public ComputeShader applyFogShader;
     public Shader applyFogShader0;
     public float jitterStrength = 1;
+    public Color ambientColor;
 
     private RenderTexture tempDestination;
 
@@ -43,12 +49,23 @@ public class VolumetricFogRenderer : MonoBehaviour
     private RenderTexture currentfogVolume;
     private RenderTexture historyFogVolume;
     private RenderTexture blendedFogVolume;
+    private ComputeBuffer pointLightBuffer;
 
     private RenderTexture accumulatedFogVolume;
     private Vector4[] frustumRays;
     private float[] sliceDepths;
     private float[][] jitteredSliceDepths;
     private int jitterIndex = 0;
+   
+    struct FogPointLight
+    {
+        public Vector4 position;
+        public Vector4 color;
+        public float range;
+        public float intensity;
+    };
+    private FogPointLight[] pointLights;
+    private int pointLightCount;
 
     private const int depthSliceCount = 128;
 
@@ -70,6 +87,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         sliceDepths = new float[depthSliceCount];
         jitteredSliceDepths = new float[2][];
         calculateSliceDepths();
+        pointLightBuffer = new ComputeBuffer(64, 40);
     }
 
     void OnDestroy()
@@ -101,6 +119,7 @@ public class VolumetricFogRenderer : MonoBehaviour
     private void OnPreRender()
     {
         directionalLightData.updateData();
+        getPointLightData();
     }
     
     private static float haltonSequence(int i, int b)
@@ -159,6 +178,25 @@ public class VolumetricFogRenderer : MonoBehaviour
         }
     }
 
+    private void getPointLightData()
+    {
+        Light[] lights = FindObjectsOfType(typeof(Light)) as Light[];
+        pointLights = new FogPointLight[lights.Length];
+        pointLightCount = 0; ;
+        for (int i = 0, j = 0; i < lights.Length; i++)
+        {
+            if (lights[i].type != LightType.Point)
+            {
+                continue;
+            }
+            pointLights[j].position = lights[i].transform.position;
+            pointLights[j].color = lights[i].color;
+            pointLights[j].range = lights[i].range;
+            pointLights[j].intensity = lights[i].intensity;
+            j = ++pointLightCount;
+        }
+    }
+
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         // recreate texture if size was changed
@@ -210,7 +248,7 @@ public class VolumetricFogRenderer : MonoBehaviour
             accumulatedFogVolume = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
             accumulatedFogVolume.enableRandomWrite = true;
             accumulatedFogVolume.volumeDepth = depthSliceCount;
-            accumulatedFogVolume.filterMode = FilterMode.Point;
+            accumulatedFogVolume.filterMode = FilterMode.Bilinear;
             accumulatedFogVolume.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
             accumulatedFogVolume.Create();
         }
@@ -231,6 +269,9 @@ public class VolumetricFogRenderer : MonoBehaviour
 
 
         directionalLightData.setComputeBuffer(densityLightingKernel, densityLightingShader);
+        pointLightBuffer.SetData(pointLights);
+
+        densityLightingShader.SetBuffer(densityLightingKernel, "pointLights", pointLightBuffer);
         densityLightingShader.SetVector("cameraPosition", transform.position);
         densityLightingShader.SetTextureFromGlobal(densityLightingKernel, "cascadeShadowMap", "_CascadeShadowMapCopy");
         densityLightingShader.SetTexture(densityLightingKernel, "fogVolume", currentfogVolume);
@@ -246,6 +287,12 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloat("logfarOverNearInv", logfarOverNearInv);
         densityLightingShader.SetVector("scatterColor", scatterColor);
         densityLightingShader.SetFloat("time", Time.time);
+        densityLightingShader.SetFloat("noiseIntensity", noiseIntensity);
+        densityLightingShader.SetBuffer(densityLightingKernel, "pointLights", pointLightBuffer);
+        densityLightingShader.SetInt("pointLightCount", pointLightCount);
+        densityLightingShader.SetVector("ambientLightColor", ambientColor);
+        densityLightingShader.SetFloat("noiseSize", noiseSize);
+        densityLightingShader.SetVector("noiseDirection", noiseDirection);
         densityLightingShader.Dispatch(densityLightingKernel, 40, 24, depthSliceCount / 4);
         densityLightingShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
 

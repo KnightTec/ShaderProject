@@ -68,7 +68,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	half4 historySampleClamped = clamp(historySample, minSample, maxSample);
 
 	half blendFactor = 0.5;
-	half4 result = fogVolume[id];
 	// simple moving average
-	blendedFogVolume[id] = lerp(result, historyFogVolume[id], blendFactor);
+	blendedFogVolume[id] = lerp(fogVolume[id], historyFogVolume[id], blendFactor);
 }
