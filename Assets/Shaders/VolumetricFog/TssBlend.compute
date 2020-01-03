@@ -2,6 +2,7 @@
 #pragma kernel CSMain
 
 Texture3D<half4> historyFogVolume;
+Texture3D<half4> historyFogVolume1;
 RWTexture3D<half4> fogVolume;
 RWTexture3D<half4> blendedFogVolume;
 
@@ -13,6 +14,7 @@ float farPlane;
 float4 frustumRays[4];
 float4 sliceDepths[32];
 matrix historyViewProjection;
+matrix historyViewProjection1;
 float logfarOverNearInv;
 float time;
 
@@ -37,7 +39,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	float4 historyNdc = mul(historyViewProjection, float4(worldPosition, 1));
 	historyNdc /= historyNdc.w;
-
 	float3 historyVolumeCoord = float3((historyNdc.xy + 1) / 2, 0);
 	historyVolumeCoord.y = 1 - historyVolumeCoord.y;
 	z = nearPlane + (farPlane - nearPlane) * Linear01Depth(historyNdc.z);
@@ -45,29 +46,17 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	half4 historySample = historyFogVolume.SampleLevel(MyLinearClampSampler, historyVolumeCoord, 0);
 
-	// variance clamping
-	// https://developer.download.nvidia.com/gameworks/events/GDC2016/msalvi_temporal_supersampling.pdf
-	float4 m1 = 0;
-	float4 m2 = 0;
-	for (int x = -1; x <= 1; x++) 
-	{
-		for (int y = -1; y <= 1; y++) 
-		{
-			for (int z = -1; z <= 1; z++) 
-			{
-				float4 sample0 = fogVolume[uint3(id.x + x, id.y + y, min(id.z + z, 127))];
-				m1 += sample0;
-				m2 += sample0 * sample0;
-			}	
-		}
-	}
-	float4 mean = m1 / 27.0f;
-	float4 sigma = sqrt(abs(m2 / 27.0f - mean * mean));
-	half4 minSample = mean - sigma;
-    half4 maxSample = mean + sigma;
-	half4 historySampleClamped = clamp(historySample, minSample, maxSample);
+	historyNdc = mul(historyViewProjection1, float4(worldPosition, 1));
+	historyNdc /= historyNdc.w;
+	historyVolumeCoord = float3((historyNdc.xy + 1) / 2, 0);
+	historyVolumeCoord.y = 1 - historyVolumeCoord.y;
+	z = nearPlane + (farPlane - nearPlane) * Linear01Depth(historyNdc.z);
+	historyVolumeCoord.z = log(z / nearPlane) * logfarOverNearInv;
 
-	half blendFactor = 0.5;
+	half4 historySample1 = historyFogVolume1.SampleLevel(MyLinearClampSampler, historyVolumeCoord, 0);
+
+	half blendFactor = 1 / 3.0f;
+
 	// simple moving average
-	blendedFogVolume[id] = lerp(fogVolume[id], historyFogVolume[id], blendFactor);
+	blendedFogVolume[id] = blendFactor * (fogVolume[id] + historySample + historySample1);
 }

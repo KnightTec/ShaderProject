@@ -1584,7 +1584,7 @@ MonoBehaviour:
   scattering: 1
   scatterColor: {r: 1, g: 1, b: 1, a: 1}
   anisotropy: 0.4
-  transmittance: 0
+  transmittance: 0.6
   fogHeight: 2
   fogFalloff: 0.3
   noiseIntensity: 0.9
