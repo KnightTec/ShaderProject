@@ -28,6 +28,7 @@ public class DirectionalLightData : MonoBehaviour
         RenderTargetIdentifier shadowmap = BuiltinRenderTextureType.CurrentActive;
         shadowMapCopy = new RenderTexture(1024, 1024, 0);
         shadowMapCopy.filterMode = FilterMode.Point;
+        shadowMapCopy.wrapMode = TextureWrapMode.Clamp;
         commandBuffer0.SetShadowSamplingMode(shadowmap, ShadowSamplingMode.RawDepth);
         var id = new RenderTargetIdentifier(shadowMapCopy);
 

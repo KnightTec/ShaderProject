@@ -17,7 +17,6 @@ RWStructuredBuffer<DirLightData> lightData;
 SamplerState MyPointClampSampler;
 
 Texture2D<float> cascadeShadowMap;
-Texture3D<half4> historyFogVolume;
 RWTexture3D<half4> fogVolume;
 float4 cameraPosition;
 float nearPlane;
@@ -32,6 +31,7 @@ float4 sliceDepths[32];
 matrix historyViewProjection;
 float logfarOverNearInv;
 float4 scatterColor;
+float time;
 
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
@@ -70,6 +70,62 @@ float calcTransmittance(float3 position, float3 lightDirection)
 	return exp(-opticalDepth * scattering * transmittance);
 }
 
+// noise function copied from here: https://www.ronja-tutorials.com/2018/09/15/perlin-noise.html
+float rand3dTo1d(float3 value, float3 dotDir = float3(12.9898, 78.233, 37.719)){
+    //make value smaller to avoid artefacts
+    float3 smallValue = sin(value);
+    //get scalar value from 3d vector
+    float random = dot(smallValue, dotDir);
+    //make value more random by making it bigger and then taking teh factional part
+    random = frac(sin(random) * 143758.5453);
+    return random;
+}
+float3 rand3dTo3d(float3 value){
+    return float3(
+        rand3dTo1d(value, float3(12.989, 78.233, 37.719)),
+        rand3dTo1d(value, float3(39.346, 11.135, 83.155)),
+        rand3dTo1d(value, float3(73.156, 52.235, 09.151))
+    );
+}
+float easeIn(float interpolator)
+{
+	return interpolator * interpolator;
+}
+float easeOut(float interpolator){
+	return 1 - easeIn(1 - interpolator);
+}
+float easeInOut(float interpolator){
+	float easeInValue = easeIn(interpolator);
+	float easeOutValue = easeOut(interpolator);
+	return lerp(easeInValue, easeOutValue, interpolator);
+}
+float perlinNoise(float3 value){
+	float3 fraction = frac(value);
+	float interpolatorX = easeInOut(fraction.x);
+	float interpolatorY = easeInOut(fraction.y);
+	float interpolatorZ = easeInOut(fraction.z);
+	float3 cellNoiseZ[2];
+	[unroll]
+	for(int z=0;z<=1;z++){
+		float3 cellNoiseY[2];
+		[unroll]
+		for(int y=0;y<=1;y++){
+			float3 cellNoiseX[2];
+			[unroll]
+			for(int x=0;x<=1;x++){
+				float3 cell = floor(value) + float3(x, y, z);
+				float3 cellDirection = rand3dTo3d(cell) * 2 - 1;
+				float3 compareVector = fraction - float3(x, y, z);
+				cellNoiseX[x] = dot(cellDirection, compareVector);
+			}
+			cellNoiseY[y] = lerp(cellNoiseX[0], cellNoiseX[1], interpolatorX);
+		}
+		cellNoiseZ[z] = lerp(cellNoiseY[0], cellNoiseY[1], interpolatorY);
+	}
+	float3 noise = lerp(cellNoiseZ[0], cellNoiseZ[1], interpolatorZ);
+	return noise;
+}
+
 [numthreads(4,4,4)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
@@ -84,26 +140,28 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
 	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, 0));
 	float4 visibility = float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 0));
-	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, 2));
-	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 2));
-	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, -2));
-	visibility = float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 2));
-	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, 4));
-	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 4));
-	visibility += float4(shadowDepth < shadowCoord.z);
+	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 0));
+	//visibility += float4(shadowDepth < shadowCoord.z);
+	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, 2));
+	//visibility += float4(shadowDepth < shadowCoord.z);
+	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 2));
+	//visibility += float4(shadowDepth < shadowCoord.z);
+	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, -2));
+	//visibility = float4(shadowDepth < shadowCoord.z);
+	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 2));
+	//visibility += float4(shadowDepth < shadowCoord.z);
+	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, 4));
+	//visibility += float4(shadowDepth < shadowCoord.z);
+	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 4));
+	//visibility += float4(shadowDepth < shadowCoord.z);
 	
 	visibility.r = dot(visibility, 1/32.0f);
 	//float pointDepthExp = exp(shadowCoord.z * 80);
 	//float visibility = saturate(shadowDepthExp * pointDepthExp);
 
-	scattering *= saturate(exp(-worldPosition.y * fogFalloff + fogHeight));
+	float noise = saturate(perlinNoise((worldPosition + float3(24, 0, 0) * time) / 16)) * 0.9 + 0.1;
+	//noise = 1;
+	scattering *= saturate(exp(-worldPosition.y * fogFalloff + fogHeight)) * noise;
 
 	half4 result = half4(lightData[0].ambientColor.rgb, scattering);
 	float3 scatteredColor = lightData[0].lightColor.rgb * visibility.r;
