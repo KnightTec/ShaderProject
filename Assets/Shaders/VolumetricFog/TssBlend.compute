@@ -1,0 +1,71 @@
+﻿#include "UnityCG.cginc"
+#pragma kernel CSMain
+
+Texture3D<half4> historyFogVolume;
+RWTexture3D<half4> fogVolume;
+
+SamplerState MyLinearClampSampler;
+
+float4 cameraPosition;
+float nearPlane;
+float farPlane;
+float4 frustumRays[4];
+float4 sliceDepths[32];
+matrix historyViewProjection;
+float logfarOverNearInv;
+
+
+float3 getFrustumRay(float2 uv)
+{
+	float3 upperRay = lerp(frustumRays[1].xyz, frustumRays[2].xyz, uv.x);
+	float3 lowerRay = lerp(frustumRays[0].xyz, frustumRays[3].xyz, uv.x);
+	return lerp(lowerRay, upperRay, uv.y);
+}
+
+[numthreads(4,4,4)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float3 resolution = float3(159, 89, 127);
+	float3 volCoord = float3(float3(id) / resolution);
+
+	// calculate position in history volume
+	float z = sliceDepths[id.z / 4][id.z % 4];
+	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
+
+	float4 historyNdc = mul(historyViewProjection, float4(worldPosition, 1));
+	historyNdc /= historyNdc.w;
+
+	float3 historyVolumeCoord = float3((historyNdc.xy + 1) / 2, 0);
+	historyVolumeCoord.y = 1 - historyVolumeCoord.y;
+	z = nearPlane + (farPlane - nearPlane) * Linear01Depth(historyNdc.z);
+	historyVolumeCoord.z = log(z / nearPlane) * logfarOverNearInv;
+
+	half4 historySample = historyFogVolume.SampleLevel(MyLinearClampSampler, historyVolumeCoord, 0);
+
+	// variance clipping/clamping
+	float4 m1 = 0;
+	float4 m2 = 0;
+	for (int x = -1; x <= 1; x++) 
+	{
+		for (int y = -1; y <= 1; y++) 
+		{
+			for (int z = -1; z <= 1; z++) 
+			{
+				float4 sample0 = fogVolume[uint3(id.x + x, id.y + y, id.z + z)];
+				m1 += sample0;
+				m2 += sample0 * sample0;
+			}	
+		}
+	}
+	float4 mean = m1 / 27.0f;
+	float4 sigma = sqrt(abs(m2 / 27.0f - mean * mean));
+	half4 minSample = mean - sigma;
+    half4 maxSample = mean + sigma;
+
+	half4 historySampleClamped = clamp(historySample, minSample, maxSample);
+
+	half blendFactor = 0.95;
+	half4 result = fogVolume[id];
+	// exponential moving average
+	fogVolume[id] = lerp(result, historySampleClamped, blendFactor);
+}

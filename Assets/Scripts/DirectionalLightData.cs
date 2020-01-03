@@ -26,7 +26,7 @@ public class DirectionalLightData : MonoBehaviour
 
         // copy cascade shadowmap
         RenderTargetIdentifier shadowmap = BuiltinRenderTextureType.CurrentActive;
-        shadowMapCopy = new RenderTexture(2048, 2048, 0);
+        shadowMapCopy = new RenderTexture(1024, 1024, 0);
         shadowMapCopy.filterMode = FilterMode.Point;
         commandBuffer0.SetShadowSamplingMode(shadowmap, ShadowSamplingMode.RawDepth);
         var id = new RenderTargetIdentifier(shadowMapCopy);
@@ -47,6 +47,11 @@ public class DirectionalLightData : MonoBehaviour
         Light light = GetComponent<Light>();
         light.AddCommandBuffer(LightEvent.AfterShadowMap, commandBuffer0);
         light.AddCommandBuffer(LightEvent.BeforeScreenspaceMask, commandBuffer1);
+    }
+
+    private void Update()
+    {
+        //transform.Rotate(0, Time.deltaTime * 10, 0, Space.World);
     }
 
     private void init()

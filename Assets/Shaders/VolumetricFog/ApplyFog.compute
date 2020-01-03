@@ -8,6 +8,7 @@ RWTexture2D<float4> result;
 float4 resolution;
 float nearPlane;
 float farPlane;
+float logfarOverNearInv;
 
 SamplerState MyLinearClampSampler;
 
@@ -18,7 +19,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 fogCoord = float3(id.xy * resolution.zw, d);
 
 	float z = nearPlane + (farPlane - nearPlane) * d;
-	fogCoord.z = log(z / nearPlane) / log(farPlane / nearPlane);
+	fogCoord.z = log(z / nearPlane) * logfarOverNearInv;
 
 	//fogCoord = float3(id.x * resolution.z, 0.5, id.y * resolution.w);
 	half4 fogSample = accumulatedFogVolume.SampleLevel(MyLinearClampSampler, fogCoord, 0);

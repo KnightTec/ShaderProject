@@ -9,6 +9,7 @@ public class VolumetricFogRenderer : MonoBehaviour
 {
     [Range(0, 1)]
     public float scattering = 0.1f;
+    public Color scatterColor = Color.white;
     [Range(-0.99f, 0.99f)]
     public float anisotropy = 0;
     [Range(0, 1)]
@@ -19,18 +20,21 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     public DirectionalLightData directionalLightData;
     public ComputeShader densityLightingShader;
+    public ComputeShader tssBlendShader;
     public ComputeShader scatteringShader;
     public ComputeShader applyFogShader;
     public Shader applyFogShader0;
+    public float jitterStrength = 1;
 
     private RenderTexture tempDestination;
+
     private int densityLightingKernel;
+    private int tssBlendKernel;
     private int scatteringKernel;
     private int applyFogKernel;
     private Material applyFogMaterial;
 
     private Camera cam;
-    private Matrix4x4 viewProjectionMatrixInverse;
     private Vector4 resolution;
 
     private RenderTexture fogVolume0;
@@ -44,6 +48,8 @@ public class VolumetricFogRenderer : MonoBehaviour
     private float[][] jitteredSliceDepths;
     private int jitterIndex = 0;
 
+    private const int depthSliceCount = 128;
+
     void OnEnable()
     {
         GetComponent<Camera>().depthTextureMode = DepthTextureMode.Depth;
@@ -54,12 +60,13 @@ public class VolumetricFogRenderer : MonoBehaviour
     void Start()
     {
         densityLightingKernel = densityLightingShader.FindKernel("CSMain");
+        tssBlendKernel = tssBlendShader.FindKernel("CSMain");
         scatteringKernel = scatteringShader.FindKernel("CSMain");
         applyFogKernel = applyFogShader.FindKernel("CSMain");
         resolution = new Vector4();
         frustumRays = new Vector4[4];
-        sliceDepths = new float[128];
-        jitteredSliceDepths = new float[7][];
+        sliceDepths = new float[depthSliceCount];
+        jitteredSliceDepths = new float[31][];
         calculateSliceDepths();
     }
 
@@ -84,7 +91,7 @@ public class VolumetricFogRenderer : MonoBehaviour
             currentfogVolume = fogVolume1;
             historyFogVolume = fogVolume0;
         }
-        jitterIndex = (jitterIndex + 1) % 7;
+        jitterIndex = (jitterIndex + 1) % 31;
     }
 
     private void OnPreRender()
@@ -108,17 +115,18 @@ public class VolumetricFogRenderer : MonoBehaviour
     private void calculateSliceDepths()
     {
         float farOverNear = cam.farClipPlane / cam.nearClipPlane;
-        for (int i = 0; i < 128; i++)
+        for (int i = 0; i < depthSliceCount; i++)
         {
-            sliceDepths[i] = cam.nearClipPlane * Mathf.Pow(farOverNear, i / 128.0f);
+            sliceDepths[i] = cam.nearClipPlane * Mathf.Pow(farOverNear, i / (float)depthSliceCount);
         }
-        float sliceProportion = 1 - Mathf.Pow(farOverNear, 1 / 128.0f);
-        jitteredSliceDepths[0] = new float[128];
-        for (int j = 0; j < 7; j++)
+        float sliceProportion = Mathf.Pow(farOverNear, 1 / (float)depthSliceCount) - 1;
+        jitteredSliceDepths[0] = new float[depthSliceCount];
+        for (int j = 0; j < 31; j++)
         {
-            jitteredSliceDepths[j] = new float[128];
+            jitteredSliceDepths[j] = new float[depthSliceCount];
             float offset = haltonSequence(j + 1, 2) - 0.5f;
-            for (int i = 0; i < 128; i++)
+            offset *= jitterStrength;
+            for (int i = 0; i < depthSliceCount; i++)
             {
                 jitteredSliceDepths[j][i] = sliceDepths[i] * (1 + offset * sliceProportion);
             }
@@ -168,8 +176,10 @@ public class VolumetricFogRenderer : MonoBehaviour
             fogVolume1 = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
             fogVolume0.enableRandomWrite = true;
             fogVolume1.enableRandomWrite = true;
-            fogVolume0.volumeDepth = 128;
-            fogVolume1.volumeDepth = 128;
+            fogVolume0.volumeDepth = depthSliceCount;
+            fogVolume1.volumeDepth = depthSliceCount;
+            fogVolume0.filterMode = FilterMode.Bilinear;
+            fogVolume1.filterMode = FilterMode.Bilinear;
             fogVolume0.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
             fogVolume1.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
             fogVolume0.Create();
@@ -182,17 +192,16 @@ public class VolumetricFogRenderer : MonoBehaviour
         {
             accumulatedFogVolume = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
             accumulatedFogVolume.enableRandomWrite = true;
-            accumulatedFogVolume.volumeDepth = 128;
+            accumulatedFogVolume.volumeDepth = depthSliceCount;
+            accumulatedFogVolume.filterMode = FilterMode.Bilinear;
             accumulatedFogVolume.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
             accumulatedFogVolume.Create();
         }
 
         // compute all required variables
-        Matrix4x4 viewMat = cam.worldToCameraMatrix;
-        Matrix4x4 projMat = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true);
-        viewProjectionMatrixInverse = projMat * viewMat;
-        viewProjectionMatrixInverse = viewProjectionMatrixInverse.inverse;
+        Matrix4x4 viewProjectionMatrix = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true) * cam.worldToCameraMatrix;;
         calculateFrustumRays();
+        float logfarOverNearInv = 1 / Mathf.Log(cam.farClipPlane / cam.nearClipPlane);
 
         //TODO: use command buffers instead of OnRenderImage (performance??)
         //TODO: fix depth texture delay in forward
@@ -218,12 +227,26 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloat("fogFalloff", fogFalloff);
         densityLightingShader.SetFloat("transmittance", 1 - transmittance);
         densityLightingShader.SetFloats("sliceDepths", jitteredSliceDepths[jitterIndex]);
-        densityLightingShader.Dispatch(densityLightingKernel, 40, 24, 32);
+        densityLightingShader.SetFloat("logfarOverNearInv", logfarOverNearInv);
+        densityLightingShader.SetVector("scatterColor", scatterColor);
+        densityLightingShader.Dispatch(densityLightingKernel, 40, 24, depthSliceCount / 4);
+        densityLightingShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
+
+        tssBlendShader.SetVector("cameraPosition", transform.position);
+        tssBlendShader.SetTexture(tssBlendKernel, "fogVolume", currentfogVolume);
+        tssBlendShader.SetTexture(tssBlendKernel, "historyFogVolume", historyFogVolume);
+        tssBlendShader.SetVectorArray("frustumRays", frustumRays);
+        tssBlendShader.SetFloat("nearPlane", cam.nearClipPlane);
+        tssBlendShader.SetFloat("farPlane", cam.farClipPlane);
+        tssBlendShader.SetFloats("sliceDepths", jitteredSliceDepths[jitterIndex]);
+        tssBlendShader.SetFloat("logfarOverNearInv", logfarOverNearInv);
+        tssBlendShader.Dispatch(tssBlendKernel, 40, 24, depthSliceCount / 4);
+        tssBlendShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
 
         scatteringShader.SetTexture(scatteringKernel, "accumulatedFogVolume", accumulatedFogVolume);
         scatteringShader.SetTexture(scatteringKernel, "fogVolume", currentfogVolume);
-        scatteringShader.SetFloat("sliceDepth", (cam.farClipPlane - cam.nearClipPlane) / 128.0f);
         scatteringShader.SetFloats("sliceDepths", sliceDepths);
+        scatteringShader.SetVector("scatterColor", scatterColor);
         scatteringShader.Dispatch(scatteringKernel, 20, 12, 1);
 
         applyFogShader.SetVector("resolution", resolution);
@@ -233,6 +256,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogShader.SetTexture(applyFogKernel, "accumulatedFogVolume", accumulatedFogVolume);
         applyFogShader.SetFloat("nearPlane", cam.nearClipPlane);
         applyFogShader.SetFloat("farPlane", cam.farClipPlane);
+        applyFogShader.SetFloat("logfarOverNearInv", logfarOverNearInv);
         applyFogShader.Dispatch(applyFogKernel, (tempDestination.width + 7) / 8, (tempDestination.height + 7) / 8, 1);
 
         //applyFogMaterial.SetTexture("mainTex", source);

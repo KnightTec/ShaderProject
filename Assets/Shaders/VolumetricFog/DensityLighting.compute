@@ -1,4 +1,4 @@
-﻿// Each #kernel tells which function to compile; you can have many kernels
+﻿#include "UnityCG.cginc"
 #pragma kernel CSMain
 
 #define PI 3.14159
@@ -17,7 +17,7 @@ RWStructuredBuffer<DirLightData> lightData;
 SamplerState MyPointClampSampler;
 
 Texture2D<float> cascadeShadowMap;
-RWTexture3D<half4> historyFogVolume;
+Texture3D<half4> historyFogVolume;
 RWTexture3D<half4> fogVolume;
 float4 cameraPosition;
 float nearPlane;
@@ -29,6 +29,9 @@ float fogHeight;
 float fogFalloff;
 float transmittance;
 float4 sliceDepths[32];
+matrix historyViewProjection;
+float logfarOverNearInv;
+float4 scatterColor;
 
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
@@ -77,6 +80,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float z = sliceDepths[id.z / 4][id.z % 4];
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
+	// 32-tap PCF filter
 	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
 	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, 0));
 	float4 visibility = float4(shadowDepth < shadowCoord.z);
@@ -86,8 +90,16 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	visibility += float4(shadowDepth < shadowCoord.z);
 	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 2));
 	visibility += float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, -2));
+	visibility = float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 2));
+	visibility += float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, 4));
+	visibility += float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 4));
+	visibility += float4(shadowDepth < shadowCoord.z);
 	
-	visibility.r = dot(visibility, 1/16.0f);
+	visibility.r = dot(visibility, 1/32.0f);
 	//float pointDepthExp = exp(shadowCoord.z * 80);
 	//float visibility = saturate(shadowDepthExp * pointDepthExp);
 
@@ -107,16 +119,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	phase /= 4 * PI * pow(1 + g * g - 2 * g * theta, 1.5);
 
 	result.rgb += scatteredColor * phase;
-	result.rgb *= scattering;
+	result.rgb *= scattering * scatterColor;
 	result.rgb *= PI;
-
-	// exponential moving average
-	result = 0.1 * result + 0.9 * historyFogVolume[id];
-	
-
-	//TODO: fix ghosting
 
 	fogVolume[id] = result;
 }
-
-
