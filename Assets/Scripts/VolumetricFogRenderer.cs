@@ -25,7 +25,8 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     public DirectionalLightData directionalLightData;
     public ComputeShader densityLightingShader;
-    public ComputeShader tssBlendShader;
+    public ComputeShader temporalResolveShader;
+    public ComputeShader temporalFilterShader;
     public ComputeShader scatteringShader;
     public ComputeShader applyFogShader;
     public Shader applyFogShader0;
@@ -35,7 +36,8 @@ public class VolumetricFogRenderer : MonoBehaviour
     private RenderTexture tempDestination;
 
     private int densityLightingKernel;
-    private int tssBlendKernel;
+    private int temporalResolveKernel;
+    private int temporalFilterKernel;
     private int scatteringKernel;
     private int applyFogKernel;
     private Material applyFogMaterial;
@@ -47,10 +49,15 @@ public class VolumetricFogRenderer : MonoBehaviour
     private RenderTexture fogVolume1;
     private RenderTexture fogVolume2;
     private RenderTexture fogVolume3;
+    private RenderTexture fogVolume4;
+    private RenderTexture fogVolume5;
     private RenderTexture currentfogVolume;
     private RenderTexture historyFogVolume_1;
     private RenderTexture historyFogVolume_0;
     private RenderTexture blendedFogVolume;
+    private RenderTexture exponentialHistoryFogVolume;
+    private RenderTexture filteredFogVolume;
+
     private ComputeBuffer pointLightBuffer;
 
     private RenderTexture accumulatedFogVolume;
@@ -59,6 +66,7 @@ public class VolumetricFogRenderer : MonoBehaviour
     private float[][] jitteredSliceDepths;
     private int jitterIndex = 0;
     private Matrix4x4 historyViewProj_1;
+    private int swapCounter = 0;
    
     struct FogPointLight
     {
@@ -82,7 +90,8 @@ public class VolumetricFogRenderer : MonoBehaviour
     void Start()
     {
         densityLightingKernel = densityLightingShader.FindKernel("CSMain");
-        tssBlendKernel = tssBlendShader.FindKernel("CSMain");
+        temporalResolveKernel = temporalResolveShader.FindKernel("CSMain");
+        temporalFilterKernel = temporalFilterShader.FindKernel("CSMain");
         scatteringKernel = scatteringShader.FindKernel("CSMain");
         applyFogKernel = applyFogShader.FindKernel("CSMain");
         resolution = new Vector4();
@@ -104,6 +113,18 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     private void Update()
     {
+        if (swapCounter % 2 == 0)
+        {
+            exponentialHistoryFogVolume = fogVolume4;
+            filteredFogVolume = fogVolume5;
+        }
+        else
+        {
+            exponentialHistoryFogVolume = fogVolume5;
+            filteredFogVolume = fogVolume4;
+        }
+        swapCounter = (swapCounter + 1) % 2;
+
         if (jitterIndex % 3 == 0)
         {
             currentfogVolume = fogVolume0;
@@ -209,6 +230,16 @@ public class VolumetricFogRenderer : MonoBehaviour
         }
     }
 
+    private void createFogVolume(ref RenderTexture volume)
+    {
+        volume = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
+        volume.enableRandomWrite = true;
+        volume.volumeDepth = depthSliceCount;
+        volume.filterMode = FilterMode.Bilinear;
+        volume.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+        volume.Create();
+    }
+
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         // recreate texture if size was changed
@@ -232,44 +263,21 @@ public class VolumetricFogRenderer : MonoBehaviour
         }
         if (fogVolume0 == null)
         {
-            fogVolume0 = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
-            fogVolume1 = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
-            fogVolume2 = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
-            fogVolume3 = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
-            fogVolume0.enableRandomWrite = true;
-            fogVolume1.enableRandomWrite = true;
-            fogVolume2.enableRandomWrite = true;
-            fogVolume3.enableRandomWrite = true;
-            fogVolume0.volumeDepth = depthSliceCount;
-            fogVolume1.volumeDepth = depthSliceCount;
-            fogVolume2.volumeDepth = depthSliceCount;
-            fogVolume3.volumeDepth = depthSliceCount;
-            fogVolume0.filterMode = FilterMode.Bilinear;
-            fogVolume1.filterMode = FilterMode.Bilinear;
-            fogVolume2.filterMode = FilterMode.Bilinear;
-            fogVolume3.filterMode = FilterMode.Bilinear;
-            fogVolume0.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-            fogVolume1.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-            fogVolume2.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-            fogVolume3.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-            fogVolume0.Create();
-            fogVolume1.Create();
-            fogVolume2.Create();
-            fogVolume3.Create();
+            createFogVolume(ref fogVolume0);
+            createFogVolume(ref fogVolume1);
+            createFogVolume(ref fogVolume2);
+            createFogVolume(ref fogVolume3);
+            createFogVolume(ref fogVolume4);
+            createFogVolume(ref fogVolume5);
 
             currentfogVolume = fogVolume0;
             historyFogVolume_0 = fogVolume1;
             historyFogVolume_1 = fogVolume2;
             blendedFogVolume = fogVolume3;
-        }
-        if (accumulatedFogVolume == null)
-        {
-            accumulatedFogVolume = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
-            accumulatedFogVolume.enableRandomWrite = true;
-            accumulatedFogVolume.volumeDepth = depthSliceCount;
-            accumulatedFogVolume.filterMode = FilterMode.Bilinear;
-            accumulatedFogVolume.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-            accumulatedFogVolume.Create();
+            exponentialHistoryFogVolume = fogVolume4;
+            filteredFogVolume = fogVolume5;
+
+            createFogVolume(ref accumulatedFogVolume);
         }
 
         // compute all required variables
@@ -315,25 +323,39 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.Dispatch(densityLightingKernel, 40, 24, depthSliceCount / 4);
         densityLightingShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
         
-
-        tssBlendShader.SetVector("cameraPosition", transform.position);
-        tssBlendShader.SetTexture(tssBlendKernel, "fogVolume", currentfogVolume);
-        tssBlendShader.SetTexture(tssBlendKernel, "historyFogVolume", historyFogVolume_0);
-        tssBlendShader.SetTexture(tssBlendKernel, "historyFogVolume1", historyFogVolume_1);
-        tssBlendShader.SetTexture(tssBlendKernel, "blendedFogVolume", blendedFogVolume);
-        tssBlendShader.SetVectorArray("frustumRays", frustumRays);
-        tssBlendShader.SetFloat("nearPlane", cam.nearClipPlane);
-        tssBlendShader.SetFloat("farPlane", cam.farClipPlane);
-        tssBlendShader.SetFloats("sliceDepths", jitteredSliceDepths[jitterIndex]);
-        tssBlendShader.SetFloat("logfarOverNearInv", logfarOverNearInv);
-        tssBlendShader.SetFloat("time", Time.time);
-        tssBlendShader.Dispatch(tssBlendKernel, 40, 24, depthSliceCount / 4);
-        tssBlendShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
-        tssBlendShader.SetMatrix("historyViewProjection1", historyViewProj_1);
+        temporalResolveShader.SetVector("cameraPosition", transform.position);
+        temporalResolveShader.SetTexture(temporalResolveKernel, "fogVolume", currentfogVolume);
+        temporalResolveShader.SetTexture(temporalResolveKernel, "historyFogVolume", historyFogVolume_0);
+        temporalResolveShader.SetTexture(temporalResolveKernel, "historyFogVolume1", historyFogVolume_1);
+        temporalResolveShader.SetTexture(temporalResolveKernel, "blendedFogVolume", blendedFogVolume);
+        temporalResolveShader.SetVectorArray("frustumRays", frustumRays);
+        temporalResolveShader.SetFloat("nearPlane", cam.nearClipPlane);
+        temporalResolveShader.SetFloat("farPlane", cam.farClipPlane);
+        temporalResolveShader.SetFloats("sliceDepths", sliceDepths);
+        temporalResolveShader.SetFloat("logfarOverNearInv", logfarOverNearInv);
+        temporalResolveShader.SetFloat("time", Time.time);
+        temporalResolveShader.Dispatch(temporalResolveKernel, 40, 24, depthSliceCount / 4);
+        temporalResolveShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
+        temporalResolveShader.SetMatrix("historyViewProjection1", historyViewProj_1);
         historyViewProj_1 = viewProjectionMatrix;
 
+        temporalFilterShader.SetVector("cameraPosition", transform.position);
+        temporalFilterShader.SetTexture(temporalFilterKernel, "exponentialHistory", exponentialHistoryFogVolume);
+        temporalFilterShader.SetTexture(temporalFilterKernel, "blendedFogVolume", blendedFogVolume);
+        temporalFilterShader.SetTexture(temporalFilterKernel, "result", filteredFogVolume);
+        temporalFilterShader.SetVectorArray("frustumRays", frustumRays);
+        temporalFilterShader.SetFloat("nearPlane", cam.nearClipPlane);
+        temporalFilterShader.SetFloat("farPlane", cam.farClipPlane);
+        temporalFilterShader.SetFloats("sliceDepths", sliceDepths);
+        temporalFilterShader.SetFloat("logfarOverNearInv", logfarOverNearInv);
+        temporalFilterShader.SetVector("noiseDirection", noiseDirection);
+        temporalFilterShader.SetFloat("deltaTime", Time.deltaTime);
+        temporalFilterShader.Dispatch(temporalFilterKernel, 40, 24, depthSliceCount / 4);
+        temporalFilterShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
+        
+
         scatteringShader.SetTexture(scatteringKernel, "accumulatedFogVolume", accumulatedFogVolume);
-        scatteringShader.SetTexture(scatteringKernel, "fogVolume", blendedFogVolume);
+        scatteringShader.SetTexture(scatteringKernel, "fogVolume", filteredFogVolume);
         scatteringShader.SetFloats("sliceDepths", sliceDepths);
         scatteringShader.SetVector("scatterColor", scatterColor);
         scatteringShader.Dispatch(scatteringKernel, 20, 12, 1);
