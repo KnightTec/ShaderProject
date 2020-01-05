@@ -26,7 +26,7 @@ public class DirectionalLightData : MonoBehaviour
 
         // copy cascade shadowmap
         RenderTargetIdentifier shadowmap = BuiltinRenderTextureType.CurrentActive;
-        shadowMapCopy = new RenderTexture(1024, 1024, 0);
+        shadowMapCopy = new RenderTexture(2048, 2048, 0);
         shadowMapCopy.filterMode = FilterMode.Point;
         shadowMapCopy.wrapMode = TextureWrapMode.Clamp;
         commandBuffer0.SetShadowSamplingMode(shadowmap, ShadowSamplingMode.RawDepth);

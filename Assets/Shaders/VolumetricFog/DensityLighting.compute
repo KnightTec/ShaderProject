@@ -185,7 +185,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) / noiseSize)) * noiseIntensity + (1 - noiseIntensity);
 	noise = noise * 0.8 + 0.2 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
-	scattering *= saturate(exp(-worldPosition.y * fogFalloff + fogHeight)) * noise;
+	scattering *= saturate(exp(-worldPosition.y * fogFalloff + fogHeight) * noise);
 
 	half4 result = half4(ambientLightColor.rgb * 0.1f, scattering);
 	float3 scatteredColor = lightData[0].lightColor.rgb * visibility.r;
