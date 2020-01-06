@@ -7,6 +7,7 @@
 [ExecuteAlways]
 public class VolumetricFogRenderer : MonoBehaviour
 {
+    public Vector3Int volumeResolution = new Vector3Int(320, 180, 128);
     [Range(0, 1)]
     public float scattering = 0.1f;
     public Color scatterColor = Color.white;
@@ -78,8 +79,6 @@ public class VolumetricFogRenderer : MonoBehaviour
     private FogPointLight[] pointLights;
     private int pointLightCount;
 
-    private const int depthSliceCount = 128;
-
     void OnEnable()
     {
         GetComponent<Camera>().depthTextureMode = DepthTextureMode.Depth;
@@ -96,7 +95,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogKernel = applyFogShader.FindKernel("CSMain");
         resolution = new Vector4();
         frustumRays = new Vector4[4];
-        sliceDepths = new float[depthSliceCount];
+        sliceDepths = new float[volumeResolution.z];
         jitteredSliceDepths = new float[3][];
         calculateSliceDepths();
         pointLightBuffer = new ComputeBuffer(64, 40);
@@ -171,14 +170,14 @@ public class VolumetricFogRenderer : MonoBehaviour
     private void calculateSliceDepths()
     {
         float farOverNear = cam.farClipPlane / cam.nearClipPlane;
-        for (int i = 0; i < depthSliceCount; i++)
+        for (int i = 0; i < volumeResolution.z; i++)
         {
-            sliceDepths[i] = cam.nearClipPlane * Mathf.Pow(farOverNear, i / (float)depthSliceCount);
+            sliceDepths[i] = cam.nearClipPlane * Mathf.Pow(farOverNear, i / (float)volumeResolution.z);
         }
-        float sliceProportion = Mathf.Pow(farOverNear, 1 / (float)depthSliceCount) - 1;
+        float sliceProportion = Mathf.Pow(farOverNear, 1 / (float)volumeResolution.z) - 1;
         for (int j = 0; j < 3; j++)
         {
-            jitteredSliceDepths[j] = new float[depthSliceCount];
+            jitteredSliceDepths[j] = new float[volumeResolution.z];
             float offset = 0;
             if (j == 0)
             {
@@ -188,7 +187,7 @@ public class VolumetricFogRenderer : MonoBehaviour
                 offset = 0.5f;
             }
             offset *= jitterStrength;
-            for (int i = 0; i < depthSliceCount; i++)
+            for (int i = 0; i < volumeResolution.z; i++)
             {
                 jitteredSliceDepths[j][i] = sliceDepths[i] * (1 + offset * sliceProportion);
             }
@@ -232,9 +231,13 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     private void createFogVolume(ref RenderTexture volume)
     {
-        volume = new RenderTexture(160, 90, 0, RenderTextureFormat.ARGBHalf);
+        if (volume != null)
+        {
+            volume.Release();
+        }
+        volume = new RenderTexture(volumeResolution.x, volumeResolution.y, 0, RenderTextureFormat.ARGBHalf);
         volume.enableRandomWrite = true;
-        volume.volumeDepth = depthSliceCount;
+        volume.volumeDepth = volumeResolution.z;
         volume.filterMode = FilterMode.Bilinear;
         volume.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
         volume.Create();
@@ -246,7 +249,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         if (null == tempDestination || source.width != tempDestination.width
            || source.height != tempDestination.height)
         {
-            if (null != tempDestination)
+            if (tempDestination != null)
             {
                 tempDestination.Release();
             }
@@ -284,6 +287,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         Matrix4x4 viewProjectionMatrix = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true) * cam.worldToCameraMatrix;;
         calculateFrustumRays();
         float logfarOverNearInv = 1 / Mathf.Log(cam.farClipPlane / cam.nearClipPlane);
+        Vector3 volRes = new Vector3(volumeResolution.x, volumeResolution.y, volumeResolution.z);
 
         //TODO: use command buffers instead of OnRenderImage (performance??)
         //TODO: fix depth texture delay in forward
@@ -320,7 +324,8 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetVector("ambientLightColor", ambientColor);
         densityLightingShader.SetFloat("noiseSize", noiseSize);
         densityLightingShader.SetVector("noiseDirection", noiseDirection);
-        densityLightingShader.Dispatch(densityLightingKernel, 40, 24, depthSliceCount / 4);
+        densityLightingShader.SetVector("volumeResolution", volRes);
+        densityLightingShader.Dispatch(densityLightingKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);
         densityLightingShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
         
         temporalResolveShader.SetVector("cameraPosition", transform.position);
@@ -334,7 +339,8 @@ public class VolumetricFogRenderer : MonoBehaviour
         temporalResolveShader.SetFloats("sliceDepths", sliceDepths);
         temporalResolveShader.SetFloat("logfarOverNearInv", logfarOverNearInv);
         temporalResolveShader.SetFloat("time", Time.time);
-        temporalResolveShader.Dispatch(temporalResolveKernel, 40, 24, depthSliceCount / 4);
+        temporalResolveShader.SetVector("volumeResolution", volRes);
+        temporalResolveShader.Dispatch(temporalResolveKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);
         temporalResolveShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
         temporalResolveShader.SetMatrix("historyViewProjection1", historyViewProj_1);
         historyViewProj_1 = viewProjectionMatrix;
@@ -350,7 +356,8 @@ public class VolumetricFogRenderer : MonoBehaviour
         temporalFilterShader.SetFloat("logfarOverNearInv", logfarOverNearInv);
         temporalFilterShader.SetVector("noiseDirection", noiseDirection);
         temporalFilterShader.SetFloat("deltaTime", Time.deltaTime);
-        temporalFilterShader.Dispatch(temporalFilterKernel, 40, 24, depthSliceCount / 4);
+        temporalFilterShader.SetVector("volumeResolution", volRes);
+        temporalFilterShader.Dispatch(temporalFilterKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);
         temporalFilterShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
         
 
@@ -358,7 +365,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         scatteringShader.SetTexture(scatteringKernel, "fogVolume", filteredFogVolume);
         scatteringShader.SetFloats("sliceDepths", sliceDepths);
         scatteringShader.SetVector("scatterColor", scatterColor);
-        scatteringShader.Dispatch(scatteringKernel, 20, 12, 1);
+        scatteringShader.Dispatch(scatteringKernel, (volumeResolution.x + 7) / 8, (volumeResolution.y + 7) / 8, 1);
 
         applyFogShader.SetVector("resolution", resolution);
         applyFogShader.SetTextureFromGlobal(applyFogKernel, "depth", "_CameraDepthTexture");

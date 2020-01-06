@@ -48,6 +48,8 @@ struct FogPointLight
 RWStructuredBuffer<FogPointLight> pointLights;
 int pointLightCount;
 
+float3 volumeResolution;
+
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
 	float distToCam = length(worldPosition - cameraPosition.xyz);
@@ -153,9 +155,7 @@ float phaseFunction(float3 pointPosition, float3 lightDirection)
 [numthreads(4,4,4)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-	float3 resolution = float3(159, 89, 127);
-	
-	float3 volCoord = float3(float3(id) / resolution);
+	float3 volCoord = float3(float3(id) / volumeResolution + 0.5f / volumeResolution);
 	//float z = volCoord.z * (farPlane - nearPlane) + nearPlane;
 	float z = sliceDepths[id.z / 4][id.z % 4];
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
@@ -170,16 +170,16 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	visibility += float4(shadowDepth < shadowCoord.z);
 	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 2));
 	visibility += float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, -2));
-	//visibility = float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 2));
-	//visibility += float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, 4));
-	//visibility += float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 4));
-	//visibility += float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, -2));
+	visibility = float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 2));
+	visibility += float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, 4));
+	visibility += float4(shadowDepth < shadowCoord.z);
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 4));
+	visibility += float4(shadowDepth < shadowCoord.z);
 	
-	visibility.r = dot(visibility, 1/16.0f);
+	visibility.r = dot(visibility, 1/32.0f);
 	//float pointDepthExp = exp(shadowCoord.z * 80);
 	//float visibility = saturate(shadowDepthExp * pointDepthExp);
 

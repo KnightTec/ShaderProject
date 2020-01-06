@@ -16,8 +16,8 @@ SamplerState MyLinearClampSampler;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	float d = Linear01Depth(depth[id.xy]);
-	float3 fogCoord = float3(id.xy * resolution.zw, d);
-
+	float3 fogCoord = float3(id.xy * resolution.zw + 0.5f * resolution.zw, d);
+	
 	float z = nearPlane + (farPlane - nearPlane) * d;
 	fogCoord.z = log(z / nearPlane) * logfarOverNearInv;
 
