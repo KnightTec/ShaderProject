@@ -3,12 +3,13 @@
 
 RWTexture3D<half4> fogVolume;
 RWTexture3D<half4> accumulatedFogVolume;
-float sliceDepth;
+float4 sliceDepths[32];
+float4 scatterColor;
 
-float4 accumulateScattering(float3 accumScattering, float accumOpticalDepth, float3 scattering, float opticalDepth) 
+float4 accumulateScattering(float3 accumScattering, float accumOpticalDepth, float3 scattering, float opticalDepth, float sliceDepth) 
 {
 	float newOpticalDepth = accumOpticalDepth + opticalDepth * sliceDepth;
-	float3 newScattering = accumScattering + sliceDepth * scattering * exp(-newOpticalDepth);
+	float3 newScattering = accumScattering + sliceDepth * scattering * exp(-newOpticalDepth * scatterColor.rgb);
 	return float4(newScattering, newOpticalDepth);
 }
 
@@ -21,12 +22,15 @@ void writeOutput(uint3 position, float3 scattering, float transmittance)
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	float4 currentValue = fogVolume[uint3(id.xy, 0)];
-	currentValue *= 0.5 * sliceDepth;
+	
+	currentValue *= sliceDepths[0][0];
+	currentValue.rgb *= exp(-currentValue.a * scatterColor.rgb);
 	writeOutput(uint3(id.xy, 0), currentValue.xyz, exp(-currentValue.a));
-    for (int i = 1; i < 128; i++) 
+    for (uint i = 1; i < 128; i++) 
 	{
 		float4 nextValue = fogVolume[uint3(id.xy, i)];
-		currentValue = accumulateScattering(currentValue.rgb, currentValue.a, nextValue.rgb, nextValue.a);
+		float sd = sliceDepths[i / 4][i % 4] - sliceDepths[(i - 1) / 4][(i - 1) % 4];
+		currentValue = accumulateScattering(currentValue.rgb, currentValue.a, nextValue.rgb, nextValue.a, sd);
 		writeOutput(uint3(id.xy, i), currentValue.rgb, exp(-currentValue.a));
 	}
 }
