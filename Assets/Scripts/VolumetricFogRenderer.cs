@@ -335,7 +335,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloat("fogHeight", fogHeight);
         densityLightingShader.SetFloat("fogFalloff", fogFalloff);
         densityLightingShader.SetFloat("transmittance", 1 - transmittance);
-        densityLightingShader.SetFloats("sliceDepths", jitteredSliceDepths[jitterIndex]);
+        densityLightingShader.SetFloats("sliceDepths", sliceDepths);
         densityLightingShader.SetFloats("sds", jitteredSliceDepths1D);
         densityLightingShader.SetBuffer(densityLightingKernel, "sliceDepthBuffer", jitteredSliceDepthsBuffer);
         densityLightingShader.SetInt("jitterIndex", jitterIndex);

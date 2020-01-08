@@ -185,7 +185,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	uint shiftedJitterIndex = (jitterIndex + bayerMatrix[id.y % 4][id.x % 4]) % 15;
 	float z = sliceDepths[id.z / 4][id.z % 4] * (1 + 0.06f * bayerMatrix[id.y % 4][id.x % 4] / 16.0f);
 	//z = sliceDepthBuffer[0].sliceDepths[id.z / 4][id.z % 4];
-	//z = sliceDepths[id.z / 4][id.z % 4] * depthJitter[shiftedJitterIndex / 4][shiftedJitterIndex % 4];
+	z = sliceDepths[id.z / 4][id.z % 4] * depthJitter[shiftedJitterIndex / 4][shiftedJitterIndex % 4];
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
 	// 32-tap PCF filter
@@ -233,8 +233,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 		float3 lightVector = light.position.xyz - worldPosition;
 		float3 lightVecNorm = normalize(lightVector);
 		float lightDist = length(lightVector);
-		float attentuation = 1 / max(lightDist, 1);
-		attentuation *= attentuation;
+		float attentuation = 1 / (pow(5 * lightDist / light.range, 2) + 1);
+		attentuation *= 10;
 		phase = phaseFunction(worldPosition, lightVecNorm);
 		result.rgb += light.color.rgb * attentuation * phase 
 			* light.intensity * calcTransmittance(light.position, lightVecNorm, lightDist);
