@@ -27,7 +27,16 @@ float g;
 float fogHeight;
 float fogFalloff;
 float transmittance;
+
+struct JitteredSliceDepths
+{
+	float4 sliceDepths[32];
+};
+RWStructuredBuffer<JitteredSliceDepths> sliceDepthBuffer;
+uint jitterIndex;
+
 float4 sliceDepths[32];
+float4 sds[480];
 matrix historyViewProjection;
 float logfarOverNearInv;
 float4 scatterColor;
@@ -49,6 +58,7 @@ RWStructuredBuffer<FogPointLight> pointLights;
 int pointLightCount;
 
 float3 volumeResolution;
+int4 bayerMatrix[4];
 
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
@@ -164,18 +174,23 @@ float phaseFunction(float3 pointPosition, float3 lightDirection)
 	return phase;
 }
 
+float4 depthJitter[4];
+
 [numthreads(4,4,4)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	float3 volCoord = float3(float3(id) / volumeResolution + 0.5f / volumeResolution);
 	
 	//TODO: replace rand with bayer matrix
-	float z = sliceDepths[id.z / 4][id.z % 4] * (1 + 0.02f * rand(volCoord * time));
+	uint shiftedJitterIndex = (jitterIndex + bayerMatrix[id.y % 4][id.x % 4]) % 15;
+	float z = sliceDepths[id.z / 4][id.z % 4] * (1 + 0.06f * bayerMatrix[id.y % 4][id.x % 4] / 16.0f);
+	//z = sliceDepthBuffer[0].sliceDepths[id.z / 4][id.z % 4];
+	//z = sliceDepths[id.z / 4][id.z % 4] * depthJitter[shiftedJitterIndex / 4][shiftedJitterIndex % 4];
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
 	// 32-tap PCF filter
 	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
-	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, 0));
+	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 0));
 	float4 visibility = float4(shadowDepth < shadowCoord.z);
 	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 0));
 	//visibility += float4(shadowDepth < shadowCoord.z);
@@ -193,12 +208,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	//visibility += float4(shadowDepth < shadowCoord.z);
 	
 	visibility.r = dot(visibility, 1/4.0f);
-	//float pointDepthExp = exp(shadowCoord.z * 80);
-	//float visibility = saturate(shadowDepthExp * pointDepthExp);
 
-	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) / noiseSize)) * noiseIntensity + (1 - noiseIntensity);
-	noise = noise * 0.8 + 0.2 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
-	noise = 1;
+	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) / noiseSize));
+	//noise = noise * 0.8 + 0.2 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
+	noise = noise * noiseIntensity + (1 - noiseIntensity);
+	//noise = 1;
 	scattering *= saturate(exp(-worldPosition.y * fogFalloff + fogHeight) * noise);
 
 	half4 result = half4(ambientLightColor.rgb * 0.1f, scattering);

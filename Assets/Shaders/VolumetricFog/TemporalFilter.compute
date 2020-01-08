@@ -78,6 +78,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	maxSample = max(maxSample, samp);
 
 	half4 clampedHistory = clamp(historySample, minSample, maxSample);
+	clampedHistory = lerp(clampedHistory, historySample, 0.4);
 
 	// exponential moving average
 	result[id] = lerp(blendedFogVolume[id], clampedHistory, 0.9);
