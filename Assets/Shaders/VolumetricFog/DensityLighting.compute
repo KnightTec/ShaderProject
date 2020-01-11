@@ -27,7 +27,16 @@ float g;
 float fogHeight;
 float fogFalloff;
 float transmittance;
+
+struct JitteredSliceDepths
+{
+	float4 sliceDepths[32];
+};
+RWStructuredBuffer<JitteredSliceDepths> sliceDepthBuffer;
+uint jitterIndex;
+
 float4 sliceDepths[32];
+float4 sds[480];
 matrix historyViewProjection;
 float logfarOverNearInv;
 float4 scatterColor;
@@ -49,12 +58,13 @@ RWStructuredBuffer<FogPointLight> pointLights;
 int pointLightCount;
 
 float3 volumeResolution;
+int4 bayerMatrix[4];
 
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
 	float distToCam = length(worldPosition - cameraPosition.xyz);
-	float4 near = float4 (distToCam >= lightData[0].lightSplitsNear); 
-	float4 far = float4 (distToCam < lightData[0].lightSplitsFar);
+	float4 near = float4(distToCam >= lightData[0].lightSplitsNear); 
+	float4 far = float4(distToCam < lightData[0].lightSplitsFar);
 	float4 weights = near * far;
 
 	float3 shadowCoord0 = mul(lightData[0].worldToShadow[0], float4(worldPosition, 1)).xyz; 
@@ -142,17 +152,6 @@ float perlinNoise(float3 value){
 	return noise;
 }
 
-//https://www.ronja-tutorials.com/2018/09/02/white-noise.html
-float rand(float3 value){
-    //make value smaller to avoid artefacts
-    float3 smallValue = sin(value);
-    //get scalar value from 3d vector
-    float random = dot(smallValue, float3(12.9898, 78.233, 37.719));
-    //make value more random by making it bigger and then taking teh factional part
-    random = frac(sin(random) * 143758.5453);
-    return random;
-}
-
 
 float phaseFunction(float3 pointPosition, float3 lightDirection) 
 {
@@ -164,13 +163,15 @@ float phaseFunction(float3 pointPosition, float3 lightDirection)
 	return phase;
 }
 
+float4 depthJitter[4];
+
 [numthreads(4,4,4)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	float3 volCoord = float3(float3(id) / volumeResolution + 0.5f / volumeResolution);
 	
-	//TODO: replace rand with bayer matrix
-	float z = sliceDepths[id.z / 4][id.z % 4] * (1 + 0.02f * rand(volCoord * time));
+	uint shiftedJitterIndex = (jitterIndex + bayerMatrix[id.y % 4][id.x % 4]) % 15;
+	float z = sliceDepths[id.z / 4][id.z % 4] * depthJitter[shiftedJitterIndex / 4][shiftedJitterIndex % 4];
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
 	// 32-tap PCF filter
@@ -193,13 +194,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	//visibility += float4(shadowDepth < shadowCoord.z);
 	
 	visibility.r = dot(visibility, 1/4.0f);
-	//float pointDepthExp = exp(shadowCoord.z * 80);
-	//float visibility = saturate(shadowDepthExp * pointDepthExp);
 
-	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) / noiseSize)) * noiseIntensity + (1 - noiseIntensity);
+	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) / noiseSize));
 	noise = noise * 0.8 + 0.2 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
-	noise = 1;
-	scattering *= saturate(exp(-worldPosition.y * fogFalloff + fogHeight) * noise);
+	noise = noise * noiseIntensity + (1 - noiseIntensity);
+
+	scattering *= saturate(exp(-clamp(worldPosition.y, -200, 200) * fogFalloff + fogHeight) * noise);
 
 	half4 result = half4(ambientLightColor.rgb * 0.1f, scattering);
 	float3 scatteredColor = lightData[0].lightColor.rgb * visibility.r;
@@ -219,8 +219,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 		float3 lightVector = light.position.xyz - worldPosition;
 		float3 lightVecNorm = normalize(lightVector);
 		float lightDist = length(lightVector);
-		float attentuation = 1 / max(lightDist, 1);
-		attentuation *= attentuation;
+		float attentuation = 1 / (pow(5 * lightDist / light.range, 2) + 1);
+		attentuation *= 10;
 		phase = phaseFunction(worldPosition, lightVecNorm);
 		result.rgb += light.color.rgb * attentuation * phase 
 			* light.intensity * calcTransmittance(light.position, lightVecNorm, lightDist);
