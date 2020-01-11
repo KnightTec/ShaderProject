@@ -1,5 +1,6 @@
 ﻿#include "UnityCG.cginc"
-#pragma kernel CSMain
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS
+#pragma kernel CSMain 
 
 #define PI 3.14159
 
@@ -14,31 +15,21 @@ struct DirLightData
 };
 RWStructuredBuffer<DirLightData> lightData;
 
+#ifdef SHADOWS
 SamplerState MyPointClampSampler;
-
 Texture2D<float> cascadeShadowMap;
+#endif
+
 RWTexture3D<half4> fogVolume;
 float4 cameraPosition;
-float nearPlane;
-float farPlane;
 float4 frustumRays[4];
 float scattering;
 float g;
 float fogHeight;
 float fogFalloff;
 float transmittance;
-
-struct JitteredSliceDepths
-{
-	float4 sliceDepths[32];
-};
-RWStructuredBuffer<JitteredSliceDepths> sliceDepthBuffer;
 uint jitterIndex;
-
 float4 sliceDepths[32];
-float4 sds[480];
-matrix historyViewProjection;
-float logfarOverNearInv;
 float4 scatterColor;
 float time;
 
@@ -47,6 +38,7 @@ float noiseSize;
 float4 noiseDirection;
 float4 ambientLightColor;
 
+#ifdef LOCAL_LIGHTS
 struct FogPointLight
 {
 	float4 position;
@@ -56,10 +48,12 @@ struct FogPointLight
 };
 RWStructuredBuffer<FogPointLight> pointLights;
 int pointLightCount;
+#endif
 
 float3 volumeResolution;
 int4 bayerMatrix[4];
 
+#ifdef SHADOWS
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
 	float distToCam = length(worldPosition - cameraPosition.xyz);
@@ -78,6 +72,7 @@ float3 getCascadeShadowCoords(float3 worldPosition)
 		shadowCoord3 * weights.w;
 	return coord;
 }
+#endif
 
 float3 getFrustumRay(float2 uv)
 {
@@ -96,6 +91,7 @@ float calcTransmittance(float3 position, float3 lightDirection, float dist)
 	return exp(-opticalDepth * scattering * transmittance);
 }
 
+#ifdef NOISE
 // noise function copied from here: https://www.ronja-tutorials.com/2018/09/15/perlin-noise.html
 float rand3dTo1d(float3 value, float3 dotDir = float3(12.9898, 78.233, 37.719)){
     //make value smaller to avoid artefacts
@@ -151,6 +147,7 @@ float perlinNoise(float3 value){
 	float3 noise = lerp(cellNoiseZ[0], cellNoiseZ[1], interpolatorZ);
 	return noise;
 }
+#endif
 
 
 float phaseFunction(float3 pointPosition, float3 lightDirection) 
@@ -174,32 +171,26 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float z = sliceDepths[id.z / 4][id.z % 4] * depthJitter[shiftedJitterIndex / 4][shiftedJitterIndex % 4];
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
-	// 32-tap PCF filter
+	float4 visibility;
+#ifdef SHADOWS
+	// 4-tap PCF filter
 	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
-	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, 0));
-	float4 visibility = float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 0));
-	//visibility += float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, 2));
-	//visibility += float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 2));
-	//visibility += float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, -2));
-	//visibility = float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 2));
-	//visibility += float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-3, 4));
-	//visibility += float4(shadowDepth < shadowCoord.z);
-	//shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(3, 4));
-	//visibility += float4(shadowDepth < shadowCoord.z);
-	
+	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 0));
+	visibility = float4(shadowDepth < shadowCoord.z);
 	visibility.r = dot(visibility, 1/4.0f);
+#else
+	visibility.r = 1;
+#endif	
 
-	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) / noiseSize));
+#ifdef NOISE
+	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) * noiseSize));
 	noise = noise * 0.8 + 0.2 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
 	noise = noise * noiseIntensity + (1 - noiseIntensity);
 
-	scattering *= saturate(exp(-clamp(worldPosition.y, -200, 200) * fogFalloff + fogHeight) * noise);
+	scattering *= saturate(exp(-clamp(worldPosition.y * fogFalloff + fogHeight, -50, 50)) * noise);
+#else
+	scattering *= saturate(exp(-clamp(worldPosition.y * fogFalloff + fogHeight, -50, 50)));
+#endif
 
 	half4 result = half4(ambientLightColor.rgb * 0.1f, scattering);
 	float3 scatteredColor = lightData[0].lightColor.rgb * visibility.r;
@@ -211,6 +202,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float phase = phaseFunction(worldPosition, lightData[0].lightDirection);
 	result.rgb += scatteredColor * phase;
 
+#ifdef LOCAL_LIGHTS
 	// point light lighting
 	for (int i = 0; i < pointLightCount; i++) 
 	{
@@ -225,6 +217,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 		result.rgb += light.color.rgb * attentuation * phase 
 			* light.intensity * calcTransmittance(light.position, lightVecNorm, lightDist);
 	}
+#endif
 
 	result.rgb *= scattering * scatterColor;
 	result.rgb *= PI;

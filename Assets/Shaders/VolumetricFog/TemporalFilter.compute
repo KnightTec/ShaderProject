@@ -8,17 +8,11 @@ RWTexture3D<half4> result;
 SamplerState MyLinearClampSampler;
 
 float4 cameraPosition;
-float nearPlane;
-float farPlane;
 float4 frustumRays[4];
 float4 sliceDepths[32];
 matrix historyViewProjection;
-float logfarOverNearInv;
-float deltaTime;
-float4 noiseDirection;
-
 float3 volumeResolution;
-
+float4 clipPlanes;
 
 float3 getFrustumRay(float2 uv)
 {
@@ -35,14 +29,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	// calculate position in history volume
 	float z = sliceDepths[id.z / 4][id.z % 4];
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
-	//worldPosition -= noiseDirection.xyz * deltaTime;
 
 	float4 historyNdc = mul(historyViewProjection, float4(worldPosition, 1));
 	historyNdc /= historyNdc.w;
 	float3 historyVolumeCoord = float3((historyNdc.xy + 1) / 2, 0);
 	historyVolumeCoord.y = 1 - historyVolumeCoord.y;
-	z = nearPlane + (farPlane - nearPlane) * Linear01Depth(historyNdc.z);
-	historyVolumeCoord.z = log(z / nearPlane) * logfarOverNearInv;
+	z = clipPlanes.x + (clipPlanes.y - clipPlanes.x) * Linear01Depth(historyNdc.z);
+	historyVolumeCoord.z = (log(z) - clipPlanes.w) * clipPlanes.z;
 	
 	half4 historySample = exponentialHistory.SampleLevel(MyLinearClampSampler, historyVolumeCoord, 0);
 
@@ -50,10 +43,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	half4 minSample = half4(1, 1, 1, 1);
 	half4 maxSample = half4(0, 0, 0, 0);
 	half4 samp; //= blendedFogVolume[id];
+	[unroll]
 	for (int x = -1; x < 1; x++) 
 	{
+		[unroll]
 		for (int y = -1; y < 1; y++) 
 		{
+			[unroll]
 			for (int z = -1; z < 1; z++)
 			{
 				samp = blendedFogVolume[uint3(id.x + x, id.y + y, id.z + z)];
@@ -62,38 +58,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 			}
 		}
 	}
-	//minSample = min(minSample, samp);
-	//maxSample = max(maxSample, samp);
-	//samp = blendedFogVolume[uint3(id.x + 1, id.y + 1, id.z + 1)];
-	//minSample = min(minSample, samp);
-	//maxSample = max(maxSample, samp);
-	//samp = blendedFogVolume[uint3(id.x - 1, id.y + 1, id.z + 1)];
-	//minSample = min(minSample, samp);
-	//maxSample = max(maxSample, samp);
-	//samp = blendedFogVolume[uint3(id.x + 1, id.y - 1, id.z + 1)];
-	//minSample = min(minSample, samp);
-	//maxSample = max(maxSample, samp);
-	//samp = blendedFogVolume[uint3(id.x - 1, id.y - 1, id.z + 1)];
-	//minSample = min(minSample, samp);
-	//maxSample = max(maxSample, samp);
-	//samp = blendedFogVolume[uint3(id.x + 1, id.y + 1, id.z - 1)];
-	//minSample = min(minSample, samp);
-	//maxSample = max(maxSample, samp);
-	//samp = blendedFogVolume[uint3(id.x - 1, id.y + 1, id.z - 1)];
-	//minSample = min(minSample, samp);
-	//maxSample = max(maxSample, samp);
-	//samp = blendedFogVolume[uint3(id.x + 1, id.y - 1, id.z - 1)];
-	//minSample = min(minSample, samp);
-	//maxSample = max(maxSample, samp);
-	//samp = blendedFogVolume[uint3(id.x - 1, id.y - 1, id.z - 1)];
-	//minSample = min(minSample, samp);
-	//maxSample = max(maxSample, samp);
 
 	half4 clampedHistory = clamp(historySample, minSample, maxSample);
-	// tradoff between ghosting and flickering
+	// tradoff between ghosting and flickering/noise
 	clampedHistory = lerp(clampedHistory, historySample, 0.6f);
 
 	// exponential moving average
-	result[id] = lerp(blendedFogVolume[id], clampedHistory, 0.9);
+	result[id] = lerp(blendedFogVolume[id], clampedHistory, 0.9f);
 	
 }

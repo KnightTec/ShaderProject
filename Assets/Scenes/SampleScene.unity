@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.004153529, g: 0.0038824384, b: 0.0044111493, a: 1}
+  m_IndirectSpecularColor: {r: 0.0042784237, g: 0.004007333, b: 0.004536045, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -4637,7 +4637,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 8.23e-43, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0.0000000037252903}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -4648,13 +4648,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
-  m_LocalRotation: {x: 0.2583254, y: -0.3530197, z: -0.058082193, w: 0.8973692}
+  m_LocalRotation: {x: 0.1531695, y: -0.2636751, z: -0.12030085, w: 0.9447445}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 25, y: -47.07, z: -18.437}
+  m_LocalEulerAnglesHint: {x: 13.06, y: -47.07, z: -18.437}
 --- !u!114 &705507996
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6534,7 +6534,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.2
-  far clip plane: 300
+  far clip plane: 200
   field of view: 35.951782
   orthographic: 0
   orthographic size: 5
@@ -6579,20 +6579,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e9bca6c17670f49ac8bfcf51d00799, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  volumeResolution: {x: 160, y: 90, z: 128}
-  scattering: 0.3
+  volumeResolution: {x: 240, y: 135, z: 128}
+  scattering: 0.4
   scatterColor: {r: 1, g: 1, b: 1, a: 1}
-  anisotropy: 0.3
-  transmittance: 1
+  anisotropy: 0.4
+  transmittance: 0.5
   fogHeight: 0
-  fogFalloff: 0.25
+  fogFalloff: 0.15
   noiseIntensity: 0.85
   noiseSize: 6
   noiseDirection: {x: 2, y: -2, z: 4}
   directionalLightData: {fileID: 705507996}
   densityLightingShader: {fileID: 7200000, guid: 4ced60263f7811f4f808303e1930387c,
-    type: 3}
-  temporalResolveShader: {fileID: 7200000, guid: 62d4f63405a82cd47b0776d5870e5732,
     type: 3}
   temporalFilterShader: {fileID: 7200000, guid: 0019dd3b7dcac894685ac27fbf63a716,
     type: 3}
@@ -6613,7 +6611,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af20c1e7b8c200b48b51e8318d401e20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  translationSpeed: 10
+  translationSpeed: 20
   rotationSpeed: 150
 --- !u!114 &963194231
 MonoBehaviour:

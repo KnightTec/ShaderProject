@@ -6,10 +6,8 @@ Texture2D<float> depth;
 Texture3D<half4> accumulatedFogVolume;
 RWTexture2D<float4> result;
 float4 resolution;
-float nearPlane;
-float farPlane;
-float logfarOverNearInv;
-float3 volumeResolution;
+float4 clipPlanes;
+float3 volumeResolution; 
 
 SamplerState MyLinearClampSampler;
 
@@ -19,16 +17,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float d = Linear01Depth(depth[id.xy]);
 	float3 fogCoord = float3(id.xy * resolution.zw + 0.5f * resolution.zw, d);
 	
-	float z = nearPlane + (farPlane - nearPlane) * d;
-	fogCoord.z = log(z / nearPlane) * logfarOverNearInv;
-
-	// approximation to bicubic filtering
-	// https://www.shadertoy.com/view/XsfGDn
+	float z = clipPlanes.x + (clipPlanes.y - clipPlanes.x) * d;
+	fogCoord.z = (log(z) - clipPlanes.w) * clipPlanes.z;
 	
 	half4 fogSample = accumulatedFogVolume.SampleLevel(MyLinearClampSampler, fogCoord, 0);
 	float3 sceneColor = source[id.xy].rgb;
 
 	float3 combinedColor = sceneColor * fogSample.a + fogSample.rgb;
 	result[id.xy] = float4(combinedColor, 1);
-	//result[id.xy] = float4(1,1,1, 1) * fogSample.a;
 }

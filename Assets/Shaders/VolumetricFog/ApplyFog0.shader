@@ -39,13 +39,11 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed4 sceneColor = tex2D(mainTex, i.uv);
-				float depth = tex2D(_CameraDepthTexture, i.uv).r;
-                float3 fogCoord = float3(float2(i.uv.x, 1 - i.uv.y), Linear01Depth(depth));
-				float4 fogSample = tex3D(froxelVolume, fogCoord);
-				float3 combinedColor = sceneColor * fogSample.a + fogSample.rgb;
-                return fixed4(combinedColor, 1);
-            }
+                float d = Linear01Depth(tex2D(_CameraDepthTexture, i.uv));
+				float3 fogCoord = float3(i.uv, d);
+	
+				//TODO
+			}
             ENDHLSL
         }
     }

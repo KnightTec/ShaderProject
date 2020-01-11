@@ -52,7 +52,7 @@ public class DirectionalLightData : MonoBehaviour
 
     private void Update()
     {
-        //transform.Rotate(0, Time.deltaTime * 10, 0, Space.World);
+        //transform.Rotate(0, Time.deltaTime * 0.5f, 0, Space.World);
     }
 
     private void init()
