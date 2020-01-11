@@ -4,6 +4,7 @@
 
 #if defined (SHADOWS_DEPTH) && !defined (SPOT)
 #       define SHADOW_COORDS(idx1) unityShadowCoord2 _ShadowCoord : TEXCOORD##idx1;
+#       define TRANSFER_SHADOW(a) a._ShadowCoord = mul (unity_WorldToShadow[0], mul(unity_ObjectToWorld,v.vertex));
 #endif
 
 struct appdata {
@@ -20,7 +21,7 @@ struct v2g {
 
 struct g2f {
     float4 pos          : SV_POSITION;
-    float4 vertexWorld  : TEXCOORD0;
+    float4 worldPos  : TEXCOORD0;
     SHADOW_COORDS(1)
     float3 normal       : NORMAL;
     float3 tangent      : TEXCOORD2;

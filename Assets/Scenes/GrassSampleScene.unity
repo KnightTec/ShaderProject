@@ -620,10 +620,10 @@ Light:
     m_Type: 1
     m_Resolution: 3
     m_CustomResolution: -1
-    m_Strength: 1
-    m_Bias: 0
-    m_NormalBias: 3
-    m_NearPlane: 1.84
+    m_Strength: 0.617
+    m_Bias: 0.739
+    m_NormalBias: 0.74
+    m_NearPlane: 3.35
     m_CullingMatrixOverride:
       e00: 1
       e01: 0

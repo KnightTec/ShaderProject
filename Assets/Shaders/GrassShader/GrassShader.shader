@@ -54,17 +54,18 @@
 
             fixed4 frag (g2f IN) : SV_Target{
                 float3 N = normalize(IN.normal);
-                float3 L = normalize(_WorldSpaceLightPos0 - IN.vertexWorld);
+                float3 L = normalize(_WorldSpaceLightPos0 - IN.worldPos);
 
                 float intensity1 = dot( N, L);
                 float intensity2 = dot(-N, L);
                 //float attenuation;//= LIGHT_ATTENUATION(IN);
-                UNITY_LIGHT_ATTENUATION(attenuation, IN, IN.vertexWorld);
+                UNITY_LIGHT_ATTENUATION(attenuation, IN, IN.worldPos);
+                //UnityComputeForwardShadows()
 
                 float intensity = max(clamp(0,1, max(intensity1,intensity2)), _Ambient);
                 float fac = tex2Dlod (_DryGrassTex, float4 (IN.uv, 0, 0)).r;
 
-                float dist = distance(IN.vertexWorld, _WorldSpaceCameraPos);
+                float dist = distance(IN.worldPos, _WorldSpaceCameraPos);
 
                 float4 GrassColor = lerp (_GrassColor, _DryGrassColor, fac);
                 float4 BottomColor = lerp ( lerp (_GrassBottomColor, _DryBottomColor, fac), GrassColor, clamp(0,0.6, dist /(_MaxDistance) ));
