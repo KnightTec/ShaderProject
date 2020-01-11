@@ -8,7 +8,7 @@
 public class VolumetricFogRenderer : MonoBehaviour
 {
     public Vector3Int volumeResolution = new Vector3Int(320, 180, 128);
-    [Range(0, 1)]
+    [Range(0, 10)]
     public float scattering = 0.1f;
     public Color scatterColor = Color.white;
     [Range(-0.99f, 0.99f)]
@@ -264,6 +264,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         volume.Create();
     }
 
+    [ImageEffectOpaque]
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         // recreate texture if size was changed
@@ -383,6 +384,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogShader.SetFloat("nearPlane", cam.nearClipPlane);
         applyFogShader.SetFloat("farPlane", cam.farClipPlane);
         applyFogShader.SetFloat("logfarOverNearInv", logfarOverNearInv);
+        applyFogShader.SetVector("volumeResolution", volRes);
         applyFogShader.Dispatch(applyFogKernel, (tempDestination.width + 7) / 8, (tempDestination.height + 7) / 8, 1);
 
         //applyFogMaterial.SetTexture("mainTex", source);

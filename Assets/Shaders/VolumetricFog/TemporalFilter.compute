@@ -49,36 +49,49 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	// neighborhood clamping
 	half4 minSample = half4(1, 1, 1, 1);
 	half4 maxSample = half4(0, 0, 0, 0);
-	half4 samp = blendedFogVolume[id];
-	minSample = min(minSample, samp);
-	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(id.x + 1, id.y + 1, id.z + 1)];
-	minSample = min(minSample, samp);
-	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(id.x - 1, id.y + 1, id.z + 1)];
-	minSample = min(minSample, samp);
-	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(id.x + 1, id.y - 1, id.z + 1)];
-	minSample = min(minSample, samp);
-	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(id.x - 1, id.y - 1, id.z + 1)];
-	minSample = min(minSample, samp);
-	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(id.x + 1, id.y + 1, id.z - 1)];
-	minSample = min(minSample, samp);
-	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(id.x - 1, id.y + 1, id.z - 1)];
-	minSample = min(minSample, samp);
-	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(id.x + 1, id.y - 1, id.z - 1)];
-	minSample = min(minSample, samp);
-	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(id.x - 1, id.y - 1, id.z - 1)];
-	minSample = min(minSample, samp);
-	maxSample = max(maxSample, samp);
+	half4 samp; //= blendedFogVolume[id];
+	for (int x = -1; x < 1; x++) 
+	{
+		for (int y = -1; y < 1; y++) 
+		{
+			for (int z = -1; z < 1; z++)
+			{
+				samp = blendedFogVolume[uint3(id.x + x, id.y + y, id.z + z)];
+				minSample = min(minSample, samp);
+				maxSample = max(maxSample, samp);
+			}
+		}
+	}
+	//minSample = min(minSample, samp);
+	//maxSample = max(maxSample, samp);
+	//samp = blendedFogVolume[uint3(id.x + 1, id.y + 1, id.z + 1)];
+	//minSample = min(minSample, samp);
+	//maxSample = max(maxSample, samp);
+	//samp = blendedFogVolume[uint3(id.x - 1, id.y + 1, id.z + 1)];
+	//minSample = min(minSample, samp);
+	//maxSample = max(maxSample, samp);
+	//samp = blendedFogVolume[uint3(id.x + 1, id.y - 1, id.z + 1)];
+	//minSample = min(minSample, samp);
+	//maxSample = max(maxSample, samp);
+	//samp = blendedFogVolume[uint3(id.x - 1, id.y - 1, id.z + 1)];
+	//minSample = min(minSample, samp);
+	//maxSample = max(maxSample, samp);
+	//samp = blendedFogVolume[uint3(id.x + 1, id.y + 1, id.z - 1)];
+	//minSample = min(minSample, samp);
+	//maxSample = max(maxSample, samp);
+	//samp = blendedFogVolume[uint3(id.x - 1, id.y + 1, id.z - 1)];
+	//minSample = min(minSample, samp);
+	//maxSample = max(maxSample, samp);
+	//samp = blendedFogVolume[uint3(id.x + 1, id.y - 1, id.z - 1)];
+	//minSample = min(minSample, samp);
+	//maxSample = max(maxSample, samp);
+	//samp = blendedFogVolume[uint3(id.x - 1, id.y - 1, id.z - 1)];
+	//minSample = min(minSample, samp);
+	//maxSample = max(maxSample, samp);
 
 	half4 clampedHistory = clamp(historySample, minSample, maxSample);
-	clampedHistory = lerp(clampedHistory, historySample, 0.5f);
+	// tradoff between ghosting and flickering
+	clampedHistory = lerp(clampedHistory, historySample, 0.6f);
 
 	// exponential moving average
 	result[id] = lerp(blendedFogVolume[id], clampedHistory, 0.9);
