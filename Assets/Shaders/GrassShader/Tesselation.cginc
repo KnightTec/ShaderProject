@@ -1,5 +1,6 @@
 #include "GrassStructs.cginc"
 #include "GrassVars.cginc"
+#include "AutoLight.cginc"
 
 v2g vert (appdata IN) {
     v2g OUT;
@@ -53,9 +54,9 @@ v2g dom (tessFactors tf, OutputPatch<appdata, 3> op, float3 dl : SV_DomainLocati
 }
 
 #define RANDOM(fieldname) abs( sin ( dot (fieldname, fixed4 (9520.7254, 5115.2899, 1736.2851, 1683.4103) * 1683.4103) ) )
-#define APPEND(index) v = IN[index]; o.vertexWorld = IN[index].vertex + 0.001 * float4(IN[index].normal,0); o.pos = UnityObjectToClipPos(o.vertexWorld); o.tangent = float3(0,0,0); o.normal = IN[index].normal; o.uv = IN[index].uv; o.blendFactors = float2( tex2Dlod(_HeightTex, float4(IN[index].uv, 0, 0)).r, 0);triStream.Append(o)
-#define APPEND_ADDITIVE(summand,uvx,uvy) if (sizefac > 0 ) { o.vertexWorld = avg + (summand); o.pos = UnityObjectToClipPos (o.vertexWorld); o.uv = avgUV;o.blendFactors = fixed2(uvx, uvy); o.normal = normal; v.vertex = o.vertexWorld; triStream.Append(o); }
-#define APPEND_ADDITIVE_BOTTOM(summand,uvx,uvy) if (sizefac > 0 ) { o.vertexWorld = avg + (summand); o.pos = UnityObjectToClipPos (o.vertexWorld); o.uv = avgUV;o.blendFactors = fixed2(uvx, uvy); o.normal = avgNorm; v.vertex = o.vertexWorld; triStream.Append(o); }
+#define APPEND(index) v = IN[index]; o.vertexWorld = IN[index].vertex + 0.001 * float4(IN[index].normal,0); o.pos = UnityObjectToClipPos(o.vertexWorld); o.tangent = float3(0,0,0); o.normal = IN[index].normal; o.uv = IN[index].uv; o.blendFactors = float2( tex2Dlod(_HeightTex, float4(IN[index].uv, 0, 0)).r, 0); TRANSFER_SHADOW(o); triStream.Append(o)
+#define APPEND_ADDITIVE(summand,uvx,uvy) if (sizefac > 0 ) { o.vertexWorld = avg + (summand); o.pos = UnityObjectToClipPos (o.vertexWorld); o.uv = avgUV;o.blendFactors = fixed2(uvx, uvy); o.normal = normal; v.vertex = o.vertexWorld; TRANSFER_SHADOW(o); triStream.Append(o); }
+#define APPEND_ADDITIVE_BOTTOM(summand,uvx,uvy) if (sizefac > 0 ) { o.vertexWorld = avg + (summand); o.pos = UnityObjectToClipPos (o.vertexWorld); o.uv = avgUV;o.blendFactors = fixed2(uvx, uvy); o.normal = avgNorm; v.vertex = o.vertexWorld; TRANSFER_SHADOW(o); triStream.Append(o); }
 #define AVG(fieldname) (IN[0].fieldname + IN[1].fieldname + IN[2].fieldname) / 3
 
 [maxvertexcount(9)]

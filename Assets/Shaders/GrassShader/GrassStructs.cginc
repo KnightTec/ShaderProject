@@ -1,3 +1,4 @@
+#include "UnityCG.cginc"
 #include "Lighting.cginc"
 #include "AutoLight.cginc"
 
@@ -18,12 +19,13 @@ struct v2g {
 };
 
 struct g2f {
-    float4 pos       : SV_POSITION;
+    float4 pos          : SV_POSITION;
     float4 vertexWorld  : TEXCOORD0;
+    SHADOW_COORDS(1)
     float3 normal       : NORMAL;
-    float3 tangent      : TEXCOORD1;
-    float2 uv           : TEXCOORD2;
-    float2 blendFactors : TEXCOORD3;
+    float3 tangent      : TEXCOORD2;
+    float2 uv           : TEXCOORD3;
+    float2 blendFactors : TEXCOORD4;
 };
 
 struct tessFactors {
