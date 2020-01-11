@@ -7,6 +7,7 @@ using UnityEngine.Rendering;
 [ExecuteAlways]
 public class VolumetricFogRenderer : MonoBehaviour
 {
+    public float distance = 200;
     public Vector3Int volumeResolution = new Vector3Int(320, 180, 128);
     [Range(0, 10)]
     public float scattering = 0.1f;
@@ -81,6 +82,7 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     private Vector3 volRes;
     private Vector4 clipPlanes;
+    private Matrix4x4 projectiomMatrix;
 
     private CommandBuffer commandBuffer;
 
@@ -103,10 +105,15 @@ public class VolumetricFogRenderer : MonoBehaviour
         jitteredSliceDepths = new float[15][];
         calculateSliceDepths();
         pointLightBuffer = new ComputeBuffer(64, 40);
-        float logfarOverNearInv = 1 / Mathf.Log(cam.farClipPlane / cam.nearClipPlane);
+        float logfarOverNearInv = 1 / Mathf.Log(distance / cam.nearClipPlane);
         float logNearPlane = Mathf.Log(cam.nearClipPlane);
-        clipPlanes = new Vector4(cam.nearClipPlane, cam.farClipPlane, logfarOverNearInv, logNearPlane);
+        clipPlanes = new Vector4(cam.nearClipPlane, distance, logfarOverNearInv, logNearPlane);
         volRes = new Vector3(volumeResolution.x, volumeResolution.y, volumeResolution.z);
+
+        float farPlane = cam.farClipPlane;
+        cam.farClipPlane = distance;
+        projectiomMatrix = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true);
+        cam.farClipPlane = farPlane;
     }
 
     private void initCommandBuffer()
@@ -137,6 +144,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         }
         swapCounter = (swapCounter + 1) % 2;
         jitterIndex = (jitterIndex + 1) % 15;
+
     }
 
     private void OnPreRender()
@@ -160,7 +168,7 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     private void calculateSliceDepths()
     {
-        float farOverNear = cam.farClipPlane / cam.nearClipPlane;
+        float farOverNear = distance / cam.nearClipPlane;
         // logarithmic depth distribution (http://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
         for (int i = 0; i < volumeResolution.z; i++)
         {
@@ -323,6 +331,8 @@ public class VolumetricFogRenderer : MonoBehaviour
         temporalFilterShader.SetFloats("sliceDepths", sliceDepths);
         temporalFilterShader.SetVector("clipPlanes", clipPlanes);
         temporalFilterShader.SetVector("volumeResolution", volRes);
+        temporalFilterShader.SetFloat("farPlane", cam.farClipPlane);
+        temporalFilterShader.SetFloat("distance", distance);
         temporalFilterShader.Dispatch(temporalFilterKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);
         temporalFilterShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
         
@@ -339,6 +349,8 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogShader.SetTexture(applyFogKernel, "accumulatedFogVolume", accumulatedFogVolume);
         applyFogShader.SetVector("volumeResolution", volRes);
         applyFogShader.SetVector("clipPlanes", clipPlanes);
+        applyFogShader.SetFloat("farPlane", cam.farClipPlane);
+        applyFogShader.SetFloat("distance", distance);
         applyFogShader.Dispatch(applyFogKernel, (tempDestination.width + 7) / 8, (tempDestination.height + 7) / 8, 1);
 
         //applyFogMaterial.SetTexture("mainTex", source);

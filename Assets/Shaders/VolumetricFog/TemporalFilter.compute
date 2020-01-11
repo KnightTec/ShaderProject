@@ -13,6 +13,8 @@ float4 sliceDepths[32];
 matrix historyViewProjection;
 float3 volumeResolution;
 float4 clipPlanes;
+float farPlane;
+float distance;
 
 float3 getFrustumRay(float2 uv)
 {
@@ -34,7 +36,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	historyNdc /= historyNdc.w;
 	float3 historyVolumeCoord = float3((historyNdc.xy + 1) / 2, 0);
 	historyVolumeCoord.y = 1 - historyVolumeCoord.y;
-	z = clipPlanes.x + (clipPlanes.y - clipPlanes.x) * Linear01Depth(historyNdc.z);
+	z = clipPlanes.x + (farPlane - clipPlanes.x) * Linear01Depth(historyNdc.z);
+	z = min(z, distance);
 	historyVolumeCoord.z = (log(z) - clipPlanes.w) * clipPlanes.z;
 	
 	half4 historySample = exponentialHistory.SampleLevel(MyLinearClampSampler, historyVolumeCoord, 0);
@@ -61,9 +64,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	half4 clampedHistory = clamp(historySample, minSample, maxSample);
 	// tradoff between ghosting and flickering/noise
-	clampedHistory = lerp(clampedHistory, historySample, 0.6f);
+	clampedHistory = lerp(clampedHistory, historySample, 0.5f);
 
 	// exponential moving average
 	result[id] = lerp(blendedFogVolume[id], clampedHistory, 0.9f);
-	
 }

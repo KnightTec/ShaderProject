@@ -8,21 +8,25 @@ RWTexture2D<float4> result;
 float4 resolution;
 float4 clipPlanes;
 float3 volumeResolution; 
+float farPlane;
+float distance;
 
 SamplerState MyLinearClampSampler;
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+	float3 sceneColor = source[id.xy].rgb;
 	float d = Linear01Depth(depth[id.xy]);
 	float3 fogCoord = float3(id.xy * resolution.zw + 0.5f * resolution.zw, d);
 	
-	float z = clipPlanes.x + (clipPlanes.y - clipPlanes.x) * d;
+	float z = clipPlanes.x + (farPlane - clipPlanes.x) * d;
+	z = min(z, distance);
 	fogCoord.z = (log(z) - clipPlanes.w) * clipPlanes.z;
 	
 	half4 fogSample = accumulatedFogVolume.SampleLevel(MyLinearClampSampler, fogCoord, 0);
-	float3 sceneColor = source[id.xy].rgb;
 
 	float3 combinedColor = sceneColor * fogSample.a + fogSample.rgb;
 	result[id.xy] = float4(combinedColor, 1);
+	
 }
