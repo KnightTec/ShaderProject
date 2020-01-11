@@ -43,7 +43,7 @@
             CGPROGRAM
             
             #pragma target 4.6
-            //#pragma multi_compile_fwdbase
+            #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
             #pragma vertex vert
             #pragma hull hull
@@ -58,7 +58,8 @@
 
                 float intensity1 = dot( N, L);
                 float intensity2 = dot(-N, L);
-                float attenuation = 1;//LIGHT_ATTENUATION(IN);
+                //float attenuation;//= LIGHT_ATTENUATION(IN);
+                UNITY_LIGHT_ATTENUATION(attenuation, IN, IN.vertexWorld);
 
                 float intensity = max(clamp(0,1, max(intensity1,intensity2)), _Ambient);
                 float fac = tex2Dlod (_DryGrassTex, float4 (IN.uv, 0, 0)).r;
@@ -70,7 +71,7 @@
 
                 return fixed4(
                 (
-                _LightColor0 * intensity * 
+                _LightColor0 * intensity * attenuation *
                 lerp(BottomColor,GrassColor, clamp(0,1,IN.blendFactors.y))).xyz, 
 
                 clamp( 0,1,IN.blendFactors.y > 0 ? 1 : IN.blendFactors.x + _GrassColorOffset)
@@ -80,28 +81,28 @@
             ENDCG
         }
 
-        // Pass
-        // {
-        //     Tags
-        //     {
-        //         "LightMode" = "ShadowCaster"
-        //     }
-        //     CGPROGRAM
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "ShadowCaster"
+            }
+            CGPROGRAM
 
-        //     #pragma vertex vert
-        //     #pragma geometry geom
-        //     #pragma fragment frag
-        //     #pragma hull hull
-        //     #pragma domain dom
-        //     #pragma target 4.6
-        //     #pragma multi_compile_shadowcaster
+            #pragma vertex vert
+            #pragma geometry geom
+            #pragma fragment frag
+            #pragma hull hull
+            #pragma domain dom
+            #pragma target 4.6
+            #pragma multi_compile_shadowcaster
 
-        //     float4 frag(g2f i) : SV_Target
-        //     {
-        //         SHADOW_CASTER_FRAGMENT(i)
-        //     }
+            float4 frag(g2f i) : SV_Target
+            {
+                SHADOW_CASTER_FRAGMENT(i)
+            }
 
-        //     ENDCG
-        // } 
+            ENDCG
+        } 
     }
 }
