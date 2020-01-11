@@ -34,7 +34,7 @@
 
          v2f vert(appdata input)
          {
-            vertexOutput output;
+            v2f output;
             output.vertex = UnityObjectToClipPos(input.vertex);
             output.texcoord = input.texcoord;
             return output;
@@ -42,6 +42,7 @@
 
          float4 frag(v2f input) : SV_Target
          {
+			float4 f4 = _WorldSpaceLightPos0;
             return texCUBE (_Cube, input.texcoord);
          }
          ENDHLSL 
