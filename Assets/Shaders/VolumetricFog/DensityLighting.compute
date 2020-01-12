@@ -1,5 +1,5 @@
 ﻿#include "UnityCG.cginc"
-#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS SELF_SHADOW JITTER
 #pragma kernel CSMain 
 
 #define PI 3.14159
@@ -47,8 +47,8 @@ struct FogPointLight
     float intensity;
 };
 RWStructuredBuffer<FogPointLight> pointLights;
-int pointLightCount;
 #endif
+int pointLightCount;
 
 float3 volumeResolution;
 int4 bayerMatrix[4];
@@ -81,11 +81,11 @@ float3 getFrustumRay(float2 uv)
 	return lerp(lowerRay, upperRay, uv.y);
 }
 
-float calcTransmittance(float3 position, float3 lightDirection, float dist)
+float calcTransmittance(float3 position, float3 lightDirection, float distance)
 {
 	// integrate optical depth along light ray
 	// https://iquilezles.org/www/articles/fog/fog.htm
-	float opticalDepth = exp(-fogFalloff * (position.y + dist * lightDirection.y) + fogHeight);
+	float opticalDepth = exp(-fogFalloff * (position.y + distance * lightDirection.y) + fogHeight);
 	opticalDepth -= exp(-fogFalloff * position.y + fogHeight);
 	opticalDepth /= -fogFalloff * lightDirection.y;
 	return exp(-opticalDepth * scattering * transmittance);
@@ -156,7 +156,7 @@ float phaseFunction(float3 pointPosition, float3 lightDirection)
 	float3 viewDir = normalize(pointPosition - cameraPosition);
 	float theta = dot(lightDirection, viewDir);
 	float phase = 1 - g * g;
-	phase /= 4 * PI * pow(1 + g * g - 2 * g * theta, 1.5);
+	phase /= 4 * pow(1 + g * g - 2 * g * theta, 1.5);
 	return phase;
 }
 
@@ -166,9 +166,11 @@ float4 depthJitter[4];
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	float3 volCoord = float3(float3(id) / volumeResolution + 0.5f / volumeResolution);
-	
+	float z = sliceDepths[id.z / 4][id.z % 4];
+#ifdef JITTER
 	uint shiftedJitterIndex = (jitterIndex + bayerMatrix[id.y % 4][id.x % 4]) % 15;
-	float z = sliceDepths[id.z / 4][id.z % 4] * depthJitter[shiftedJitterIndex / 4][shiftedJitterIndex % 4];
+	z *= depthJitter[shiftedJitterIndex / 4][shiftedJitterIndex % 4];
+#endif
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
 	float4 visibility;
@@ -195,9 +197,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	half4 result = half4(ambientLightColor.rgb * 0.1f, scattering);
 	float3 scatteredColor = lightData[0].lightColor.rgb * visibility.r;
 
+#ifdef SELF_SHADOW
 	// transmittance from directional light to worldPosition
 	float transmittance = calcTransmittance(worldPosition, lightData[0].lightDirection, 100000);
 	scatteredColor *= transmittance;
+#endif
 
 	float phase = phaseFunction(worldPosition, lightData[0].lightDirection);
 	result.rgb += scatteredColor * phase;
@@ -220,7 +224,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 #endif
 
 	result.rgb *= scattering * scatterColor;
-	result.rgb *= PI;
 
 	fogVolume[id] = result;
 }

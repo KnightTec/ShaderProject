@@ -7,7 +7,6 @@ Texture3D<half4> accumulatedFogVolume;
 RWTexture2D<float4> result;
 float4 resolution;
 float4 clipPlanes;
-float3 volumeResolution; 
 float farPlane;
 float distance;
 

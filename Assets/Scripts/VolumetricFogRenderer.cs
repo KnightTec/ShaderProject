@@ -342,20 +342,22 @@ public class VolumetricFogRenderer : MonoBehaviour
         scatteringShader.SetVector("scatterColor", scatterColor);
         scatteringShader.Dispatch(scatteringKernel, (volumeResolution.x + 7) / 8, (volumeResolution.y + 7) / 8, 1);
 
-        applyFogShader.SetVector("resolution", resolution);
-        applyFogShader.SetTextureFromGlobal(applyFogKernel, "depth", "_CameraDepthTexture");
-        applyFogShader.SetTexture(applyFogKernel, "source", source);
-        applyFogShader.SetTexture(applyFogKernel, "result", tempDestination);
-        applyFogShader.SetTexture(applyFogKernel, "accumulatedFogVolume", accumulatedFogVolume);
-        applyFogShader.SetVector("volumeResolution", volRes);
-        applyFogShader.SetVector("clipPlanes", clipPlanes);
-        applyFogShader.SetFloat("farPlane", cam.farClipPlane);
-        applyFogShader.SetFloat("distance", distance);
-        applyFogShader.Dispatch(applyFogKernel, (tempDestination.width + 7) / 8, (tempDestination.height + 7) / 8, 1);
+        //applyFogShader.SetVector("resolution", resolution);
+        //applyFogShader.SetTextureFromGlobal(applyFogKernel, "depth", "_CameraDepthTexture");
+        //applyFogShader.SetTexture(applyFogKernel, "source", source);
+        //applyFogShader.SetTexture(applyFogKernel, "result", tempDestination);
+        //applyFogShader.SetTexture(applyFogKernel, "accumulatedFogVolume", accumulatedFogVolume);
+        //applyFogShader.SetVector("clipPlanes", clipPlanes);
+        //applyFogShader.SetFloat("farPlane", cam.farClipPlane);
+        //applyFogShader.SetFloat("distance", distance);
+        //applyFogShader.Dispatch(applyFogKernel, (tempDestination.width + 7) / 8, (tempDestination.height + 7) / 8, 1);
 
-        //applyFogMaterial.SetTexture("mainTex", source);
-        //applyFogMaterial.SetTexture("froxelVolume", fogVolume);
-        //Graphics.Blit(tempDestination, destination, applyFogMaterial);
-        Graphics.Blit(tempDestination, destination);
+        applyFogMaterial.SetTexture("fogVolume", accumulatedFogVolume);
+        applyFogMaterial.SetVector("clipPlanes", clipPlanes);
+        applyFogMaterial.SetFloat("farPlane", cam.farClipPlane);
+        applyFogMaterial.SetFloat("distance", distance);
+        applyFogMaterial.SetMatrix("viewProjectionInv", viewProjectionMatrix.inverse);
+        Graphics.Blit(source, destination, applyFogMaterial);
+        //Graphics.Blit(tempDestination, destination);
     }
 }

@@ -38,7 +38,7 @@
 			float3 delta = sunDirPos - skyDirPos;
 			float dist = length(delta);
 			half spot = 1.0 - smoothstep(0.0, 0.02, dist);
-			return 1.0 - pow(0.125, spot * 100);
+			return 1.0 - pow(0.125, spot * 50);
 		}
 
          v2f vert(appdata input)
@@ -54,7 +54,7 @@
 			
 			float sun = calcSunSpot(_WorldSpaceLightPos0.xyz, input.texcoord.xyz);
 			float3 stars = texCUBE(_Cube, input.texcoord);
-			float3 outerSpaceColor = lerp(stars, float3(1, 1, 1), sun);
+			float3 outerSpaceColor = lerp(stars, float3(1, 1, 1) * 50, sun);
 
 			return float4(outerSpaceColor, 1.0);
          }
