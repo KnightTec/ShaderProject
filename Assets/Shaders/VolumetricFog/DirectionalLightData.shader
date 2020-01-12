@@ -22,9 +22,6 @@
 			float4x4 worldToShadow[4];
 			float4 lightSplitsNear;
 			float4 lightSplitsFar;
-			float4 lightColor;
-			float4 ambientColor;
-			float4 lightDirection;
 		};
 		RWStructuredBuffer<DirLightData> lightData : register(u1);
 
@@ -36,9 +33,6 @@
 			}
 			lightData[0].lightSplitsNear = _LightSplitsNear;
 			lightData[0].lightSplitsFar = _LightSplitsFar;
-			lightData[0].lightColor = _LightColor0;
-			lightData[0].ambientColor = unity_AmbientSky;
-			lightData[0].lightDirection = _WorldSpaceLightPos0;
 			
 			return float4(0, 0, 0, 1);
 		}

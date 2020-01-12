@@ -20,7 +20,7 @@ public class DirectionalLightData : MonoBehaviour
     {
         commandBuffer0 = new CommandBuffer();
         commandBuffer1 = new CommandBuffer();
-        lightDataBuffer = new ComputeBuffer(1, 352);
+        lightDataBuffer = new ComputeBuffer(1, 304);
         lightDataCopyMaterial = new Material(lightDataShader);
         esmMaterial = new Material(esmShader);
 

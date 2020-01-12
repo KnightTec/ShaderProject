@@ -1,10 +1,17 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
+#pragma kernel CSMain ATMOPSHERE
 
 RWTexture3D<half4> fogVolume;
 RWTexture3D<half4> accumulatedFogVolume;
 float4 sliceDepths[32];
 float4 scatterColor;
+
+#ifdef ATMOPSHERE
+#define DEPTH 32
+#else
+#define DEPTH 128
+#endif
 
 float4 accumulateScattering(float3 accumScattering, float accumOpticalDepth, float3 scattering, float opticalDepth, float sliceDepth) 
 {
@@ -17,14 +24,17 @@ float4 accumulateScattering(float3 accumScattering, float accumOpticalDepth, flo
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	float4 currentValue = fogVolume[uint3(id.xy, 0)];
-	currentValue *= sliceDepths[0][0];
+	float lastSliceDepth = sliceDepths[0][0];
+	currentValue *= lastSliceDepth;
 	currentValue.rgb *= exp(-currentValue.a * scatterColor.rgb);
 	accumulatedFogVolume[uint3(id.xy, 0)] = half4(currentValue.xyz, exp(-currentValue.a));
-    for (uint i = 1; i < 128; i++) 
+    for (uint i = 1; i < DEPTH; i++) 
 	{
 		float4 nextValue = fogVolume[uint3(id.xy, i)];
-		float sd = sliceDepths[i / 4][i % 4] - sliceDepths[(i - 1) / 4][(i - 1) % 4];
-		currentValue = accumulateScattering(currentValue.rgb, currentValue.a, nextValue.rgb, nextValue.a, sd);
+		float currentSliceDepth = sliceDepths[i / 4][i % 4];
+		float depthDiff = currentSliceDepth - lastSliceDepth;
+		lastSliceDepth = currentSliceDepth;
+		currentValue = accumulateScattering(currentValue.rgb, currentValue.a, nextValue.rgb, nextValue.a, depthDiff);
 		accumulatedFogVolume[uint3(id.xy, i)] = half4(currentValue.rgb, exp(-currentValue.a));
 	}
 }

@@ -10,8 +10,10 @@
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+			#pragma multi_compile __ FOG_FALLBACK
 
             #include "UnityCG.cginc"
+			#include "FogCommon.cginc"
 
             struct appdata
             {
@@ -36,30 +38,67 @@
             sampler2D _MainTex;
 			sampler2D _CameraDepthTexture;
 			sampler3D fogVolume;
+			sampler3D atmoVolume;
 			float4 clipPlanes;
 			float farPlane;
 			float distance;
 			matrix viewProjectionInv;
+			float fogHeight;
+			float fogFalloff;
+			float3 scatterColor;
+			float scattering;
+			float3 ambientColor;
+			float3 dirLightColor;
+			float3 dirLightDirection;
+			float g;
+			float noiseIntensity;
+			float logfarOverNearInv;
 
             fixed4 frag (v2f i) : SV_Target
             {
                 float3 sceneColor = tex2D(_MainTex, i.uv);
 				float depth = tex2D(_CameraDepthTexture, i.uv);
 
-				float3 ndc = float3(i.uv * float2(2, -2) + float2(-1, 1), depth);
+				float z = (farPlane - clipPlanes.x) * Linear01Depth(depth) + clipPlanes.x;
+				float logZ = log(z);
+
+				float atmoZ = (logZ - clipPlanes.w) * logfarOverNearInv;
+
+				float3 atmoCoord = float3(i.uv, atmoZ);
+				
+
+				z = min(z, distance);
+				z = (logZ - clipPlanes.w) * clipPlanes.z;
+				float3 fogCoord = float3(i.uv, z);
+
+				half4 fogSample = tex3D(fogVolume, fogCoord);	
+				half4 atmoSample = tex3D(atmoVolume, atmoCoord);
+
+				float3 combinedColor = sceneColor * atmoSample.a + atmoSample.rgb;
+
+#ifdef FOG_FALLBACK
+				// analytic fallback fog beyond volumetric fog distance
+				float3 ndc = float3((i.uv * 2) - 1, depth);
+				ndc.y *= -1;
 				float4 worldPos = mul(viewProjectionInv, float4(ndc, 1));
 				worldPos /= worldPos.w;
+				float3 camPos = _WorldSpaceCameraPos;
+				float3 viewDir = worldPos.xyz - camPos;
+				float3 dist = length(viewDir);
+				viewDir = normalize(viewDir);
+				float3 fallbackFogStart = viewDir * distance + camPos;
+				float fallbackDistance = max(dist - (distance), 0);
+				float opticalDepth = exp(-fogFalloff * (fallbackFogStart.y + fallbackDistance * viewDir.y) + fogHeight);
+				opticalDepth -= exp(-fogFalloff * fallbackFogStart.y + fogHeight);
+				opticalDepth /= -fogFalloff * viewDir.y;
+				float3 transmittance = exp(-opticalDepth * scattering * scatterColor * (1 - noiseIntensity));
+				float3 scatteredColor = dirLightColor;
+				scatteredColor *= henyeyGreensteinPhaseFunction(worldPos, dirLightDirection, camPos, g);
+				scatteredColor += ambientColor;
+				combinedColor = transmittance * combinedColor + scatteredColor * (1 - transmittance);
+#endif
 
-				//TODO: fallback after max distance
-
-				
-				float z = (farPlane - clipPlanes.x) * Linear01Depth(depth) + clipPlanes.x;
-				z = min(z, distance);
-				z = (log(z) - clipPlanes.w) * clipPlanes.z;
-				float3 fogCoord = float3(i.uv, z);
-				half4 fogSample = tex3D(fogVolume, fogCoord);
-
-				float3 combinedColor = sceneColor * fogSample.a + fogSample.rgb;
+				combinedColor = combinedColor * fogSample.a + fogSample.rgb;
 				return float4(combinedColor, 1);
             }
             ENDHLSL

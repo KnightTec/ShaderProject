@@ -7,6 +7,17 @@ using UnityEngine.Rendering;
 [ExecuteAlways]
 public class VolumetricFogRenderer : MonoBehaviour
 {
+    [Header("Atmosphere")]
+    [Range(0, 10)]
+    public float atmosphereScattering = 0.01f;
+    public Color atmosphereScatterColor = Color.white;
+    public float atmosphereHeight = 0;
+    [Range(0.00001f, 0.2f)]
+    public float atmosphereFalloff = 0.001f;
+    [Range(1, 100)]
+    public float sunLightMultiplier = 1;
+
+    [Header("Fog")]
     public float distance = 200;
     public Vector3Int volumeResolution = new Vector3Int(320, 180, 128);
     [Range(0, 10)]
@@ -16,8 +27,10 @@ public class VolumetricFogRenderer : MonoBehaviour
     public float anisotropy = 0;
     [Range(0, 1)]
     public float transmittance = 0;
+    [Range(1, 100)]
+    public float lightMultiplier = 1;
     public float fogHeight;
-    [Range(0.01f, 1)]
+    [Range(0.00001f, 1)]
     public float fogFalloff;
     [Range(0, 1)]
     public float noiseIntensity = 1;
@@ -34,11 +47,11 @@ public class VolumetricFogRenderer : MonoBehaviour
     public float jitterStrength = 1;
     public Color ambientColor;
 
-    private RenderTexture tempDestination;
-
-    private int densityLightingKernel;
+    private int fogDensityLightingKernel;
+    private int atmoDensityLightingKernel;
     private int temporalFilterKernel;
-    private int scatteringKernel;
+    private int fogScatteringKernel;
+    private int atmoScatteringKernel;
     private int applyFogKernel;
     private Material applyFogMaterial;
 
@@ -51,10 +64,13 @@ public class VolumetricFogRenderer : MonoBehaviour
     private RenderTexture currentfogVolume;
     private RenderTexture exponentialHistoryFogVolume;
     private RenderTexture filteredFogVolume;
+    private RenderTexture accumulatedFogVolume;
+
+    private RenderTexture atmosphereVolume;
+    private RenderTexture accumulatedAtmoVol;
 
     private ComputeBuffer pointLightBuffer;
-
-    private RenderTexture accumulatedFogVolume;
+   
     private Vector4[] frustumRays;
     private float[] sliceDepths;
     private float[][] jitteredSliceDepths;
@@ -69,6 +85,7 @@ public class VolumetricFogRenderer : MonoBehaviour
     };
     private Vector4[][] jitteredFrustumRays;
     private float[] depthJitter;
+    private float[] atmoSliceDepths;
    
     struct FogPointLight
     {
@@ -79,6 +96,7 @@ public class VolumetricFogRenderer : MonoBehaviour
     };
     private FogPointLight[] pointLights;
     private int pointLightCount;
+    private Light directionalLight;
 
     private Vector3 volRes;
     private Vector4 clipPlanes;
@@ -95,13 +113,16 @@ public class VolumetricFogRenderer : MonoBehaviour
     {
         cam = GetComponent<Camera>();
         applyFogMaterial = new Material(applyFogShader0);
-        densityLightingKernel = densityLightingShader.FindKernel("CSMain");
+        fogDensityLightingKernel = densityLightingShader.FindKernel("CSMain");
+        atmoDensityLightingKernel = 1;
         temporalFilterKernel = temporalFilterShader.FindKernel("CSMain");
-        scatteringKernel = scatteringShader.FindKernel("CSMain");
+        fogScatteringKernel = scatteringShader.FindKernel("CSMain");
+        atmoScatteringKernel = 1;
         applyFogKernel = applyFogShader.FindKernel("CSMain");
         resolution = new Vector4();
         frustumRays = new Vector4[4];
         sliceDepths = new float[volumeResolution.z];
+        atmoSliceDepths = new float[32];
         jitteredSliceDepths = new float[15][];
         calculateSliceDepths();
         pointLightBuffer = new ComputeBuffer(64, 40);
@@ -123,11 +144,6 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     void OnDestroy()
     {
-        if (null != tempDestination)
-        {
-            tempDestination.Release();
-            tempDestination = null;
-        }
     }
 
     private void Update()
@@ -150,7 +166,7 @@ public class VolumetricFogRenderer : MonoBehaviour
     private void OnPreRender()
     {
         directionalLightData.updateData();
-        getPointLightData();
+        getLightData();
     }
     
     private static float haltonSequence(int i, int b)
@@ -168,13 +184,19 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     private void calculateSliceDepths()
     {
-        float farOverNear = distance / cam.nearClipPlane;
+        float farOverNear = cam.farClipPlane / cam.nearClipPlane;
+        for (int i = 0; i < 32; i++)
+        {
+            atmoSliceDepths[i] = cam.nearClipPlane * Mathf.Pow(farOverNear, i / 32.0f);
+        }
+
+        float distOverNear = distance / cam.nearClipPlane;
         // logarithmic depth distribution (http://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf)
         for (int i = 0; i < volumeResolution.z; i++)
         {
-            sliceDepths[i] = cam.nearClipPlane * Mathf.Pow(farOverNear, i / (float)volumeResolution.z);
+            sliceDepths[i] = cam.nearClipPlane * Mathf.Pow(distOverNear, i / (float)volumeResolution.z);
         }
-        float sliceProportion = Mathf.Pow(farOverNear, 1 / (float)volumeResolution.z) - 1;
+        float sliceProportion = Mathf.Pow(distOverNear, 1 / (float)volumeResolution.z) - 1;
         depthJitter = new float[15];
         for (int j = 0; j < 15; j++)
         {
@@ -218,13 +240,17 @@ public class VolumetricFogRenderer : MonoBehaviour
         }
     }
 
-    private void getPointLightData()
+    private void getLightData()
     {
         Light[] lights = FindObjectsOfType(typeof(Light)) as Light[];
         pointLights = new FogPointLight[lights.Length];
         pointLightCount = 0; ;
         for (int i = 0, j = 0; i < lights.Length; i++)
         {
+            if (lights[i].type == LightType.Directional)
+            {
+                directionalLight = lights[i];
+            }
             if (lights[i].type != LightType.Point)
             {
                 continue;
@@ -250,29 +276,28 @@ public class VolumetricFogRenderer : MonoBehaviour
         volume.dimension = TextureDimension.Tex3D;
         volume.Create();
     }
+    private void createAtmosphereVolume(ref RenderTexture volume)
+    {
+        if (volume != null)
+        {
+            volume.Release();
+        }
+        volume = new RenderTexture(32, 32, 0, RenderTextureFormat.ARGBHalf);
+        volume.enableRandomWrite = true;
+        volume.volumeDepth = 32;
+        volume.filterMode = FilterMode.Bilinear;
+        volume.dimension = TextureDimension.Tex3D;
+        volume.Create();
+    }
 
     [ImageEffectOpaque]
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        // recreate texture if size was changed
-        if (null == tempDestination || source.width != tempDestination.width
-           || source.height != tempDestination.height)
-        {
-            if (tempDestination != null)
-            {
-                tempDestination.Release();
-            }
-            tempDestination = new RenderTexture(source.width, source.height,
-               source.depth);
-            tempDestination.enableRandomWrite = true;
-            tempDestination.format = RenderTextureFormat.ARGB64;
-            tempDestination.Create();
+        resolution.x = source.width;
+        resolution.y = source.height;
+        resolution.z = 1.0f / source.width;
+        resolution.w = 1.0f / source.height;
 
-            resolution.x = source.width;
-            resolution.y = source.height;
-            resolution.z = 1.0f / source.width;
-            resolution.w = 1.0f / source.height;
-        }
         if (fogVolume0 == null)
         {
             createFogVolume(ref fogVolume0);
@@ -284,24 +309,30 @@ public class VolumetricFogRenderer : MonoBehaviour
             filteredFogVolume = fogVolume5;
 
             createFogVolume(ref accumulatedFogVolume);
+
+            createAtmosphereVolume(ref atmosphereVolume);
+            createAtmosphereVolume(ref accumulatedAtmoVol);
         }
 
         // compute all required variables
         Matrix4x4 viewProjectionMatrix = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true) * cam.worldToCameraMatrix;;
         calculateFrustumRays();
-        
+        Vector3 dirLightDirection = (directionalLight.transform.rotation * Vector3.back).normalized;
 
         //TODO: use command buffers instead of OnRenderImage (performance??)
         //TODO: fix depth texture delay in forward
         //TODO: release buffers correctly (might be the reason for some crashes)
 
-        directionalLightData.setComputeBuffer(densityLightingKernel, densityLightingShader);
-        pointLightBuffer.SetData(pointLights);
 
-        densityLightingShader.SetBuffer(densityLightingKernel, "pointLights", pointLightBuffer);
+        // render volumetric fog
+        directionalLightData.setComputeBuffer(fogDensityLightingKernel, densityLightingShader);
+        densityLightingShader.SetVector("dirLightColor", directionalLight.color * directionalLight.intensity);
+        densityLightingShader.SetVector("dirLightDirection", dirLightDirection);
+        pointLightBuffer.SetData(pointLights);
+        densityLightingShader.SetBuffer(fogDensityLightingKernel, "pointLights", pointLightBuffer);
         densityLightingShader.SetVector("cameraPosition", transform.position);
-        densityLightingShader.SetTextureFromGlobal(densityLightingKernel, "cascadeShadowMap", "_CascadeShadowMapCopy");
-        densityLightingShader.SetTexture(densityLightingKernel, "fogVolume", currentfogVolume);
+        densityLightingShader.SetTextureFromGlobal(fogDensityLightingKernel, "cascadeShadowMap", "_CascadeShadowMapCopy");
+        densityLightingShader.SetTexture(fogDensityLightingKernel, "fogVolume", currentfogVolume);
         densityLightingShader.SetVectorArray("frustumRays", frustumRays);
         densityLightingShader.SetFloat("scattering", scattering);
         densityLightingShader.SetFloat("g", anisotropy);
@@ -313,15 +344,16 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetVector("scatterColor", scatterColor);
         densityLightingShader.SetFloat("time", Time.time);
         densityLightingShader.SetFloat("noiseIntensity", noiseIntensity);
-        densityLightingShader.SetBuffer(densityLightingKernel, "pointLights", pointLightBuffer);
+        densityLightingShader.SetBuffer(fogDensityLightingKernel, "pointLights", pointLightBuffer);
         densityLightingShader.SetInt("pointLightCount", pointLightCount);
-        densityLightingShader.SetVector("ambientLightColor", ambientColor);
+        densityLightingShader.SetVector("ambientLightColor", ambientColor * 0.1f);
         densityLightingShader.SetFloat("noiseSize", 1.0f / noiseSize);
         densityLightingShader.SetVector("noiseDirection", noiseDirection);
         densityLightingShader.SetVector("volumeResolution", volRes);
         densityLightingShader.SetInts("bayerMatrix", bayerMatrix);
         densityLightingShader.SetFloats("depthJitter", depthJitter);
-        densityLightingShader.Dispatch(densityLightingKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);
+        densityLightingShader.SetFloat("sunLightIntensityMultiplier", lightMultiplier);
+        densityLightingShader.Dispatch(fogDensityLightingKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);
         
         temporalFilterShader.SetVector("cameraPosition", transform.position);
         temporalFilterShader.SetTexture(temporalFilterKernel, "exponentialHistory", exponentialHistoryFogVolume);
@@ -336,27 +368,54 @@ public class VolumetricFogRenderer : MonoBehaviour
         temporalFilterShader.Dispatch(temporalFilterKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);
         temporalFilterShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
         
-        scatteringShader.SetTexture(scatteringKernel, "accumulatedFogVolume", accumulatedFogVolume);
-        scatteringShader.SetTexture(scatteringKernel, "fogVolume", filteredFogVolume);
+        scatteringShader.SetTexture(fogScatteringKernel, "accumulatedFogVolume", accumulatedFogVolume);
+        scatteringShader.SetTexture(fogScatteringKernel, "fogVolume", filteredFogVolume);
         scatteringShader.SetFloats("sliceDepths", sliceDepths);
         scatteringShader.SetVector("scatterColor", scatterColor);
-        scatteringShader.Dispatch(scatteringKernel, (volumeResolution.x + 7) / 8, (volumeResolution.y + 7) / 8, 1);
+        scatteringShader.Dispatch(fogScatteringKernel, (volumeResolution.x + 7) / 8, (volumeResolution.y + 7) / 8, 1);
 
-        //applyFogShader.SetVector("resolution", resolution);
-        //applyFogShader.SetTextureFromGlobal(applyFogKernel, "depth", "_CameraDepthTexture");
-        //applyFogShader.SetTexture(applyFogKernel, "source", source);
-        //applyFogShader.SetTexture(applyFogKernel, "result", tempDestination);
-        //applyFogShader.SetTexture(applyFogKernel, "accumulatedFogVolume", accumulatedFogVolume);
-        //applyFogShader.SetVector("clipPlanes", clipPlanes);
-        //applyFogShader.SetFloat("farPlane", cam.farClipPlane);
-        //applyFogShader.SetFloat("distance", distance);
-        //applyFogShader.Dispatch(applyFogKernel, (tempDestination.width + 7) / 8, (tempDestination.height + 7) / 8, 1);
 
+        // render atmosphere
+        //TODO: fix variables
+        densityLightingShader.SetTexture(atmoDensityLightingKernel, "fogVolume", atmosphereVolume);
+        densityLightingShader.SetVector("dirLightColor", Color.white * directionalLight.intensity);
+        densityLightingShader.SetFloat("scattering", atmosphereScattering);
+        densityLightingShader.SetFloat("fogHeight", atmosphereHeight);
+        densityLightingShader.SetFloat("fogFalloff", atmosphereFalloff);
+        densityLightingShader.SetFloat("transmittance", 1);
+        densityLightingShader.SetFloats("sliceDepths", atmoSliceDepths);
+        densityLightingShader.SetVector("scatterColor", atmosphereScatterColor);
+        densityLightingShader.SetVector("ambientLightColor", ambientColor * 0.0f);
+        densityLightingShader.SetVector("volumeResolution", new Vector3(32, 32, 32));
+        densityLightingShader.SetFloat("sunLightIntensityMultiplier", sunLightMultiplier);
+        densityLightingShader.Dispatch(atmoScatteringKernel, 8, 8, 8);
+
+        scatteringShader.SetTexture(atmoScatteringKernel, "accumulatedFogVolume", accumulatedAtmoVol);
+        scatteringShader.SetTexture(atmoScatteringKernel, "fogVolume", atmosphereVolume);
+        scatteringShader.SetFloats("sliceDepths", atmoSliceDepths);
+        scatteringShader.SetVector("scatterColor", atmosphereScatterColor);
+        scatteringShader.Dispatch(atmoScatteringKernel, 4, 4, 1);
+
+
+        applyFogMaterial.SetTexture("_MainTex", source);
         applyFogMaterial.SetTexture("fogVolume", accumulatedFogVolume);
+        applyFogMaterial.SetTexture("atmoVolume", accumulatedAtmoVol);
         applyFogMaterial.SetVector("clipPlanes", clipPlanes);
         applyFogMaterial.SetFloat("farPlane", cam.farClipPlane);
         applyFogMaterial.SetFloat("distance", distance);
         applyFogMaterial.SetMatrix("viewProjectionInv", viewProjectionMatrix.inverse);
+        applyFogMaterial.SetFloat("fogHeight", fogHeight);
+        applyFogMaterial.SetFloat("fogFalloff", fogFalloff);
+        applyFogMaterial.SetVector("scatterColor", scatterColor);
+        applyFogMaterial.SetFloat("scattering", scattering);
+        applyFogMaterial.SetVector("ambientColor", ambientColor * 0.1f);
+        applyFogMaterial.SetVector("dirLightColor", directionalLight.color * directionalLight.intensity);
+        applyFogMaterial.SetVector("dirLightDirection", dirLightDirection);
+        applyFogMaterial.SetFloat("g", anisotropy);
+        applyFogMaterial.SetFloat("noiseIntensity", noiseIntensity * 0.9f);
+        applyFogMaterial.SetFloat("logfarOverNearInv", 1 / Mathf.Log(cam.farClipPlane / cam.nearClipPlane));
+        Shader.DisableKeyword("FOG_FALLBACK");
+
         Graphics.Blit(source, destination, applyFogMaterial);
         //Graphics.Blit(tempDestination, destination);
     }

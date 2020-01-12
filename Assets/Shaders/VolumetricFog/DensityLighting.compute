@@ -1,6 +1,7 @@
 ﻿#include "UnityCG.cginc"
-#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS SELF_SHADOW JITTER
-#pragma kernel CSMain 
+#include "FogCommon.cginc"
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS SELF_SHADOW JITTER MIE
+#pragma kernel CSMain SELF_SHADOW ATMOSPHERE
 
 #define PI 3.14159
 
@@ -9,11 +10,10 @@ struct DirLightData
 	float4x4 worldToShadow[4];
 	float4 lightSplitsNear;
 	float4 lightSplitsFar;
-	float4 lightColor;
-	float4 ambientColor;
-	float4 lightDirection;
 };
 RWStructuredBuffer<DirLightData> lightData;
+float3 dirLightColor;
+float3 dirLightDirection;
 
 #ifdef SHADOWS
 SamplerState MyPointClampSampler;
@@ -81,14 +81,14 @@ float3 getFrustumRay(float2 uv)
 	return lerp(lowerRay, upperRay, uv.y);
 }
 
-float calcTransmittance(float3 position, float3 lightDirection, float distance)
+float3 calcTransmittance(float3 position, float3 viewDirection, float distance)
 {
 	// integrate optical depth along light ray
 	// https://iquilezles.org/www/articles/fog/fog.htm
-	float opticalDepth = exp(-fogFalloff * (position.y + distance * lightDirection.y) + fogHeight);
+	float opticalDepth = exp(-fogFalloff * (position.y + distance * viewDirection.y) + fogHeight);
 	opticalDepth -= exp(-fogFalloff * position.y + fogHeight);
-	opticalDepth /= -fogFalloff * lightDirection.y;
-	return exp(-opticalDepth * scattering * transmittance);
+	opticalDepth /= -fogFalloff * viewDirection.y;
+	return exp(-opticalDepth * scattering * transmittance * scatterColor);
 }
 
 #ifdef NOISE
@@ -149,18 +149,15 @@ float perlinNoise(float3 value){
 }
 #endif
 
-
-float phaseFunction(float3 pointPosition, float3 lightDirection) 
-{
-	// Henyey-Greenstein phase function
-	float3 viewDir = normalize(pointPosition - cameraPosition);
-	float theta = dot(lightDirection, viewDir);
-	float phase = 1 - g * g;
-	phase /= 4 * pow(1 + g * g - 2 * g * theta, 1.5);
-	return phase;
-}
-
 float4 depthJitter[4];
+
+#ifdef MIE
+#define PHASE(pointPosition, lightDirection) henyeyGreensteinPhaseFunction(pointPosition, lightDirection, cameraPosition, g) 
+#else 
+#define PHASE(pointPosition, lightDirection) rayleighPhaseFunction(pointPosition, lightDirection, cameraPosition)
+#endif
+
+float sunLightIntensityMultiplier;
 
 [numthreads(4,4,4)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -194,16 +191,18 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	scattering *= saturate(exp(-clamp(worldPosition.y * fogFalloff + fogHeight, -50, 50)));
 #endif
 
-	half4 result = half4(ambientLightColor.rgb * 0.1f, scattering);
-	float3 scatteredColor = lightData[0].lightColor.rgb * visibility.r;
+	half4 result = half4(ambientLightColor.rgb, scattering);
+	float3 scatteredColor = dirLightColor * visibility.r;
+
+	scatteredColor *= sunLightIntensityMultiplier;
 
 #ifdef SELF_SHADOW
 	// transmittance from directional light to worldPosition
-	float transmittance = calcTransmittance(worldPosition, lightData[0].lightDirection, 100000);
+	float3 transmittance = calcTransmittance(worldPosition, dirLightDirection, 100000);
 	scatteredColor *= transmittance;
 #endif
 
-	float phase = phaseFunction(worldPosition, lightData[0].lightDirection);
+	float phase = PHASE(worldPosition, dirLightDirection);
 	result.rgb += scatteredColor * phase;
 
 #ifdef LOCAL_LIGHTS
@@ -216,8 +215,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 		float3 lightVecNorm = normalize(lightVector);
 		float lightDist = length(lightVector);
 		float attentuation = 1 / (pow(5 * lightDist / light.range, 2) + 1);
-		attentuation *= 10;
-		phase = phaseFunction(worldPosition, lightVecNorm);
+		attentuation *= sunLightIntensityMultiplier;
+		phase = PHASE(worldPosition, lightVecNorm);
 		result.rgb += light.color.rgb * attentuation * phase 
 			* light.intensity * calcTransmittance(light.position, lightVecNorm, lightDist);
 	}

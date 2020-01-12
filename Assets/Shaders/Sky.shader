@@ -37,7 +37,7 @@
 		{
 			float3 delta = sunDirPos - skyDirPos;
 			float dist = length(delta);
-			half spot = 1.0 - smoothstep(0.0, 0.02, dist);
+			half spot = 1.0 - smoothstep(0.0, 0.025, dist);
 			return 1.0 - pow(0.125, spot * 50);
 		}
 
