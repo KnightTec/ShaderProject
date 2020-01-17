@@ -1,102 +1,288 @@
 fileFormatVersion: 2
 guid: 3ddc197b6411dce4e870bdda434920ca
-timeCreated: 1506361778
-licenseType: Store
 ModelImporter:
-  serializedVersion: 21
-  fileIDToRecycleName:
-    100000: Bone215
-    100002: Bone216
-    100004: Bone219
-    100006: Bone220
-    100008: Bone221
-    100010: Bone222
-    100012: Bone223
-    100014: Bone224
-    100016: Bone225
-    100018: Bone226
-    100020: Bone227
-    100022: Bone228
-    100024: Bone229
-    100026: Bone230
-    100028: Bone231
-    100030: Bone232
-    100032: Bone233
-    100034: Bone234
-    100036: Bone235
-    100038: Bone236
-    100040: Bone237
-    100042: Bone238
-    100044: Bone239
-    100046: Bone240
-    100048: Bone241
-    100050: Bone242
-    100052: Bone243
-    100054: Bone244
-    100056: Bone245
-    100058: Bone246
-    100060: Bone247
-    100062: Bone248
-    100064: Bone249
-    100066: Bone250
-    100068: Bone251
-    100070: Bone252
-    100072: Bone253
-    100074: Bone254
-    100076: Bone255
-    100078: Bone256
-    100080: Maple_12338Poly
-    100082: //RootNode
-    400000: Bone215
-    400002: Bone216
-    400004: Bone219
-    400006: Bone220
-    400008: Bone221
-    400010: Bone222
-    400012: Bone223
-    400014: Bone224
-    400016: Bone225
-    400018: Bone226
-    400020: Bone227
-    400022: Bone228
-    400024: Bone229
-    400026: Bone230
-    400028: Bone231
-    400030: Bone232
-    400032: Bone233
-    400034: Bone234
-    400036: Bone235
-    400038: Bone236
-    400040: Bone237
-    400042: Bone238
-    400044: Bone239
-    400046: Bone240
-    400048: Bone241
-    400050: Bone242
-    400052: Bone243
-    400054: Bone244
-    400056: Bone245
-    400058: Bone246
-    400060: Bone247
-    400062: Bone248
-    400064: Bone249
-    400066: Bone250
-    400068: Bone251
-    400070: Bone252
-    400072: Bone253
-    400074: Bone254
-    400076: Bone255
-    400078: Bone256
-    400080: Maple_12338Poly
-    400082: //RootNode
-    4300000: Maple_12338Poly
-    7400000: Wind
-    9500000: //RootNode
-    13700000: Maple_12338Poly
+  serializedVersion: 26
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: Bone215
+  - first:
+      1: 100002
+    second: Bone216
+  - first:
+      1: 100004
+    second: Bone219
+  - first:
+      1: 100006
+    second: Bone220
+  - first:
+      1: 100008
+    second: Bone221
+  - first:
+      1: 100010
+    second: Bone222
+  - first:
+      1: 100012
+    second: Bone223
+  - first:
+      1: 100014
+    second: Bone224
+  - first:
+      1: 100016
+    second: Bone225
+  - first:
+      1: 100018
+    second: Bone226
+  - first:
+      1: 100020
+    second: Bone227
+  - first:
+      1: 100022
+    second: Bone228
+  - first:
+      1: 100024
+    second: Bone229
+  - first:
+      1: 100026
+    second: Bone230
+  - first:
+      1: 100028
+    second: Bone231
+  - first:
+      1: 100030
+    second: Bone232
+  - first:
+      1: 100032
+    second: Bone233
+  - first:
+      1: 100034
+    second: Bone234
+  - first:
+      1: 100036
+    second: Bone235
+  - first:
+      1: 100038
+    second: Bone236
+  - first:
+      1: 100040
+    second: Bone237
+  - first:
+      1: 100042
+    second: Bone238
+  - first:
+      1: 100044
+    second: Bone239
+  - first:
+      1: 100046
+    second: Bone240
+  - first:
+      1: 100048
+    second: Bone241
+  - first:
+      1: 100050
+    second: Bone242
+  - first:
+      1: 100052
+    second: Bone243
+  - first:
+      1: 100054
+    second: Bone244
+  - first:
+      1: 100056
+    second: Bone245
+  - first:
+      1: 100058
+    second: Bone246
+  - first:
+      1: 100060
+    second: Bone247
+  - first:
+      1: 100062
+    second: Bone248
+  - first:
+      1: 100064
+    second: Bone249
+  - first:
+      1: 100066
+    second: Bone250
+  - first:
+      1: 100068
+    second: Bone251
+  - first:
+      1: 100070
+    second: Bone252
+  - first:
+      1: 100072
+    second: Bone253
+  - first:
+      1: 100074
+    second: Bone254
+  - first:
+      1: 100076
+    second: Bone255
+  - first:
+      1: 100078
+    second: Bone256
+  - first:
+      1: 100080
+    second: Maple_12338Poly
+  - first:
+      1: 100082
+    second: //RootNode
+  - first:
+      4: 400000
+    second: Bone215
+  - first:
+      4: 400002
+    second: Bone216
+  - first:
+      4: 400004
+    second: Bone219
+  - first:
+      4: 400006
+    second: Bone220
+  - first:
+      4: 400008
+    second: Bone221
+  - first:
+      4: 400010
+    second: Bone222
+  - first:
+      4: 400012
+    second: Bone223
+  - first:
+      4: 400014
+    second: Bone224
+  - first:
+      4: 400016
+    second: Bone225
+  - first:
+      4: 400018
+    second: Bone226
+  - first:
+      4: 400020
+    second: Bone227
+  - first:
+      4: 400022
+    second: Bone228
+  - first:
+      4: 400024
+    second: Bone229
+  - first:
+      4: 400026
+    second: Bone230
+  - first:
+      4: 400028
+    second: Bone231
+  - first:
+      4: 400030
+    second: Bone232
+  - first:
+      4: 400032
+    second: Bone233
+  - first:
+      4: 400034
+    second: Bone234
+  - first:
+      4: 400036
+    second: Bone235
+  - first:
+      4: 400038
+    second: Bone236
+  - first:
+      4: 400040
+    second: Bone237
+  - first:
+      4: 400042
+    second: Bone238
+  - first:
+      4: 400044
+    second: Bone239
+  - first:
+      4: 400046
+    second: Bone240
+  - first:
+      4: 400048
+    second: Bone241
+  - first:
+      4: 400050
+    second: Bone242
+  - first:
+      4: 400052
+    second: Bone243
+  - first:
+      4: 400054
+    second: Bone244
+  - first:
+      4: 400056
+    second: Bone245
+  - first:
+      4: 400058
+    second: Bone246
+  - first:
+      4: 400060
+    second: Bone247
+  - first:
+      4: 400062
+    second: Bone248
+  - first:
+      4: 400064
+    second: Bone249
+  - first:
+      4: 400066
+    second: Bone250
+  - first:
+      4: 400068
+    second: Bone251
+  - first:
+      4: 400070
+    second: Bone252
+  - first:
+      4: 400072
+    second: Bone253
+  - first:
+      4: 400074
+    second: Bone254
+  - first:
+      4: 400076
+    second: Bone255
+  - first:
+      4: 400078
+    second: Bone256
+  - first:
+      4: 400080
+    second: Maple_12338Poly
+  - first:
+      4: 400082
+    second: //RootNode
+  - first:
+      43: 4300000
+    second: Maple_12338Poly
+  - first:
+      74: 7400000
+    second: Wind
+  - first:
+      95: 9500000
+    second: //RootNode
+  - first:
+      137: 13700000
+    second: Maple_12338Poly
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Bark_Klen
+    second: {fileID: 2100000, guid: 5afc1cb3dcad87f459fd783c4bb62a0e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Leaves_Klen
+    second: {fileID: 2100000, guid: d1347e4cc3813c5488b9a50efebbfd7f, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
     materialSearch: 1
+    materialLocation: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
@@ -109,16 +295,20 @@ ModelImporter:
     animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
     animationCompression: 0
     animationRotationError: 0.5
     animationPositionError: 0.5
     animationScaleError: 0.5
     animationWrapMode: 0
     extraExposedTransformPaths: []
+    extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
       name: Wind
       takeName: Take 001
+      internalID: 0
       firstFrame: 1
       lastFrame: 200
       wrapMode: 0
@@ -147,9 +337,11 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 30
+    globalScale: 10
     meshCompression: 0
     addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1
@@ -157,9 +349,14 @@ ModelImporter:
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    meshOptimizationFlags: -1
+    indexFormat: 1
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
@@ -170,10 +367,14 @@ ModelImporter:
     normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 1
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
   importAnimation: 1
   copyAvatar: 0
   humanDescription:
-    serializedVersion: 2
+    serializedVersion: 3
     human: []
     skeleton: []
     armTwist: 0.5
@@ -183,8 +384,8 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
+    globalScale: 0.099999994
     rootMotionBoneName: 
-    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1

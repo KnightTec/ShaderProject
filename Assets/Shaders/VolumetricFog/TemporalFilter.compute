@@ -64,8 +64,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	half4 clampedHistory = clamp(historySample, minSample, maxSample);
 	// tradoff between ghosting and flickering/noise
-	clampedHistory = lerp(clampedHistory, historySample, 0.2f);
+	clampedHistory = lerp(clampedHistory, historySample, 0.4f);
 
 	// exponential moving average
-	result[id] = lerp(blendedFogVolume[id], clampedHistory, 0.9f);
+	result[id] = lerp(blendedFogVolume[id], clampedHistory, 0.92f);
 }

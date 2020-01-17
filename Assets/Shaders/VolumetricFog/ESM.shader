@@ -44,11 +44,10 @@
 				// http://jankautz.com/publications/esm_gi08.pdf
 				float4 accum = 0;
 				accum += exp(_MainTex.GatherRed(sampler_MainTex, i.uv, int2(0, 0)) * -80);
-				//accum += exp(_MainTex.GatherRed(sampler_MainTex, i.uv, int2(0, 1)) * -30);
-				//accum += exp(_MainTex.GatherRed(sampler_MainTex, i.uv, int2(1, 0)) * -30);
-				//accum += exp(_MainTex.GatherRed(sampler_MainTex, i.uv, int2(1, 1)) * -30);
-				//float output = exp(shadow * -30);
-                return dot(accum, 1/4.0f);
+				accum += exp(_MainTex.GatherRed(sampler_MainTex, i.uv, int2(0, 2)) * -80);
+				accum += exp(_MainTex.GatherRed(sampler_MainTex, i.uv, int2(2, 0)) * -80);
+				accum += exp(_MainTex.GatherRed(sampler_MainTex, i.uv, int2(2, 2)) * -80);
+                return dot(accum, 1/16.0f);
             }
             ENDHLSL
         }
@@ -85,16 +84,15 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
-				float3 screenTex = tex2D(_GrabTexture, i.uv);
-				float stepX = 1 / 2048.0f;
+				float3 screenTex = tex2D(_GrabTexture, i.uv) * 0.5;
+				float stepX = 1 / 1024.0f;
 
-				for (int x = 0; x < 10; x++) 
+				for (int x = 1; x < 2; x++) 
 				{
 					float2 offsetX = float2(stepX * x, 0);
-					screenTex += tex2D(_GrabTexture, i.uv + offsetX);
-					screenTex += tex2D(_GrabTexture, i.uv - offsetX);
+					screenTex += tex2D(_GrabTexture, i.uv + offsetX) * 0.25;
+					screenTex += tex2D(_GrabTexture, i.uv - offsetX) * 0.25;
 				}
-				screenTex /= 10 * 2 + 1;
 				return fixed4(screenTex, 1);
             }
 
@@ -133,16 +131,15 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
-				float3 screenTex = tex2D(_GrabTexture, i.uv);
-				float stepY = 1 / 2048.0f;
+				float3 screenTex = tex2D(_GrabTexture, i.uv) * 0.5;
+				float stepY = 1 / 1024.0f;
 
-				for (int y = 0; y < 5; y++) 
+				for (int y = 1; y < 2; y++) 
 				{
 					float2 offsetY = float2(0, stepY * y);
-					screenTex += tex2D(_GrabTexture, i.uv + offsetY);
-					screenTex += tex2D(_GrabTexture, i.uv - offsetY);
+					screenTex += tex2D(_GrabTexture, i.uv + offsetY) * 0.25;
+					screenTex += tex2D(_GrabTexture, i.uv - offsetY) * 0.25;
 				}
-				screenTex /= 5 * 2 + 1;
 				return fixed4(screenTex, 1);
             }
 

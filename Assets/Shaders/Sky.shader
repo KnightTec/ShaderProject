@@ -51,10 +51,10 @@
 
          float4 frag(v2f input) : SV_Target
          {
-			
 			float sun = calcSunSpot(_WorldSpaceLightPos0.xyz, input.texcoord.xyz);
-			float3 stars = texCUBE(_Cube, input.texcoord);
-			float3 outerSpaceColor = lerp(stars, float3(1, 1, 1) * 50, sun);
+			float3 texCoord = mul(input.texcoord.xyz, _rotationMatrix);
+			float3 stars = texCUBE(_Cube, texCoord);
+			float3 outerSpaceColor = lerp(stars, float3(1, 1, 1) * 5000, sun);
 
 			return float4(outerSpaceColor, 1.0);
          }

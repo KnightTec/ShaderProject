@@ -45,7 +45,6 @@ public class VolumetricFogRenderer : MonoBehaviour
     public ComputeShader applyFogShader;
     public Shader applyFogShader0;
     public float jitterStrength = 1;
-    public Color ambientColor;
 
     private int fogDensityLightingKernel;
     private int atmoDensityLightingKernel;
@@ -232,6 +231,8 @@ public class VolumetricFogRenderer : MonoBehaviour
         {
             float offsetX = haltonSequence(i + 1, 3) - 0.5f;
             float offsetY = haltonSequence(i + 1, 5) - 0.5f;
+            offsetX *= jitterStrength;
+            offsetY *= jitterStrength;
             jitteredFrustumRays[i] = new Vector4[4];
             for (int j = 0; j < 4; j++)
             {
@@ -333,7 +334,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetVector("cameraPosition", transform.position);
         densityLightingShader.SetTextureFromGlobal(fogDensityLightingKernel, "cascadeShadowMap", "_CascadeShadowMapCopy");
         densityLightingShader.SetTexture(fogDensityLightingKernel, "fogVolume", currentfogVolume);
-        densityLightingShader.SetVectorArray("frustumRays", frustumRays);
+        densityLightingShader.SetVectorArray("frustumRays", jitteredFrustumRays[jitterIndex]);
         densityLightingShader.SetFloat("scattering", scattering);
         densityLightingShader.SetFloat("g", anisotropy);
         densityLightingShader.SetFloat("fogHeight", fogHeight);
@@ -346,7 +347,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloat("noiseIntensity", noiseIntensity);
         densityLightingShader.SetBuffer(fogDensityLightingKernel, "pointLights", pointLightBuffer);
         densityLightingShader.SetInt("pointLightCount", pointLightCount);
-        densityLightingShader.SetVector("ambientLightColor", ambientColor * 0.1f);
+        densityLightingShader.SetVector("ambientLightColor", RenderSettings.ambientLight);
         densityLightingShader.SetFloat("noiseSize", 1.0f / noiseSize);
         densityLightingShader.SetVector("noiseDirection", noiseDirection);
         densityLightingShader.SetVector("volumeResolution", volRes);
@@ -379,13 +380,14 @@ public class VolumetricFogRenderer : MonoBehaviour
         //TODO: fix variables
         densityLightingShader.SetTexture(atmoDensityLightingKernel, "fogVolume", atmosphereVolume);
         densityLightingShader.SetVector("dirLightColor", Color.white * directionalLight.intensity);
+        densityLightingShader.SetVectorArray("frustumRays", frustumRays);
         densityLightingShader.SetFloat("scattering", atmosphereScattering);
         densityLightingShader.SetFloat("fogHeight", atmosphereHeight);
         densityLightingShader.SetFloat("fogFalloff", atmosphereFalloff);
         densityLightingShader.SetFloat("transmittance", 1);
         densityLightingShader.SetFloats("sliceDepths", atmoSliceDepths);
         densityLightingShader.SetVector("scatterColor", atmosphereScatterColor);
-        densityLightingShader.SetVector("ambientLightColor", ambientColor * 0.0f);
+        densityLightingShader.SetVector("ambientLightColor", Color.black);
         densityLightingShader.SetVector("volumeResolution", new Vector3(32, 32, 32));
         densityLightingShader.SetFloat("sunLightIntensityMultiplier", sunLightMultiplier);
         densityLightingShader.Dispatch(atmoScatteringKernel, 8, 8, 8);
@@ -408,13 +410,13 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogMaterial.SetFloat("fogFalloff", fogFalloff);
         applyFogMaterial.SetVector("scatterColor", scatterColor);
         applyFogMaterial.SetFloat("scattering", scattering);
-        applyFogMaterial.SetVector("ambientColor", ambientColor * 0.1f);
+        applyFogMaterial.SetVector("ambientColor", RenderSettings.ambientLight);
         applyFogMaterial.SetVector("dirLightColor", directionalLight.color * directionalLight.intensity);
         applyFogMaterial.SetVector("dirLightDirection", dirLightDirection);
         applyFogMaterial.SetFloat("g", anisotropy);
-        applyFogMaterial.SetFloat("noiseIntensity", noiseIntensity * 0.9f);
+        applyFogMaterial.SetFloat("noiseIntensity", noiseIntensity);
         applyFogMaterial.SetFloat("logfarOverNearInv", 1 / Mathf.Log(cam.farClipPlane / cam.nearClipPlane));
-        Shader.DisableKeyword("FOG_FALLBACK");
+        Shader.EnableKeyword("FOG_FALLBACK");
 
         Graphics.Blit(source, destination, applyFogMaterial);
         //Graphics.Blit(tempDestination, destination);

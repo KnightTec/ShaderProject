@@ -19,8 +19,9 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        translation.x = Input.GetAxis("Horizontal") * Time.deltaTime * translationSpeed;
-        translation.z = Input.GetAxis("Vertical") * Time.deltaTime * translationSpeed;
+        float speed = translationSpeed + Input.GetAxis("Fire3") * 50;
+        translation.x = Input.GetAxis("Horizontal") * Time.deltaTime * speed;
+        translation.z = Input.GetAxis("Vertical") * Time.deltaTime * speed;
         transform.Translate(translation, Space.Self);
 
         rotation.x = -Input.GetAxis("Mouse Y") * Time.deltaTime * rotationSpeed;

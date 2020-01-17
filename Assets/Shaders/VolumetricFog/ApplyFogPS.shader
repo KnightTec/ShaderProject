@@ -71,7 +71,17 @@
 				z = (logZ - clipPlanes.w) * clipPlanes.z;
 				float3 fogCoord = float3(i.uv, z);
 
-				half4 fogSample = tex3D(fogVolume, fogCoord);	
+				float3 screenSizeMult = float3(1.0f / float2(240, 135), 1);
+
+				
+				// upscale using multiple samples to avoid artifacts
+				// Creating the Atmospheric World of Red Dead Redemption 2: A Complete and Integrated Solution
+				// using rotated grid sampling pattern
+				half4 fogSample = tex3D(fogVolume, fogCoord + float3(0.75, -0.25, 0) * screenSizeMult);
+				fogSample += tex3D(fogVolume, fogCoord + float3(-0.25, -0.75, 0) * screenSizeMult);
+				fogSample += tex3D(fogVolume, fogCoord + float3(-0.75, 0.25, 0) * screenSizeMult);
+				fogSample += tex3D(fogVolume, fogCoord + float3(0.25, 0.75, 0) * screenSizeMult);
+				fogSample /= 4.0f;
 				half4 atmoSample = tex3D(atmoVolume, atmoCoord);
 
 				float3 combinedColor = sceneColor * atmoSample.a + atmoSample.rgb;
@@ -88,8 +98,8 @@
 				viewDir = normalize(viewDir);
 				float3 fallbackFogStart = viewDir * distance + camPos;
 				float fallbackDistance = max(dist - (distance), 0);
-				float opticalDepth = exp(-fogFalloff * (fallbackFogStart.y + fallbackDistance * viewDir.y) + fogHeight);
-				opticalDepth -= exp(-fogFalloff * fallbackFogStart.y + fogHeight);
+				float opticalDepth = exp(-fogFalloff * (fallbackFogStart.y + fallbackDistance * viewDir.y) - fogHeight);
+				opticalDepth -= exp(-fogFalloff * fallbackFogStart.y - fogHeight);
 				opticalDepth /= -fogFalloff * viewDir.y;
 				float3 transmittance = exp(-opticalDepth * scattering * scatterColor * (1 - noiseIntensity));
 				float3 scatteredColor = dirLightColor;
