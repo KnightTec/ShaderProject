@@ -1,0 +1,19 @@
+﻿#pragma kernel CSMain
+
+Texture2D<float> shadowMap;
+RWTexture2D<float> expShadowMap;
+
+SamplerState MyPointClampSampler;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	 float2 uv = float2(float2(id.xy) / 512 + 0.5f / 512);
+
+	 float4 accum = 0;
+	 accum += exp(shadowMap.GatherRed(MyPointClampSampler, uv, int2(0, 0)) * -80);
+	 accum += exp(shadowMap.GatherRed(MyPointClampSampler, uv, int2(0, 2)) * -80);
+	 accum += exp(shadowMap.GatherRed(MyPointClampSampler, uv, int2(2, 0)) * -80);
+	 accum += exp(shadowMap.GatherRed(MyPointClampSampler, uv, int2(2, 2)) * -80);
+     expShadowMap[id.xy] = dot(accum, 1/16.0f);
+}

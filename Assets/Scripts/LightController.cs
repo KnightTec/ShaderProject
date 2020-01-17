@@ -13,6 +13,6 @@ public class LightController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.Translate(0, 0, Mathf.Sin(Time.time * 10));
+        transform.Translate(0, 0, Mathf.Sin(Time.time * 10) * 2);
     }
 }
