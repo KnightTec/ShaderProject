@@ -53,6 +53,8 @@ int pointLightCount;
 
 float3 volumeResolution;
 int4 bayerMatrix[4];
+Texture2D<float> blueNoise;
+float sliceProportion;
 
 #ifdef SHADOWS
 float3 getCascadeShadowCoords(float3 worldPosition) 
@@ -86,10 +88,10 @@ float3 calcTransmittance(float3 position, float3 viewDirection, float distance)
 {
 	// integrate optical depth along light ray
 	// https://iquilezles.org/www/articles/fog/fog.htm
-	float opticalDepth = exp(-fogFalloff * (position.y + distance * viewDirection.y) + fogHeight);
-	opticalDepth -= exp(-fogFalloff * position.y + fogHeight);
+	float opticalDepth = EXP(-fogFalloff * (position.y + distance * viewDirection.y) + fogHeight);
+	opticalDepth -= EXP(-fogFalloff * position.y + fogHeight);
 	opticalDepth /= -fogFalloff * viewDirection.y;
-	return exp(-opticalDepth * scattering * transmittance * scatterColor);
+	return EXP(-opticalDepth * scattering * transmittance * scatterColor);
 }
 
 #ifdef NOISE
@@ -166,9 +168,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 volCoord = float3(float3(id) / volumeResolution + 0.5f / volumeResolution);
 	float z = sliceDepths[id.z / 4][id.z % 4];
 #ifdef JITTER
-	uint shiftedJitterIndex = (jitterIndex) % 15;
-	z *= (1 + bayerMatrix[id.y % 4][id.x % 4] / 128.0f) * depthJitter[0][0];
-	z *= depthJitter[shiftedJitterIndex / 4][shiftedJitterIndex % 4];
+	float off = blueNoise.Load(int3(id.x % 64, id.y % 64, 0));
+	//z *= (1 + off * sliceProportion);
+	//z *= (1 + bayerMatrix[id.y % 4][id.x % 4] / 128.0f) * depthJitter[0][0];
+	z *= (1 + off / 8.0f) * depthJitter[0][0];
 #endif
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
@@ -187,12 +190,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	visibility += float4(shadowDepth < shadowCoord.z);
 	visibility.r = dot(visibility, 1/16.0f);
 
-	//visibility.r = saturate(exp(-160*(-shadowCoord.z)) * shadowSample);
+	//visibility.r = saturate(EXP(-160*(-shadowCoord.z)) * shadowSample);
 #else
 	visibility.r = 1;
 #endif	
-
-	
 
 	// shift height to approximate planet curvature
 	float3 planetCenter = cameraPosition - float3(0, cameraPosition.y + 600000, 0);
@@ -204,9 +205,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	noise = noise * 0.8 + 0.2 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
 	noise = noise * noiseIntensity + (1 - noiseIntensity);
 
-	scattering *= saturate(exp(-clamp(worldPosition.y * fogFalloff + fogHeight, -50, 50)) * noise);
+	scattering *= saturate(EXP(-(worldPosition.y * fogFalloff + fogHeight)) * noise);
 #else
-	scattering *= saturate(exp(-clamp(worldPosition.y * fogFalloff + fogHeight, -50, 50)));
+	scattering *= saturate(EXP(-(worldPosition.y * fogFalloff + fogHeight)));
 #endif
 
 	half4 result = half4(ambientLightColor.rgb, scattering);
