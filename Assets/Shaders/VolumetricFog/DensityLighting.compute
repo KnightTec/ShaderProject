@@ -1,6 +1,6 @@
 ﻿#include "UnityCG.cginc"
 #include "FogCommon.cginc"
-#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE	
 #pragma kernel CSMain SELF_SHADOW ATMOSPHERE
 
 #define PI 3.14159
@@ -169,9 +169,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float z = sliceDepths[id.z / 4][id.z % 4];
 #ifdef JITTER
 	float off = blueNoise.Load(int3(id.x % 64, id.y % 64, 0));
-	//z *= (1 + off * sliceProportion);
+	z *= (1 + off * sliceProportion);
 	//z *= (1 + bayerMatrix[id.y % 4][id.x % 4] / 128.0f) * depthJitter[0][0];
-	z *= (1 + off / 8.0f) * depthJitter[0][0];
+	//z *= (1 + off / 8.0f) * depthJitter[0][0];
 #endif
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
@@ -179,18 +179,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 #ifdef SHADOWS
 	// 4-tap PCF filter
 	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
-	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, -1));
-	//float shadowSample = cascadeShadowMap.SampleLevel(MyLinearClampSampler, shadowCoord.xy, 0);
+	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 0));
 	visibility = float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, -1));
-	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(-1, 1));
-	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(1, 1));
-	visibility += float4(shadowDepth < shadowCoord.z);
-	visibility.r = dot(visibility, 1/16.0f);
-
-	//visibility.r = saturate(EXP(-160*(-shadowCoord.z)) * shadowSample);
+	visibility.r = dot(visibility, 0.25f);
 #else
 	visibility.r = 1;
 #endif	
@@ -202,23 +193,22 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 #ifdef NOISE
 	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) * noiseSize));
-	noise = noise * 0.8 + 0.2 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
+	//noise = noise * 0.8 + 0.2 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
 	noise = noise * noiseIntensity + (1 - noiseIntensity);
 
-	scattering *= saturate(EXP(-(worldPosition.y * fogFalloff + fogHeight)) * noise);
+	scattering *= saturate(EXP(-(worldPosition.y * fogFalloff - fogHeight)) * noise);
 #else
-	scattering *= saturate(EXP(-(worldPosition.y * fogFalloff + fogHeight)));
+	scattering *= saturate(EXP(-(worldPosition.y * fogFalloff - fogHeight)));
 #endif
 
 	half4 result = half4(ambientLightColor.rgb, scattering);
 
 #ifdef ATMOSPHERE
 	float3 scatteredColor = float3(1, 1, 1) * visibility.r;
+	scatteredColor *= sunLightIntensityMultiplier;
 #else
 	float3 scatteredColor = dirLightColor * visibility.r;
-#endif
-
-	scatteredColor *= sunLightIntensityMultiplier;
+#endif	
 
 #ifdef SELF_SHADOW
 	// transmittance from directional light to worldPosition
