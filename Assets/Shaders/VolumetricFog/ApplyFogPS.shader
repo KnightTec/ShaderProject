@@ -87,6 +87,7 @@
 					}
 				}
 				fogSample /= 16.0f;
+				fogSample =  tex3D(fogVolume, fogCoord);
 				half4 atmoSample = tex3D(atmoVolume, atmoCoord);
 
 				float3 combinedColor = sceneColor * atmoSample.a + atmoSample.rgb;
