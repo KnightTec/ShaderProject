@@ -15,3 +15,5 @@ float rayleighPhaseFunction(float3 pointPosition, float3 lightDirection, float3 
 	// 3/16
 	return 0.1875 * (1 + theta * theta); 
 }
+
+#define EXP(arg) exp(clamp(arg, -50, 50))

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &6094364852761599327
+--- !u!1 &6353743416315794894
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,13 +8,13 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4844540409847283228}
-  - component: {fileID: 2046855072792085742}
-  - component: {fileID: 668301717768331253}
-  - component: {fileID: 4145288877539506287}
-  - component: {fileID: 5054454556515588709}
-  - component: {fileID: 3982263718365285511}
-  - component: {fileID: 5863929543123276002}
+  - component: {fileID: 4530142603190434244}
+  - component: {fileID: 1559829122025046925}
+  - component: {fileID: 3813330559635828208}
+  - component: {fileID: 1307081648583313079}
+  - component: {fileID: 7304848401784961562}
+  - component: {fileID: 2389904002851706795}
+  - component: {fileID: 2594328716024835720}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -22,27 +22,27 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4844540409847283228
+--- !u!4 &4530142603190434244
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6094364852761599327}
-  m_LocalRotation: {x: -0.007154782, y: 0.98870033, z: 0.05013726, w: 0.14109138}
-  m_LocalPosition: {x: 134.3, y: 16.4, z: 86.3}
+  m_GameObject: {fileID: 6353743416315794894}
+  m_LocalRotation: {x: -0.12597789, y: 0.0908166, z: 0.011975663, w: 0.98779476}
+  m_LocalPosition: {x: 71.33, y: 3.78, z: -43.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: -5.806, y: 163.757, z: 0}
---- !u!20 &2046855072792085742
+  m_LocalEulerAnglesHint: {x: -14.54, y: 10.5, z: 0.046000004}
+--- !u!20 &1559829122025046925
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6094364852761599327}
+  m_GameObject: {fileID: 6353743416315794894}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
@@ -60,7 +60,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 100000
+  far clip plane: 10000
   field of view: 42.995667
   orthographic: 0
   orthographic size: 5
@@ -79,43 +79,42 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &668301717768331253
+--- !u!81 &3813330559635828208
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6094364852761599327}
+  m_GameObject: {fileID: 6353743416315794894}
   m_Enabled: 1
---- !u!114 &4145288877539506287
+--- !u!114 &1307081648583313079
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6094364852761599327}
+  m_GameObject: {fileID: 6353743416315794894}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 60e9bca6c17670f49ac8bfcf51d00799, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  atmosphereScattering: 0.0001
+  atmosphereScattering: 0.001
   atmosphereScatterColor: {r: 0.2509804, g: 0.5019608, b: 1, a: 1}
   atmosphereHeight: 0
-  atmosphereFalloff: 0.0002
-  sunLightMultiplier: 3
-  distance: 200
+  atmosphereFalloff: 0.002
+  sunLightMultiplier: 15
+  distance: 350
   volumeResolution: {x: 240, y: 135, z: 128}
-  scattering: 0.2
+  scattering: 0.3
   scatterColor: {r: 1, g: 1, b: 1, a: 1}
-  anisotropy: 0.3
-  transmittance: 1
-  lightMultiplier: 1
-  fogHeight: 0
-  fogFalloff: 0.15
-  noiseIntensity: 0.8
-  noiseSize: 4
-  noiseDirection: {x: 2, y: -2, z: 4}
+  anisotropy: 0.6
+  transmittance: 0
+  fogHeight: 0.5
+  fogFalloff: 0.2
+  noiseIntensity: 0.9
+  noiseSize: 16
+  noiseDirection: {x: 2, y: -0.5, z: 4}
   directionalLightData: {fileID: 0}
   densityLightingShader: {fileID: 7200000, guid: 4ced60263f7811f4f808303e1930387c,
     type: 3}
@@ -125,34 +124,33 @@ MonoBehaviour:
   applyFogShader: {fileID: 7200000, guid: 6f773d049c9a3364d82fe839e1bce952, type: 3}
   applyFogShader0: {fileID: 4800000, guid: 6a64b2b2cdd5ca34fb8dd4e7f6e2c871, type: 3}
   jitterStrength: 1
-  ambientColor: {r: 0.15841937, g: 0.26788893, b: 0.3773585, a: 0}
---- !u!114 &5054454556515588709
+--- !u!114 &7304848401784961562
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6094364852761599327}
+  m_GameObject: {fileID: 6353743416315794894}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: af20c1e7b8c200b48b51e8318d401e20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  translationSpeed: 20
+  translationSpeed: 10
   rotationSpeed: 150
---- !u!114 &3982263718365285511
+--- !u!114 &2389904002851706795
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6094364852761599327}
+  m_GameObject: {fileID: 6353743416315794894}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 948f4100a11a5c24981795d21301da5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  volumeTrigger: {fileID: 4844540409847283228}
+  volumeTrigger: {fileID: 4530142603190434244}
   volumeLayer:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -200,13 +198,13 @@ MonoBehaviour:
   m_BeforeTransparentBundles: []
   m_BeforeStackBundles: []
   m_AfterStackBundles: []
---- !u!114 &5863929543123276002
+--- !u!114 &2594328716024835720
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6094364852761599327}
+  m_GameObject: {fileID: 6353743416315794894}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
