@@ -53,9 +53,9 @@ v2g dom (tessFactors tf, OutputPatch<appdata, 3> op, float3 dl : SV_DomainLocati
 }
 
 #define RANDOM(fieldname) abs( sin ( dot (fieldname, fixed4 (9520.7254, 5115.2899, 1736.2851, 1683.4103) * 1683.4103) ) )
-#define APPEND(index) v = IN[index]; o.worldPos = IN[index].vertex + 0.001 * float4(IN[index].normal,0); o.pos = UnityObjectToClipPos(o.worldPos); o.tangent = float3(0,0,0); o.normal = IN[index].normal; o.uv = IN[index].uv; o.blendFactors = float2( tex2Dlod(_HeightTex, float4(IN[index].uv, 0, 0)).r, 0); TRANSFER_SHADOW(o); triStream.Append(o)
-#define APPEND_ADDITIVE(summand,uvx,uvy) if (sizefac > 0 ) { o.worldPos = avg + (summand); o.pos = UnityObjectToClipPos (o.worldPos); o.uv = avgUV;o.blendFactors = fixed2(uvx, uvy); o.normal = normal; v.vertex = o.worldPos; TRANSFER_SHADOW(o); triStream.Append(o); }
-#define APPEND_ADDITIVE_BOTTOM(summand,uvx,uvy) if (sizefac > 0 ) { o.worldPos = avg + (summand); o.pos = UnityObjectToClipPos (o.worldPos); o.uv = avgUV;o.blendFactors = fixed2(uvx, uvy); o.normal = avgNorm; v.vertex = o.worldPos; TRANSFER_SHADOW(o); triStream.Append(o); }
+#define APPEND(index) v = IN[index]; o.worldPos = mul ( unity_ObjectToWorld, IN[index].vertex + 0.001 * float4(IN[index].normal,0) ); o.pos = mul(UNITY_MATRIX_VP, o.worldPos); o.tangent = float3(0,0,0); o.normal = IN[index].normal; o.uv = IN[index].uv; o.blendFactors = float2( tex2Dlod(_HeightTex, float4(IN[index].uv, 0, 0)).r, 0); TRANSFER_SHADOW(o); triStream.Append(o)
+#define APPEND_ADDITIVE(summand,uvx,uvy) if (sizefac > 0 ) { o.worldPos = mul ( unity_ObjectToWorld, avg + (summand) ); o.pos = UnityObjectToClipPos ( avg + (summand) ); o.uv = avgUV;o.blendFactors = fixed2(uvx, uvy); o.normal = normal; v.vertex = o.worldPos; TRANSFER_SHADOW(o); triStream.Append(o); }
+#define APPEND_ADDITIVE_BOTTOM(summand,uvx,uvy) if (sizefac > 0 ) { o.worldPos = mul ( unity_ObjectToWorld, avg + (summand) ); o.pos = UnityObjectToClipPos (avg + (summand)); o.uv = avgUV; o.blendFactors = fixed2(uvx, uvy); o.normal = normal; v.vertex = o.worldPos; TRANSFER_SHADOW(o); triStream.Append(o); }
 #define AVG(fieldname) (IN[0].fieldname + IN[1].fieldname + IN[2].fieldname) / 3
 
 [maxvertexcount(9)]
@@ -92,13 +92,13 @@ void geom (triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
     float4 up =     normalize ( float4( avgNorm, 0 ) + float4( wind, 0 ) * _WindDepth );
     float3 normal = normalize ( float3 (forward.x, ( - forward.x * up.x - forward.z * up.z ) / up.y, forward.z));
 
-    float3 L =  normalize(_WorldSpaceLightPos0 - avg);
-    normal = ( dot (L, normal) > 0 ) ? normal : -normal;
-    o.tangent =     up.xyz;
+    float3 V =  normalize(_WorldSpaceCameraPos - avg);
+    normal = ( dot (V, normal) > 0 ) ? normal : -normal;
+    o.tangent = up.xyz;
 
-    APPEND_ADDITIVE_BOTTOM(right * sizefac * _MaxGrassWidth, 1, 0);
-    APPEND_ADDITIVE(sizefac * (up * _MaxGrassHeight * _GrassCutOff + right * _MaxGrassWidth * (1-_GrassCutOff)), 1, 1);
-    APPEND_ADDITIVE_BOTTOM(- right * sizefac * _MaxGrassWidth, 1, 0);
+    APPEND_ADDITIVE_BOTTOM(right * _MaxGrassWidth, 0, 0);
+    APPEND_ADDITIVE(sizefac * (up * _MaxGrassHeight * _GrassCutOff + right * _MaxGrassWidth * (1-_GrassCutOff)), 0, 1);
+    APPEND_ADDITIVE_BOTTOM(- right * _MaxGrassWidth, 1, 0);
     APPEND_ADDITIVE(sizefac * (up * _MaxGrassHeight * _GrassCutOff - right * _MaxGrassWidth * (1-_GrassCutOff)), 1, 1);
     triStream.RestartStrip();
 }

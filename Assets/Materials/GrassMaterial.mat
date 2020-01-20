@@ -36,7 +36,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DryGrassTex:
-        m_Texture: {fileID: 2800000, guid: 099f2aa204b10764fae89fae5b649f68, type: 3}
+        m_Texture: {fileID: 2800000, guid: a77c4715eb61d4942add9eb4f498fc01, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
@@ -52,11 +52,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _HeightTex:
-        m_Texture: {fileID: 10307, guid: 0000000000000000f000000000000000, type: 0}
+        m_Texture: {fileID: 2800000, guid: 3bc4da38f000f9a4895024f5fa295e1f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTexture:
+        m_Texture: {fileID: 2800000, guid: ca65e372ecf16fd488a506fcef9f365d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -76,36 +80,38 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _Ambient: 0.443
+    - _Ambient: 0.013
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
+    - _DiffSpec: 0.018
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _GrassColorOffset: 0.281
-    - _GrassCutOff: 1
-    - _MaxDistance: 95.6
-    - _MaxGrassHeight: 0
-    - _MaxGrassWidth: 0.09
+    - _GrassColorOffset: 0.189
+    - _GrassCutOff: 0.792
+    - _MaxDistance: 80
+    - _MaxGrassHeight: 0.42
+    - _MaxGrassWidth: 0.0292
     - _Metallic: 0
     - _MinGrassHeight: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
+    - _SpecularExp: 40
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TessFactor: 25.4
+    - _TessFactor: 4
     - _UVSec: 0
-    - _WindDepth: 0.81
+    - _WindDepth: 100
     - _WindSpeed: 0.8
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _DryBottomColor: {r: 0.5377358, g: 0.38818634, b: 0.086240664, a: 1}
-    - _DryGrassColor: {r: 1, g: 0.9545455, b: 0, a: 1}
+    - _DryBottomColor: {r: 0.5372549, g: 0.09589719, b: 0.0862745, a: 1}
+    - _DryGrassColor: {r: 1, g: 0.26311314, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _GrassBottomColor: {r: 0.14478245, g: 0.4528302, b: 0, a: 1}
     - _GrassColor: {r: 0.28837982, g: 0.8867924, b: 0.21751511, a: 1}

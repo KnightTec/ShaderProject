@@ -2895,7 +2895,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 57a2e057001c396458955865bf408131,
         type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 57a2e057001c396458955865bf408131,
         type: 3}
@@ -2980,6 +2980,16 @@ PrefabInstance:
     - target: {fileID: -1504981713932161579, guid: 57a2e057001c396458955865bf408131,
         type: 3}
       propertyPath: m_ReceiveShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -1504981713932161579, guid: 57a2e057001c396458955865bf408131,
+        type: 3}
+      propertyPath: m_ReceiveGI
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -1504981713932161579, guid: 57a2e057001c396458955865bf408131,
+        type: 3}
+      propertyPath: m_ImportantGI
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
