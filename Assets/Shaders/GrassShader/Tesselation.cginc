@@ -16,6 +16,13 @@ tessFactors patch(InputPatch<v2g, 3> ip) {
     float x = lerp(0,1,min( _MaxDistance, dist) / _MaxDistance);
     float fac = lerp(_TessFactor, 1, x );
 
+    float h = (
+        tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r +
+        tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r +
+        tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r ) / 3.;
+    if ( h <= _MinGrassHeight )
+        fac = 1;
+
     t.edge[0] = fac;
     t.edge[1] = fac;
     t.edge[2] = fac;
