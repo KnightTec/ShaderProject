@@ -53,8 +53,9 @@ int pointLightCount;
 
 float3 volumeResolution;
 int4 bayerMatrix[4];
-Texture2D<float> blueNoise;
+Texture2D<float4> blueNoise;
 float sliceProportion;
+uint ditherIndex;
 
 #ifdef SHADOWS
 float3 getCascadeShadowCoords(float3 worldPosition) 
@@ -168,7 +169,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 volCoord = float3(float3(id) / volumeResolution + 0.5f / volumeResolution);
 	float z = sliceDepths[id.z / 4][id.z % 4];
 #ifdef JITTER
-	float off = blueNoise.Load(int3(id.x % 64, id.y % 64, 0));
+	float off = blueNoise.Load(int3(id.x % 64, id.y % 64, 0))[ditherIndex];
 	z *= (1 + off * sliceProportion);
 	//z *= (1 + bayerMatrix[id.y % 4][id.x % 4] / 128.0f) * depthJitter[0][0];
 	//z *= (1 + off / 8.0f) * depthJitter[0][0];
@@ -181,16 +182,22 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
 	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 0));
 	visibility = float4(shadowDepth < shadowCoord.z);
-	visibility.r = dot(visibility, 0.25f);
+	shadowDepth += cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 0));
+	visibility += float4(shadowDepth < shadowCoord.z);
+	shadowDepth += cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 2));
+	visibility += float4(shadowDepth < shadowCoord.z);
+	shadowDepth += cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 2));
+	visibility += float4(shadowDepth < shadowCoord.z);
+	visibility.r = dot(visibility, 1/16.0f);
 
 #else
 	visibility.r = 1;
 #endif	
 
-	// shift height to approximate planet curvature
-	float3 planetCenter = cameraPosition - float3(0, cameraPosition.y + 600000, 0);
-	float diffY = (normalize(worldPosition - planetCenter) * 600000 + planetCenter).y;
-	worldPosition.y += diffY;
+	//// shift height to approximate planet curvature
+	//float3 planetCenter = cameraPosition - float3(0, cameraPosition.y + 600000, 0);
+	//float diffY = (normalize(worldPosition - planetCenter) * 600000 + planetCenter).y;
+	//worldPosition.y += diffY;
 
 #ifdef NOISE
 	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) * noiseSize));

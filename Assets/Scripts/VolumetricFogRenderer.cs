@@ -19,7 +19,7 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     [Header("Fog")]
     public float distance = 200;
-    public Vector3Int volumeResolution = new Vector3Int(320, 180, 128);
+    public Vector3Int volumeResolution = new Vector3Int(240, 135, 128);
     [Range(0, 10)]
     public float scattering = 0.1f;
     public Color scatterColor = Color.white;
@@ -28,8 +28,10 @@ public class VolumetricFogRenderer : MonoBehaviour
     [Range(0, 1)]
     public float transmittance = 0;
     public float fogHeight;
-    [Range(0.00001f, 1)]
+    [Range(0.00001f, 0.1f)]
     public float fogFalloff;
+    [Range(0, 1)]
+    float ambientIntensity = 0.5f;
     [Range(0, 1)]
     public float noiseIntensity = 1;
     [Range(0.1f, 100)]
@@ -46,7 +48,7 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     private Texture blueNoise1D;
     private Texture blueNoise4D;
-    private float ditherIndex = 0;
+    private int ditherIndex = 0;
 
     private int fogDensityLightingKernel;
     private int atmoDensityLightingKernel;
@@ -353,7 +355,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloat("noiseIntensity", noiseIntensity);
         densityLightingShader.SetBuffer(fogDensityLightingKernel, "pointLights", pointLightBuffer);
         densityLightingShader.SetInt("pointLightCount", pointLightCount);
-        densityLightingShader.SetVector("ambientLightColor", RenderSettings.ambientLight * 0.5f);
+        densityLightingShader.SetVector("ambientLightColor", RenderSettings.ambientLight * ambientIntensity);
         densityLightingShader.SetFloat("noiseSize", 1.0f / noiseSize);
         densityLightingShader.SetVector("noiseDirection", noiseDirection);
         densityLightingShader.SetVector("volumeResolution", volRes);
@@ -361,7 +363,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloats("depthJitter", depthJitter);
         densityLightingShader.SetTexture(fogDensityLightingKernel, "blueNoise", blueNoise4D);
         densityLightingShader.SetFloat("sliceProportion", sliceProportion);
-        densityLightingShader.SetFloat("ditherIndex", ditherIndex);
+        densityLightingShader.SetInt("ditherIndex", ditherIndex);
         densityLightingShader.Dispatch(fogDensityLightingKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);
         
         temporalFilterShader.SetVector("cameraPosition", transform.position);
@@ -418,7 +420,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogMaterial.SetFloat("fogFalloff", fogFalloff);
         applyFogMaterial.SetVector("scatterColor", scatterColor);
         applyFogMaterial.SetFloat("scattering", scattering);
-        applyFogMaterial.SetVector("ambientColor", RenderSettings.ambientLight * 0.5f);
+        applyFogMaterial.SetVector("ambientColor", RenderSettings.ambientLight * ambientIntensity);
         applyFogMaterial.SetVector("dirLightColor", directionalLight.color * directionalLight.intensity);
         applyFogMaterial.SetVector("dirLightDirection", dirLightDirection);
         applyFogMaterial.SetFloat("g", anisotropy);
