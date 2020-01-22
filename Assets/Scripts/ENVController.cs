@@ -23,10 +23,7 @@ public class ENVController : MonoBehaviour
 
     public Light directionalLight;
     public VolumetricFogRenderer fogRenderer;
-
-    void Start()
-    {
-    }
+    public Material grassMaterial;
 
     void Update()
     {
@@ -45,8 +42,9 @@ public class ENVController : MonoBehaviour
             fogRenderer.scattering = fogScattering.Evaluate(time);
         }
 
-        time += Time.deltaTime * Input.GetAxis("Jump") * 0.001f;
+        // Insert other controls here
 
+        time += Time.deltaTime * Input.GetAxis("Jump") * 0.01f;
         if (time > 1)
         {
             time = 0;

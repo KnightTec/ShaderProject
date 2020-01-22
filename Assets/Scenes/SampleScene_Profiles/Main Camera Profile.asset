@@ -67,7 +67,7 @@ MonoBehaviour:
     value: 1
   shutterAngle:
     overrideState: 1
-    value: 90
+    value: 180
   sampleCount:
     overrideState: 1
     value: 8
@@ -144,8 +144,8 @@ MonoBehaviour:
     overrideState: 1
     value: -0.5
   contrast:
-    overrideState: 0
-    value: -14
+    overrideState: 1
+    value: 10
   mixerRedOutRedIn:
     overrideState: 0
     value: 100
@@ -1409,7 +1409,7 @@ MonoBehaviour:
     value: {x: 0.5, y: 0.5}
   intensity:
     overrideState: 1
-    value: 0.323
+    value: 0.2
   smoothness:
     overrideState: 1
     value: 0.165
