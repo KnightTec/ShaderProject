@@ -14,7 +14,12 @@ tessFactors patch(InputPatch<v2g, 3> ip) {
     float4 avg = (ip[0].vertex + ip[1].vertex + ip[2].vertex)/3;
     float dist = distance(mul(unity_ObjectToWorld, avg), _WorldSpaceCameraPos);
     float x = lerp(0,1,min( _MaxDistance, dist) / _MaxDistance);
+	
     float fac = lerp(_TessFactor, 1, x );
+	if (dist > 10) 
+	{
+		 fac = 0;
+	}
 
     float h = (
         tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r +
