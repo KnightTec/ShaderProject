@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: TreeMat
-  m_Shader: {fileID: 4800000, guid: 045ae723fcbbdfd40a3822b571138421, type: 3}
+  m_Name: HairMat
+  m_Shader: {fileID: 4800000, guid: a489d573e90dfeb40aec39f9c875e87b, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -35,16 +35,32 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _DistributionTex:
-        m_Texture: {fileID: 2800000, guid: 2af5e5afc0d75274b8b0df70c6cc35b9, type: 3}
+    - _DryGrassTex:
+        m_Texture: {fileID: 2800000, guid: a77c4715eb61d4942add9eb4f498fc01, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _GrassColor:
+        m_Texture: {fileID: 10307, guid: 0000000000000000f000000000000000, type: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GrassNormal:
+        m_Texture: {fileID: 2800000, guid: 3597086d33f76494e9bf2d68b79e18d7, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HeightTex:
+        m_Texture: {fileID: 2800000, guid: 45c10c5f3829b0c428612b2e667d87a5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 24f00eaedbd52784ca29048fce83e907, type: 3}
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTexture:
+        m_Texture: {fileID: 2800000, guid: ca65e372ecf16fd488a506fcef9f365d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -64,26 +80,38 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - _Ambient: 0.013
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
+    - _DiffSpec: 0.018
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _GrassColorOffset: 0
+    - _GrassCutOff: 1
+    - _MaxDistance: 24.4
+    - _MaxGrassHeight: 1.22
+    - _MaxGrassWidth: 0.0292
     - _Metallic: 0
+    - _MinGrassHeight: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Random: 0.99856
-    - _Scale: 4
     - _SmoothnessTextureChannel: 0
+    - _SpecularExp: 40
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _TessFactor: 2
     - _UVSec: 0
-    - _WindDepth: 5
-    - _WindSpeed: 0.02
+    - _WindDepth: 6.1
+    - _WindSpeed: 2.7
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DryBottomColor: {r: 0.5372549, g: 0.09589719, b: 0.0862745, a: 1}
+    - _DryGrassColor: {r: 1, g: 0.26311314, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _GrassBottomColor: {r: 0.14478245, g: 0.4528302, b: 0, a: 1}
+    - _GrassColor: {r: 0.8657086, g: 0.8862745, b: 0.21568629, a: 1}

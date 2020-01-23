@@ -59,7 +59,8 @@ v2g dom (tessFactors tf, OutputPatch<appdata, 3> op, float3 dl : SV_DomainLocati
     return o;
 }
 
-#define RANDOM(fieldname) abs( sin ( dot (fieldname, fixed4 (9520.7254, 5115.2899, 1736.2851, 1683.4103) * 1683.4103) ) )
+#define RANDOM_ABS(fieldname) abs( sin ( 3.512 * dot ( 1.51323 * fieldname.yzx, fixed4 (4.754, 5.299, 6.2851, 3.4103) * 9.03) ) )
+#define RANDOM(fieldname) sin ( 3.512 * dot ( 1.51323 * fieldname.yzx, fixed4 (4.754, 5.299, 6.2851, 3.4103) * 9.03) ) 
 #define APPEND(index) v = IN[index]; o.worldPos = mul ( unity_ObjectToWorld, IN[index].vertex + 0.001 * float4(IN[index].normal,0) ); o.pos = mul(UNITY_MATRIX_VP, o.worldPos); o.tangent = float3(0,0,0); o.normal = IN[index].normal; o.uv = IN[index].uv; o.blendFactors = float2( tex2Dlod(_HeightTex, float4(IN[index].uv, 0, 0)).r, 0); TRANSFER_SHADOW(o); triStream.Append(o)
 #define APPEND_ADDITIVE(summand,uvx,uvy) if (sizefac > 0 ) { o.worldPos = mul ( unity_ObjectToWorld, avg + (summand) ); o.pos = UnityObjectToClipPos ( avg + (summand) ); o.uv = avgUV;o.blendFactors = fixed2(uvx, uvy); o.normal = normal; v.vertex = o.worldPos; TRANSFER_SHADOW(o); triStream.Append(o); }
 #define APPEND_ADDITIVE_BOTTOM(summand,uvx,uvy) if (sizefac > 0 ) { o.worldPos = mul ( unity_ObjectToWorld, avg + (summand) ); o.pos = UnityObjectToClipPos (avg + (summand)); o.uv = avgUV; o.blendFactors = fixed2(uvx, uvy); o.normal = normal; v.vertex = o.worldPos; TRANSFER_SHADOW(o); triStream.Append(o); }
@@ -89,7 +90,7 @@ void geom (triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
     float rand1 = RANDOM(IN[1].vertex);
     float rand2 = RANDOM(IN[2].vertex);
 
-    avg += float4 ( (rand0 - 0.5) * 0.05, 0, (rand1 - 0.5) * 0.05, 0);
+    avg += float4 ( (rand0 - 0.5) * 0.1, 0, (rand1 - 0.5) * 0.1, 0);
 
     float sizefac = lerp ( 0.5, 1, rand0) * size;
     sizefac = sizefac >= _MinGrassHeight ? sizefac : 0;

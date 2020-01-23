@@ -58,9 +58,6 @@
             float _SpecularExp;
             float _DiffSpec;
 
-            const float pi = 3.14159265f;
-
-
             fixed4 frag (g2f IN) : SV_Target{
                
                 float3 N = normalize(IN.normal);
@@ -84,7 +81,6 @@
                 float4 BottomColor = lerp (_GrassBottomColor, _DryBottomColor, fac);
 
                 float3 FragColor = lerp( BottomColor, GrassColor, clamp(0,1,IN.blendFactors.y) ).rgb;
-                float alpha = 1.0;
                 float diffuse = max ( dot (L, N), 0. ) / 3.1415;
                 float3 diffuseTerm = FragColor * diffuse * _LightColor0;
 
@@ -92,8 +88,11 @@
 
                 FragColor = FragColor - tex.r;
                 float3 ambientTerm = FragColor * _Ambient;
+                float alpha = 1. * tex.b *
+                    ( dist > _MaxDistance / 2. ? 1.0 :
+                      IN.blendFactors.y == 0 ? 0.5: 1.0 );
 
-                return fixed4( ( attenuation < 2. ? attenuation : 1. ) * (lerp ( diffuseTerm, specularTerm, _DiffSpec ) + ambientTerm ), 1 * tex.b);
+                return fixed4( ( attenuation < 2. ? attenuation : 1. ) * (lerp ( diffuseTerm, specularTerm, _DiffSpec ) + ambientTerm ), alpha);
             }
 
             ENDCG

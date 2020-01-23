@@ -12,15 +12,17 @@
     }
     SubShader
     {
-        Tags { "Queue"="Transparent" "RenderType"="Transparent" }
+        Tags { "Queue"="Opaque" "RenderType"="Transparent" }
         Cull Back
         Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
         
         Pass {
-            HLSLPROGRAM
+            CGPROGRAM
             #include "UnityCG.cginc"
             #include "UnityLightingCommon.cginc"
+            #include "AutoLight.cginc"
+            #pragma multi_compile_fwdbase
 
             struct appdata {
                 float4 vertex : POSITION;
@@ -35,10 +37,11 @@
             };
 
             struct g2f {
-                float4 vertex : SV_POSITION;
+                float4 pos : SV_POSITION;
                 float4 worldPos : TEXCOORD1;
                 float3 normal : TEXCOORD2;
                 float2 uv : TEXCOORD0;
+                SHADOW_COORDS(3)
             };
 
             #pragma vertex vert
@@ -82,31 +85,35 @@
 
                     o.normal = _WorldSpaceCameraPos - o.worldPos;
                     o.uv = uvStart + float2 (0,0);
-                    o.vertex = mul ( UNITY_MATRIX_P,
+                    o.pos = mul ( UNITY_MATRIX_P,
                         middlePos - _Scale * float4 (1,0,0,0)
                     );
+                    TRANSFER_VERTEX_TO_FRAGMENT(o);
                     tristream.Append(o);
 
                     o.normal = float3(0,1,0);
                     o.uv = uvStart + float2 (0,.5);
-                    o.vertex = mul ( UNITY_MATRIX_P,
+                    o.pos = mul ( UNITY_MATRIX_P,
                         middlePos + _Scale * float4 (-1 + wind,1,0,0) 
                     );
+                    TRANSFER_VERTEX_TO_FRAGMENT(o);
                     tristream.Append(o);
 
                     o.normal = _WorldSpaceCameraPos - o.worldPos;
                     o.uv = uvStart + float2 (.5,0);
-                    o.vertex = mul ( UNITY_MATRIX_P,
+                    o.pos = mul ( UNITY_MATRIX_P,
                         middlePos + _Scale * float4 (1,0,0,0)
                     );
+                    TRANSFER_VERTEX_TO_FRAGMENT(o);
                     tristream.Append(o);
 
                     o.normal = float3(0,1,0);
                     o.uv = uvStart + float2 (.5, .5);
-                    o.vertex = mul ( UNITY_MATRIX_P,
+                    o.pos = mul ( UNITY_MATRIX_P,
                         middlePos + _Scale * float4 (1 + wind,1,0,0)
                     );
                     tristream.Append(o);
+                    TRANSFER_VERTEX_TO_FRAGMENT(o);
                     tristream.RestartStrip();
                 }
             }
@@ -120,14 +127,15 @@
                 float3 L = normalize ( _WorldSpaceLightPos0 - IN.worldPos );
                 float3 N = normalize ( IN.normal );
 
+                float attenuation = SHADOW_ATTENUATION(IN);
                 float diffuse = dot ( N, L );
 
                 float3 diffuseTerm = col.rgb * diffuse * _LightColor0;
 
-                return float4(diffuseTerm, col.a);
+                return float4(diffuseTerm * attenuation, col.a);
             }
 
-            ENDHLSL
+            ENDCG
         }
     }
 }
