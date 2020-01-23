@@ -9,29 +9,38 @@ v2g vert (appdata IN) {
     return OUT;
 }
 
+#define inside(fieldname) ( fieldname.x < 1. && fieldname.x > -1. && fieldname.y > -1. && fieldname.y < 1. )
+
 tessFactors patch(InputPatch<v2g, 3> ip) {
     tessFactors t;
-    float4 avg = (ip[0].vertex + ip[1].vertex + ip[2].vertex)/3;
-    float dist = distance(mul(unity_ObjectToWorld, avg), _WorldSpaceCameraPos);
-    float x = lerp(0,1,min( _MaxDistance, dist) / _MaxDistance);
-	
-    float fac = lerp(_TessFactor, 1, x );
-	if (dist > 10) 
-	{
-		 fac = 0;
-	}
+    float4 clip[3];
 
-    float h = (
-        tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r +
-        tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r +
-        tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r ) / 3.;
-    if ( h <= _MinGrassHeight )
-        fac = 1;
+    float4 avg = (ip[0].vertex + ip[1].vertex + ip[2].vertex) / 3;
+    clip[0] = UnityObjectToClipPos ( ip[0].vertex );    clip[0] /= clip[0].w;
+    clip[1] = UnityObjectToClipPos ( ip[1].vertex );    clip[1] /= clip[1].w; 
+    clip[2] = UnityObjectToClipPos ( ip[2].vertex );    clip[2] /= clip[2].w;
+
+    float fac;
+    if ( ! inside(clip[0]) && ! inside(clip[1]) && ! ! inside(clip[2]) ) {
+        fac = 0;
+    }
+    else {   
+        float dist = distance(mul(unity_ObjectToWorld, avg), _WorldSpaceCameraPos);
+        float x = lerp (0, 1, min( _MaxDistance, dist) / _MaxDistance);
+        
+        fac = lerp(_TessFactor, 1, x );
+
+        float h = (
+            tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r +
+            tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r +
+            tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r ) / 3.;
+        if ( h <= _MinGrassHeight )
+            fac = 1;
+    }
 
     t.edge[0] = fac;
     t.edge[1] = fac;
     t.edge[2] = fac;
-
     t.inside = fac;
 
     return t;
