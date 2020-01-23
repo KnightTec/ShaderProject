@@ -5958,6 +5958,7 @@ MonoBehaviour:
   transmittance: 1
   fogHeight: -0.5
   fogFalloff: 0.041707724
+  ambientIntensity: 0.5
   noiseIntensity: 0
   noiseSize: 0.1
   noiseDirection: {x: 2, y: -0.5, z: 4}

@@ -103,7 +103,7 @@ Material:
     - _SpecularExp: 40
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TessFactor: 10
+    - _TessFactor: 7
     - _UVSec: 0
     - _WindDepth: 100
     - _WindSpeed: 0.8

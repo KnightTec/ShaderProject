@@ -31,7 +31,7 @@ public class VolumetricFogRenderer : MonoBehaviour
     [Range(0.00001f, 0.2f)]
     public float fogFalloff;
     [Range(0, 1)]
-    float ambientIntensity = 0.5f;
+    public float ambientIntensity = 0.5f;
     [Range(0, 1)]
     public float noiseIntensity = 1;
     [Range(0.1f, 100)]
