@@ -79,15 +79,16 @@
 				// blur to hide dithering
 				//TODO: bilateral gaussian blur
 				half4 fogSample = half4(0, 0, 0, 0);
-				for (int x = -2; x < 2; x++) 
-				{
-					for (int y = -2; y < 2; y++) 
-					{
-						fogSample += tex3D(fogVolume, fogCoord + float3(x, -y, 0) * screenSizeMult);
-					}
-				}
+				//for (int x = -2; x < 2; x++) 
+				//{
+				//	for (int y = -2; y < 2; y++) 
+				//	{
+				//		fogSample += tex3D(fogVolume, fogCoord + float3(x, -y, 0) * screenSizeMult);
+				//	}
+				//}
 				fogSample /= 16.0f;
 				fogSample =  tex3D(fogVolume, fogCoord);
+				//return float4(fogSample.rgb, 1);
 				half4 atmoSample = tex3D(atmoVolume, atmoCoord);
 
 				float3 combinedColor = sceneColor * atmoSample.a + atmoSample.rgb;

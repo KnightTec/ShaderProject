@@ -80,34 +80,34 @@ public class DirectionalLightData : MonoBehaviour
 
     private void Update()
     {
-        float rot = light.transform.rotation.eulerAngles.x;
-        LightControlPoint lpc0 = controlPoints[controlPoints.Length - 2];
-        LightControlPoint lpc1 = controlPoints[controlPoints.Length - 1];
-        float lpc0Angle = lpc0.angle - 360;
-        if (lpc0Angle - 360 <= rot && rot < lpc1.angle)
-        {
-            float lerpFactor = (rot - lpc0Angle) / (lpc1.angle - lpc0Angle);
-            light.color = Color.Lerp(lpc0.color, lpc1.color, Mathf.SmoothStep(0f, 1f, lerpFactor));
-            light.intensity = Mathf.SmoothStep(lpc0.intensity, lpc1.intensity, lerpFactor);
-            RenderSettings.ambientLight = Color.Lerp(lpc0.ambientColor, lpc1.ambientColor, Mathf.SmoothStep(0f, 1f, lerpFactor));
-        }
-        for (int i = 1; i < controlPoints.Length; i++)
-        {            
-            lpc0 = controlPoints[i - 1];
-            lpc1 = controlPoints[i];
-            float angle0 = lpc0.angle;
-            float angle1 = lpc1.angle;
-            if (angle0 <= rot && rot <= angle1)
-            {
-                float lerpFactor = (rot - angle0) / (angle1 - angle0);
-                light.color = Color.Lerp(lpc0.color, lpc1.color, Mathf.SmoothStep(0f, 1f, lerpFactor));
-                light.intensity = Mathf.Lerp(lpc0.intensity, lpc1.intensity, lerpFactor);
-                RenderSettings.ambientLight = Color.Lerp(lpc0.ambientColor, lpc1.ambientColor, Mathf.SmoothStep(0f, 1f, lerpFactor));
-            }
-        }
+        //float rot = light.transform.rotation.eulerAngles.x;
+        //LightControlPoint lpc0 = controlPoints[controlPoints.Length - 2];
+        //LightControlPoint lpc1 = controlPoints[controlPoints.Length - 1];
+        //float lpc0Angle = lpc0.angle - 360;
+        //if (lpc0Angle - 360 <= rot && rot < lpc1.angle)
+        //{
+        //    float lerpFactor = (rot - lpc0Angle) / (lpc1.angle - lpc0Angle);
+        //    light.color = Color.Lerp(lpc0.color, lpc1.color, Mathf.SmoothStep(0f, 1f, lerpFactor));
+        //    light.intensity = Mathf.SmoothStep(lpc0.intensity, lpc1.intensity, lerpFactor);
+        //    RenderSettings.ambientLight = Color.Lerp(lpc0.ambientColor, lpc1.ambientColor, Mathf.SmoothStep(0f, 1f, lerpFactor));
+        //}
+        //for (int i = 1; i < controlPoints.Length; i++)
+        //{            
+        //    lpc0 = controlPoints[i - 1];
+        //    lpc1 = controlPoints[i];
+        //    float angle0 = lpc0.angle;
+        //    float angle1 = lpc1.angle;
+        //    if (angle0 <= rot && rot <= angle1)
+        //    {
+        //        float lerpFactor = (rot - angle0) / (angle1 - angle0);
+        //        light.color = Color.Lerp(lpc0.color, lpc1.color, Mathf.SmoothStep(0f, 1f, lerpFactor));
+        //        light.intensity = Mathf.Lerp(lpc0.intensity, lpc1.intensity, lerpFactor);
+        //        RenderSettings.ambientLight = Color.Lerp(lpc0.ambientColor, lpc1.ambientColor, Mathf.SmoothStep(0f, 1f, lerpFactor));
+        //    }
+        //}
         
 
-        transform.Rotate(Time.deltaTime * (0.0f + Input.GetAxis("Jump") * 15), 0, 0, Space.Self);
+       // transform.Rotate(Time.deltaTime * (0.0f + Input.GetAxis("Jump") * 15), 0, 0, Space.Self);
 
 
         skyMaterial.SetMatrix("_rotationMatrix", Matrix4x4.Rotate(transform.rotation));
