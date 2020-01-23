@@ -46,26 +46,53 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	half4 minSample = half4(1, 1, 1, 1);
 	half4 maxSample = half4(0, 0, 0, 0);
 	half4 samp; //= blendedFogVolume[id];
-	[unroll]
-	for (int x = -1; x < 1; x++) 
-	{
-		[unroll]
-		for (int y = -1; y < 1; y++) 
-		{
-			[unroll]
-			for (int z = -1; z < 1; z++)
-			{
-				samp = blendedFogVolume[uint3(id.x + x, id.y + y, id.z + z)];
-				minSample = min(minSample, samp);
-				maxSample = max(maxSample, samp);
-			}
-		}
-	}
+	//[unroll]
+	//for (int x = -1; x < 1; x++) 
+	//{
+	//	[unroll]
+	//	for (int y = -1; y < 1; y++) 
+	//	{
+	//		[unroll]
+	//		for (int z = -1; z < 1; z++)
+	//		{
+	//			samp = blendedFogVolume[uint3(id.x + x, id.y + y, id.z + z)];
+	//			minSample = min(minSample, samp);
+	//			maxSample = max(maxSample, samp);
+	//		}
+	//	}
+	//}
+	samp = blendedFogVolume[uint3(id.x, id.y, id.z)];
+	minSample = min(minSample, samp);
+	maxSample = max(maxSample, samp);
+	samp = blendedFogVolume[uint3(id.x + 1, id.y + 1, id.z + 1)];
+	minSample = min(minSample, samp);
+	maxSample = max(maxSample, samp);
+	samp = blendedFogVolume[uint3(id.x + 1, id.y + 1, id.z - 1)];
+	minSample = min(minSample, samp);
+	maxSample = max(maxSample, samp);
+	samp = blendedFogVolume[uint3(id.x + 1, id.y - 1, id.z + 1)];
+	minSample = min(minSample, samp);
+	maxSample = max(maxSample, samp);
+	samp = blendedFogVolume[uint3(id.x - 1, id.y + 1, id.z + 1)];
+	minSample = min(minSample, samp);
+	maxSample = max(maxSample, samp);
+	samp = blendedFogVolume[uint3(id.x + 1, id.y - 1, id.z - 1)];
+	minSample = min(minSample, samp);
+	maxSample = max(maxSample, samp);
+	samp = blendedFogVolume[uint3(id.x - 1, id.y + 1, id.z - 1)];
+	minSample = min(minSample, samp);
+	maxSample = max(maxSample, samp);
+	samp = blendedFogVolume[uint3(id.x - 1, id.y - 1, id.z + 1)];
+	minSample = min(minSample, samp);
+	maxSample = max(maxSample, samp);
+	samp = blendedFogVolume[uint3(id.x - 1, id.y - 1, id.z - 1)];
+	minSample = min(minSample, samp);
+	maxSample = max(maxSample, samp);
 
 	half4 clampedHistory = clamp(historySample, minSample, maxSample);
 	
 	// slice depths are large further away -> more flickering -> clamp less
-	// ghosting not noticable at larger distance
+	// ghosting less noticable at larger distance
 	clampedHistory = lerp(clampedHistory, historySample, 0.2 + (id.z / volumeResolution.z) * 0.4);
 
 	// exponential moving average

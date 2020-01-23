@@ -169,7 +169,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 volCoord = float3(float3(id) / volumeResolution + 0.5f / volumeResolution);
 	float z = sliceDepths[id.z / 4][id.z % 4];
 #ifdef JITTER
-	float off = blueNoise.Load(int3(id.x % 64, id.y % 64, 0))[ditherIndex];
+	float off = blueNoise.Load(int3(id.x % 64, id.y % 64, 0))[ditherIndex] * 0.95f;
 	z *= (1 + off * sliceProportion);
 	//z *= (1 + bayerMatrix[id.y % 4][id.x % 4] / 128.0f) * depthJitter[0][0];
 	//z *= (1 + off / 8.0f) * depthJitter[0][0];
@@ -178,7 +178,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	float4 visibility;
 #ifdef SHADOWS
-	// 4-tap PCF filter
+	// percentage closer filtering
 	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
 	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 0));
 	visibility = float4(shadowDepth < shadowCoord.z);
@@ -188,7 +188,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	visibility += float4(shadowDepth < shadowCoord.z);
 	shadowDepth += cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 2));
 	visibility += float4(shadowDepth < shadowCoord.z);
-	visibility.r = dot(visibility, 1/16.0f);
+	visibility.r = dot(visibility, 0.0625f);
 
 #else
 	visibility.r = 1;
@@ -212,7 +212,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	half4 result = half4(ambientLightColor.rgb, scattering);
 
 #ifdef ATMOSPHERE
-	float3 scatteredColor = float3(1, 1, 1) * visibility.r;
+	float3 scatteredColor = float3(1, 1, 1);
 	scatteredColor *= sunLightIntensityMultiplier;
 #else
 	float3 scatteredColor = dirLightColor * visibility.r;

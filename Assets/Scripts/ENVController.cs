@@ -20,6 +20,7 @@ public class ENVController : MonoBehaviour
 
     public AnimationCurve fogFalloff;
     public AnimationCurve fogScattering;
+    public float fogScatteringMultiplier = 1;
 
     public Light directionalLight;
     public VolumetricFogRenderer fogRenderer;
@@ -39,7 +40,7 @@ public class ENVController : MonoBehaviour
         if (fogRenderer != null)
         {
             fogRenderer.fogFalloff = fogFalloff.Evaluate(time);
-            fogRenderer.scattering = fogScattering.Evaluate(time);
+            fogRenderer.scattering = fogScattering.Evaluate(time) * fogScatteringMultiplier;
         }
 
         // Insert other controls here
