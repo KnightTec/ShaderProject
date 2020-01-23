@@ -1,6 +1,6 @@
 ﻿#include "UnityCG.cginc"
 #include "FogCommon.cginc"
-#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE	
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE
 #pragma kernel CSMain SELF_SHADOW ATMOSPHERE
 
 #define PI 3.14159
@@ -8,16 +8,15 @@
 struct DirLightData 
 {
 	float4x4 worldToShadow[4];
-	float4 lightSplitsNear;
-	float4 lightSplitsFar;
 };
 RWStructuredBuffer<DirLightData> lightData;
 float3 dirLightColor;
 float3 dirLightDirection;
+float4 lightSplitsNear;
+float4 lightSplitsFar;
 
 #ifdef SHADOWS
 SamplerState MyPointClampSampler;
-SamplerState MyLinearClampSampler;
 Texture2D<float> cascadeShadowMap;
 #endif
 
@@ -29,7 +28,6 @@ float g;
 float fogHeight;
 float fogFalloff;
 float transmittance;
-uint jitterIndex;
 float4 sliceDepths[32];
 float4 scatterColor;
 float time;
@@ -52,7 +50,6 @@ RWStructuredBuffer<FogPointLight> pointLights;
 int pointLightCount;
 
 float3 volumeResolution;
-int4 bayerMatrix[4];
 Texture2D<float4> blueNoise;
 float sliceProportion;
 uint ditherIndex;
@@ -61,14 +58,15 @@ uint ditherIndex;
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
 	float distToCam = length(worldPosition - cameraPosition.xyz);
-	float4 near = float4(distToCam >= lightData[0].lightSplitsNear); 
-	float4 far = float4(distToCam < lightData[0].lightSplitsFar);
+	float4 near = float4(distToCam >= lightSplitsNear); 
+	float4 far = float4(distToCam < lightSplitsFar);
 	float4 weights = near * far;
 
-	float3 shadowCoord0 = mul(lightData[0].worldToShadow[0], float4(worldPosition, 1)).xyz; 
-	float3 shadowCoord1 = mul(lightData[0].worldToShadow[1], float4(worldPosition, 1)).xyz;
-	float3 shadowCoord2 = mul(lightData[0].worldToShadow[2], float4(worldPosition, 1)).xyz;
-	float3 shadowCoord3 = mul(lightData[0].worldToShadow[3], float4(worldPosition, 1)).xyz;
+	float4x4 worldToShadow[4] = lightData[0].worldToShadow;
+	float3 shadowCoord0 = mul(worldToShadow[0], float4(worldPosition, 1)).xyz; 
+	float3 shadowCoord1 = mul(worldToShadow[1], float4(worldPosition, 1)).xyz;
+	float3 shadowCoord2 = mul(worldToShadow[2], float4(worldPosition, 1)).xyz;
+	float3 shadowCoord3 = mul(worldToShadow[3], float4(worldPosition, 1)).xyz;
 	float3 coord = 
 		shadowCoord0 * weights.x + 
 		shadowCoord1 * weights.y +
@@ -92,6 +90,7 @@ float3 calcTransmittance(float3 position, float3 viewDirection, float distance)
 	float opticalDepth = EXP(-fogFalloff * (position.y + distance * viewDirection.y) + fogHeight);
 	opticalDepth -= EXP(-fogFalloff * position.y + fogHeight);
 	opticalDepth /= -fogFalloff * viewDirection.y;
+	// return transmittance
 	return EXP(-opticalDepth * scattering * transmittance * scatterColor);
 }
 
@@ -106,7 +105,8 @@ float rand3dTo1d(float3 value, float3 dotDir = float3(12.9898, 78.233, 37.719)){
     random = frac(sin(random) * 143758.5453);
     return random;
 }
-float3 rand3dTo3d(float3 value){
+float3 rand3dTo3d(float3 value)
+{
     return float3(
         rand3dTo1d(value, float3(12.989, 78.233, 37.719)),
         rand3dTo1d(value, float3(39.346, 11.135, 83.155)),
@@ -153,8 +153,6 @@ float perlinNoise(float3 value){
 }
 #endif
 
-float4 depthJitter[4];
-
 #ifdef MIE
 #define PHASE(pointPosition, lightDirection) henyeyGreensteinPhaseFunction(pointPosition, lightDirection, cameraPosition, g) 
 #else 
@@ -166,13 +164,11 @@ float sunLightIntensityMultiplier;
 [numthreads(4,4,4)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-	float3 volCoord = float3(float3(id) / volumeResolution + 0.5f / volumeResolution);
-	float z = sliceDepths[id.z / 4][id.z % 4];
+	float3 volCoord = float3(float3(id) * volumeResolution + 0.5f * volumeResolution);
+	float z = sliceDepths[id.z >> 2][id.z & 3];
 #ifdef JITTER
 	float off = blueNoise.Load(int3(id.x % 64, id.y % 64, 0))[ditherIndex] * 0.95f;
 	z *= (1 + off * sliceProportion);
-	//z *= (1 + bayerMatrix[id.y % 4][id.x % 4] / 128.0f) * depthJitter[0][0];
-	//z *= (1 + off / 8.0f) * depthJitter[0][0];
 #endif
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 
@@ -182,11 +178,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 shadowCoord = getCascadeShadowCoords(worldPosition);
 	float4 shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 0));
 	visibility = float4(shadowDepth < shadowCoord.z);
-	shadowDepth += cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 0));
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 0));
 	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth += cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 2));
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(0, 2));
 	visibility += float4(shadowDepth < shadowCoord.z);
-	shadowDepth += cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 2));
+	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 2));
 	visibility += float4(shadowDepth < shadowCoord.z);
 	visibility.r = dot(visibility, 0.0625f);
 
@@ -194,14 +190,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	visibility.r = 1;
 #endif	
 
-	//// shift height to approximate planet curvature
-	//float3 planetCenter = cameraPosition - float3(0, cameraPosition.y + 600000, 0);
-	//float diffY = (normalize(worldPosition - planetCenter) * 600000 + planetCenter).y;
-	//worldPosition.y += diffY;
-
 #ifdef NOISE
 	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) * noiseSize));
-	//noise = noise * 0.8 + 0.2 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
+	noise = noise * 0.6 + 0.4 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
 	noise = noise * noiseIntensity + (1 - noiseIntensity);
 
 	scattering *= saturate(EXP(-(worldPosition.y * fogFalloff - fogHeight)) * noise);
@@ -238,14 +229,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 		float lightDist = length(lightVector);
 		float attentuation = 5 * lightDist / light.range;
 		attentuation = 1 / (attentuation * attentuation + 1);
-		attentuation *= sunLightIntensityMultiplier;
 		phase = PHASE(worldPosition, lightVecNorm);
 		result.rgb += light.color.rgb * attentuation * phase 
-			* light.intensity * calcTransmittance(light.position, lightVecNorm, lightDist);
+			* light.intensity;
 	}
 #endif
-
 	result.rgb *= scattering * scatterColor;
-
 	fogVolume[id] = result;
 }

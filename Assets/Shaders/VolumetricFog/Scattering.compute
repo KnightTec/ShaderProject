@@ -31,7 +31,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     for (uint i = 1; i < DEPTH; i++) 
 	{
 		float4 nextValue = fogVolume[uint3(id.xy, i)];
-		float currentSliceDepth = sliceDepths[i / 4][i % 4];
+		float currentSliceDepth = sliceDepths[i >> 2][i & 3];
 		float depthDiff = currentSliceDepth - lastSliceDepth;
 		lastSliceDepth = currentSliceDepth;
 		currentValue = accumulateScattering(currentValue.rgb, currentValue.a, nextValue.rgb, nextValue.a, depthDiff);

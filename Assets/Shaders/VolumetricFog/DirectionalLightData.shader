@@ -20,20 +20,12 @@
 		struct DirLightData 
 		{
 			float4x4 worldToShadow[4];
-			float4 lightSplitsNear;
-			float4 lightSplitsFar;
 		};
 		RWStructuredBuffer<DirLightData> lightData : register(u1);
 
 		float4 vert (appdata vertex) : SV_POSITION
 		{
-			for (int i = 0; i < 4; i++) 
-			{
-				lightData[0].worldToShadow[i] = unity_WorldToShadow[i];
-			}
-			lightData[0].lightSplitsNear = _LightSplitsNear;
-			lightData[0].lightSplitsFar = _LightSplitsFar;
-			
+			lightData[0].worldToShadow = unity_WorldToShadow;			
 			return float4(0, 0, 0, 1);
 		}
 		

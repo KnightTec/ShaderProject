@@ -53,7 +53,6 @@
 			float g;
 			float noiseIntensity;
 			float logfarOverNearInv;
-			float4 volumeResolutionWH;
 
 			Texture2D<float4> blueNoiseTex;
 
@@ -73,28 +72,14 @@
 				z = min(z, distance);
 				z = (logZ - clipPlanes.w) * clipPlanes.z;
 				float3 fogCoord = float3(i.uv, z);
-
-				float3 screenSizeMult = float3(volumeResolutionWH.zw, 1);
 				
-				// blur to hide dithering
-				//TODO: bilateral gaussian blur
-				half4 fogSample = half4(0, 0, 0, 0);
-				//for (int x = -2; x < 2; x++) 
-				//{
-				//	for (int y = -2; y < 2; y++) 
-				//	{
-				//		fogSample += tex3D(fogVolume, fogCoord + float3(x, -y, 0) * screenSizeMult);
-				//	}
-				//}
-				fogSample /= 16.0f;
-				fogSample =  tex3D(fogVolume, fogCoord);
-				//return float4(fogSample.rgb, 1);
+				half4 fogSample = tex3D(fogVolume, fogCoord);
 				half4 atmoSample = tex3D(atmoVolume, atmoCoord);
 
 				float3 combinedColor = sceneColor * atmoSample.a + atmoSample.rgb;
 
 #ifdef FOG_FALLBACK
-				// analytic fallback fog beyond volumetric fog distance
+				// analytic fog beyond volumetric fog distance
 				float3 ndc = float3((i.uv * 2) - 1, depth);
 				ndc.y *= -1;
 				float4 worldPos = mul(viewProjectionInv, float4(ndc, 1));
