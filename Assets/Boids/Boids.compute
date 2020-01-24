@@ -1,0 +1,47 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+struct Boid {
+	float4x4 m;
+	float3 heading;
+};
+
+RWStructuredBuffer<Boid> Boids;
+
+cbuffer CB{
+uint boid_amount;
+float4 size;
+float4 position;
+};
+
+[numthreads(64,1,1)]
+void CSMain ( uint3 id : SV_DispatchThreadID )
+{
+	float3 avoid_collision = float3(0, 0, 0);
+	float3 matchSpeed = float3(0, 0, 0);
+	float3 flock = float3(0, 0, 0);
+
+	float3 pos = mul(Boids[id.x].m, float4(0, 0, 0, 1)).xyz;
+
+	for (uint i = 0; i < boid_amount; ++i) {
+		if (i == id.x)
+			continue;
+		
+		float3 other_pos = mul(Boids[i].m, float4(0, 0, 0, 1)).xyz;
+		float3 boundaryDistances = pow(max(-1, min( 1, size / (pos - other_pos))) * 1.3 / size, float3(7, 7, 7));
+
+		avoid_collision += boundaryDistances * 0.01;
+	}
+	avoid_collision = normalize(avoid_collision) * 0.01;
+	
+
+	float3 boundaryDistances = pow((position.xyz - pos) * 1.3 / size, float3(3, 3, 3));
+	avoid_collision += boundaryDistances * 0.1;
+
+	Boids[id.x].heading += avoid_collision;
+	Boids[id.x].heading *= 0.995;
+
+	Boids[id.x].m._14 += Boids[id.x].heading.x;
+	Boids[id.x].m._24 += Boids[id.x].heading.y;
+	Boids[id.x].m._34 += Boids[id.x].heading.z;
+}
