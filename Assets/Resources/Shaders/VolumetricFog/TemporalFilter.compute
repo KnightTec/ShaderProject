@@ -78,7 +78,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	
 	// slice depths are large further away -> more flickering -> clamp less
 	// ghosting less noticable at larger distance
-	//clampedHistory = lerp(clampedHistory, historySample, 0.2 + (id.z * volumeResolution.z) * 0.4);
+	clampedHistory = lerp(clampedHistory, historySample, 0.2f);
 
 	// exponential moving average
 	result[id] = lerp(blendedFogVolume[id], clampedHistory, 0.92f);

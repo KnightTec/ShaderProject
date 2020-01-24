@@ -53,8 +53,10 @@
 			float g;
 			float noiseIntensity;
 			float logfarOverNearInv;
+			float4 volumeResolutionWH;
 
 			Texture2D<float4> blueNoiseTex;
+			uint ditherIndex;
 
             fixed4 frag (v2f i) : SV_Target
             {
@@ -67,13 +69,29 @@
 				float atmoZ = (logZ - clipPlanes.w) * logfarOverNearInv;
 
 				float3 atmoCoord = float3(i.uv, atmoZ);
-				
 
 				z = min(z, distance);
 				z = (logZ - clipPlanes.w) * clipPlanes.z;
 				float3 fogCoord = float3(i.uv, z);
+
+				float2 pixCoord = i.uv * _ScreenParams.xy;
+
+				// dithered sampling
+				float4 noise = blueNoiseTex.Load(int3(pixCoord, 0) & 1023);
+				float3 off0 = float3(noise[ditherIndex] * volumeResolutionWH.zw, 0);
+				uint noiseIndex1 = (ditherIndex + 1) & 3;
+				float3 off1 = float3(float2(-noise[noiseIndex1], noise[noiseIndex1]) * volumeResolutionWH.zw, 0);
+				uint noiseIndex2 = (ditherIndex + 2) & 3;
+				float3 off2 = float3(float2(noise[noiseIndex2], -noise[noiseIndex2]) * volumeResolutionWH.zw, 0);
+				float3 off3 = float3(-noise[(ditherIndex + 3) & 3] * volumeResolutionWH.zw, 0);
 				
-				half4 fogSample = tex3D(fogVolume, fogCoord);
+				half4 fogSample = tex3D(fogVolume, fogCoord + off0);
+				fogSample += tex3D(fogVolume, fogCoord + off1);
+				fogSample += tex3D(fogVolume, fogCoord + off2);
+				fogSample += tex3D(fogVolume, fogCoord + off3);
+				fogSample *= 0.25f;
+
+
 				half4 atmoSample = tex3D(atmoVolume, atmoCoord);
 
 				float3 combinedColor = sceneColor * atmoSample.a + atmoSample.rgb;

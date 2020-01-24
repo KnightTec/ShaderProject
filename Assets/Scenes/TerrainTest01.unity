@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.14034908, g: 0.26946017, b: 0.3283766, a: 0.2124195}
+  m_AmbientSkyColor: {r: 0.13509713, g: 0.26335362, b: 0.3220193, a: 0.20755911}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 0
@@ -725,41 +725,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f41f7d7e2005924a8e50eb70dc6b8df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controlPoints:
-  - angle: 5
-    intensity: 1.5
-    color: {r: 1, g: 0.5633511, b: 0.33490568, a: 0}
-    ambientColor: {r: 0.23455065, g: 0.32314324, b: 0.3967553, a: 0}
-  - angle: 30
-    intensity: 2.3
-    color: {r: 1, g: 0.9313725, b: 0.75, a: 0}
-    ambientColor: {r: 0.34191445, g: 0.47932023, b: 0.61720675, a: 0}
-  - angle: 90
-    intensity: 2.5
-    color: {r: 1, g: 0.9787736, b: 0.8726415, a: 0}
-    ambientColor: {r: 0.34191445, g: 0.47932023, b: 0.61720675, a: 0}
-  - angle: 150
-    intensity: 2.3
-    color: {r: 1, g: 0.9333334, b: 0.7490196, a: 0}
-    ambientColor: {r: 0.3515327, g: 0.48514998, b: 0.62396055, a: 0}
-  - angle: 175
-    intensity: 1.5
-    color: {r: 1, g: 0.5647059, b: 0.33333334, a: 0}
-    ambientColor: {r: 0.23292929, g: 0.32166424, b: 0.39930737, a: 0}
-  - angle: 181
-    intensity: 0.001
-    color: {r: 1, g: 0.40784317, b: 0.098039225, a: 0}
-    ambientColor: {r: 0.025490196, g: 0.021568628, b: 0.021568628, a: 0}
-  - angle: 359
-    intensity: 0.001
-    color: {r: 1, g: 0.40784317, b: 0.098039225, a: 0}
-    ambientColor: {r: 0.025186857, g: 0.02121901, b: 0.02121901, a: 0}
-  - angle: 5
-    intensity: 1
-    color: {r: 1, g: 0.40784317, b: 0.098039225, a: 0}
-    ambientColor: {r: 0.16666667, g: 0.2254902, b: 0.28235295, a: 0}
-  lightDataShader: {fileID: 4800000, guid: 0102f3c1ab4176548a79d1f604a847e1, type: 3}
-  skyMaterial: {fileID: 2100000, guid: 7fc249f876a190840961e60c8155c3ef, type: 2}
 --- !u!1 &181195392
 GameObject:
   m_ObjectHideFlags: 0
@@ -2038,8 +2003,8 @@ Light:
   m_Enabled: 1
   serializedVersion: 9
   m_Type: 1
-  m_Color: {r: 1, g: 0.70642126, b: 0.31897825, a: 0.35895878}
-  m_Intensity: 1.0778763
+  m_Color: {r: 1, g: 0.6980001, b: 0.30204725, a: 0.5185647}
+  m_Intensity: 1.5566941
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -2084,7 +2049,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 7.36e-43, y: -0.00000059368404, z: 7.36e-43, w: -0.0000004878607}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 1e-45, w: 0}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -2095,7 +2060,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1333302444}
-  m_LocalRotation: {x: 0.07845912, y: 0, z: 0, w: 0.99691737}
+  m_LocalRotation: {x: 0.05651856, y: 0, z: 0, w: 0.9984016}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -3352,7 +3317,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!108 &976439090
 Light:
   m_ObjectHideFlags: 0
@@ -3439,7 +3404,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 976439089}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76713ae4f711a8b4297438ed2c20731b, type: 3}
   m_Name: 
@@ -3511,7 +3476,7 @@ MonoBehaviour:
   finalBlitToCameraTarget: 0
   antialiasingMode: 3
   temporalAntialiasing:
-    jitterSpread: 0.25
+    jitterSpread: 0.3
     sharpness: 0.25
     stationaryBlending: 0.95
     motionBlending: 0.85
@@ -3579,29 +3544,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   atmosphereScattering: 0.0001
   atmosphereScatterColor: {r: 0.2509804, g: 0.5019608, b: 1, a: 1}
-  atmosphereHeight: 0.1
+  atmosphereHeight: 0.2
   atmosphereFalloff: 0.001
   sunLightMultiplier: 30
   distance: 900
-  volumeResolution: {x: 240, y: 135, z: 128}
-  scattering: 0.2631289
+  volumeResolution: {x: 240, y: 135, z: 96}
+  scattering: 0.21559995
   scatterColor: {r: 1, g: 1, b: 1, a: 1}
   anisotropy: 0.6
-  transmittance: 0
   fogHeight: 0.5
-  fogFalloff: 0.05609102
-  ambientIntensity: 0.4
+  fogFalloff: 0.05674585
+  ambientIntensity: 0.6
   noiseIntensity: 0
-  noiseSize: 4
-  noiseDirection: {x: 1, y: -2, z: 2}
-  directionalLightData: {fileID: 177525441}
-  densityLightingShader: {fileID: 7200000, guid: 4ced60263f7811f4f808303e1930387c,
-    type: 3}
-  temporalFilterShader: {fileID: 7200000, guid: 0019dd3b7dcac894685ac27fbf63a716,
-    type: 3}
-  scatteringShader: {fileID: 7200000, guid: 1345916c6eb7a27499b56f638bb9ba43, type: 3}
-  applyFogShader0: {fileID: 4800000, guid: 6a64b2b2cdd5ca34fb8dd4e7f6e2c871, type: 3}
-  jitterStrength: 1
+  noiseSize: 16
+  noiseDirection: {x: 1, y: 2, z: 2}
+  jitterStrength: 0.7
 --- !u!81 &984287396
 AudioListener:
   m_ObjectHideFlags: 0
@@ -4215,27 +4172,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db806be28db1ce14b9de0dfeee427327, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  time: 0.275
+  time: 0.268
   sun:
     serializedVersion: 2
     key0: {r: 1, g: 0.7596622, b: 0.4481132, a: 0}
-    key1: {r: 1, g: 0.68235296, b: 0.27058825, a: 0.3019608}
+    key1: {r: 1, g: 0.68235296, b: 0.27058825, a: 0.5019608}
     key2: {r: 1, g: 0.977111, b: 0.8632076, a: 1}
-    key3: {r: 1, g: 0.6955614, b: 0.4009434, a: 0.49411765}
-    key4: {r: 1, g: 0.5952023, b: 0.27058828, a: 0}
+    key3: {r: 1, g: 0.5952023, b: 0.27058828, a: 0.49411765}
+    key4: {r: 1, g: 1, b: 1, a: 0}
     key5: {r: 1, g: 1, b: 1, a: 0}
     key6: {r: 1, g: 1, b: 1, a: 0}
     key7: {r: 0, g: 0, b: 0, a: 0}
     ctime0: 0
     ctime1: 16711
     ctime2: 32768
-    ctime3: 42405
-    ctime4: 49479
+    ctime3: 49479
+    ctime4: 65535
     ctime5: 65535
     ctime6: 65535
     ctime7: 0
     atime0: 15728
-    atime1: 16711
+    atime1: 17039
     atime2: 32768
     atime3: 49151
     atime4: 49807
@@ -4243,16 +4200,16 @@ MonoBehaviour:
     atime6: 0
     atime7: 0
     m_Mode: 0
-    m_NumColorKeys: 6
+    m_NumColorKeys: 5
     m_NumAlphaKeys: 5
   sunIntensityMultiplier: 3
   ambient:
     serializedVersion: 2
-    key0: {r: 0.3921569, g: 0.3921569, b: 0.3921569, a: 0.19607843}
+    key0: {r: 0.3921569, g: 0.3921569, b: 0.3921569, a: 0.11764706}
     key1: {r: 0.32133323, g: 0.6378516, b: 0.7830189, a: 0.49411765}
     key2: {r: 0.6273585, g: 0.8907818, b: 1, a: 0.7058824}
     key3: {r: 0.32156864, g: 0.6392157, b: 0.7843138, a: 0.49411765}
-    key4: {r: 0.3921569, g: 0.3921569, b: 0.3921569, a: 0.19607843}
+    key4: {r: 0.3921569, g: 0.3921569, b: 0.3921569, a: 0.11764706}
     key5: {r: 1, g: 1, b: 1, a: 0}
     key6: {r: 0, g: 0, b: 0, a: 0}
     key7: {r: 0, g: 0, b: 0, a: 0}
@@ -4331,13 +4288,13 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0.49228072
     - serializedVersion: 3
-      time: 0.25568652
-      value: 0.39418852
-      inSlope: -1.0988936
-      outSlope: -1.0988936
+      time: 0.25022703
+      value: 0.30412772
+      inSlope: -0.94473845
+      outSlope: -0.94473845
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.10167681
+      inWeight: 0.08184887
       outWeight: 0.30721632
     - serializedVersion: 3
       time: 0.32046887

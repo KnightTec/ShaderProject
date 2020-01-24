@@ -3,6 +3,7 @@ using UnityEngine.Rendering;
 
 //https://bartwronski.files.wordpress.com/2014/08/bwronski_volumetric_fog_siggraph2014.pdf
 
+// Renders volumetric fog and atmosphere
 [RequireComponent(typeof(Camera))]
 [ExecuteAlways]
 public class VolumetricFogRenderer : MonoBehaviour
@@ -10,7 +11,7 @@ public class VolumetricFogRenderer : MonoBehaviour
     [Header("Atmosphere")]
     [Range(0, 10)]
     public float atmosphereScattering = 0.01f;
-    public Color atmosphereScatterColor = Color.white;
+    public Color atmosphereScatterColor = new Color(63, 127, 255);
     public float atmosphereHeight = 0;
     [Range(0.00001f, 0.2f)]
     public float atmosphereFalloff = 0.001f;
@@ -24,27 +25,24 @@ public class VolumetricFogRenderer : MonoBehaviour
     public float scattering = 0.1f;
     public Color scatterColor = Color.white;
     [Range(-0.99f, 0.99f)]
-    public float anisotropy = 0;
-    [Range(0, 1)]
-    public float transmittance = 0;
+    public float anisotropy = 0.6f;
     public float fogHeight;
     [Range(0.00001f, 0.2f)]
-    public float fogFalloff;
+    public float fogFalloff = 0.1f;
     [Range(0, 1)]
     public float ambientIntensity = 0.5f;
     [Range(0, 1)]
-    public float noiseIntensity = 1;
+    public float noiseIntensity = 0;
     [Range(0.1f, 100)]
     public float noiseSize = 8;
     public Vector3 noiseDirection;
 
-    public DirectionalLightData directionalLightData;
-    public ComputeShader densityLightingShader;
-    public ComputeShader temporalFilterShader;
-    public ComputeShader scatteringShader;
-    public Shader applyFogShader0;
-    public float jitterStrength = 0.8f;
+    public float jitterStrength = 0.5f;
 
+    private ComputeShader densityLightingShader;
+    private ComputeShader temporalFilterShader;
+    private ComputeShader scatteringShader;
+    
     private Texture blueNoise1D;
     private Texture blueNoise4D;
     private int ditherIndex = 0;
@@ -71,19 +69,15 @@ public class VolumetricFogRenderer : MonoBehaviour
     private RenderTexture accumulatedAtmoVol;
 
     private ComputeBuffer pointLightBuffer;
-   
+    private ComputeBuffer worldToShadowBuffer;
+    private Material lightDataCopyMaterial;
+
     private Vector4[] frustumRays;
     private float[] sliceDepths;
     private float[][] jitteredSliceDepths;
     private int jitterIndex = 0;
     private Matrix4x4 historyViewProj_1;
     private int swapCounter = 0;
-    private int[] bayerMatrix = {
-        0, 8, 2, 10,
-        12, 4, 14, 6,
-        3, 11, 1, 9,
-        15, 7, 13, 5
-    };
     private Vector4[][] jitteredFrustumRays;
     private float[] atmoSliceDepths;
    
@@ -103,6 +97,9 @@ public class VolumetricFogRenderer : MonoBehaviour
     private Matrix4x4 projectiomMatrix;
 
     private CommandBuffer cbGrabCascadeShadowMap;
+    private CommandBuffer cbGrabWorldToShadow;
+
+    private Material skyMaterial;
 
     void OnEnable()
     {
@@ -111,8 +108,12 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     void Start()
     {
+        densityLightingShader = Resources.Load<ComputeShader>("Shaders/VolumetricFog/DensityLighting");
+        temporalFilterShader = Resources.Load<ComputeShader>("Shaders/VolumetricFog/TemporalFilter");
+        scatteringShader = Resources.Load<ComputeShader>("Shaders/VolumetricFog/Scattering");
+
         cam = GetComponent<Camera>();
-        applyFogMaterial = new Material(applyFogShader0);
+        applyFogMaterial = new Material(Shader.Find("Hidden/ApplyFogPS"));
         fogDensityLightingKernel = densityLightingShader.FindKernel("CSMain");
         atmoDensityLightingKernel = 1;
         temporalFilterKernel = temporalFilterShader.FindKernel("CSMain");
@@ -139,10 +140,12 @@ public class VolumetricFogRenderer : MonoBehaviour
         blueNoise4D = Resources.Load<Texture>("Textures/BlueNoiseRGBA");
 
         cbGrabCascadeShadowMap = new CommandBuffer();
-    }
+        cbGrabWorldToShadow = new CommandBuffer();
+        worldToShadowBuffer = new ComputeBuffer(1, 256);
+        lightDataCopyMaterial = new Material(Shader.Find("Hidden/CopyWorldToShadowMatrix"));
+        Graphics.SetRandomWriteTarget(1, worldToShadowBuffer);
 
-    void grabCascadeShadowMap()
-    {
+        skyMaterial = Resources.Load<Material>("Mateials/Skybox");
     }
 
     void OnDestroy()
@@ -164,11 +167,9 @@ public class VolumetricFogRenderer : MonoBehaviour
         swapCounter = (swapCounter + 1) % 2;
         jitterIndex = (jitterIndex + 1) % 15;
 
-       // if (swapCounter == 0)
-        { 
-            ditherIndex = (ditherIndex + 1) % 4;
-        }
+        ditherIndex = (ditherIndex + 1) % 4;
 
+        skyMaterial.SetMatrix("_rotationMatrix", Matrix4x4.Rotate(directionalLight.transform.rotation));
     }
 
     private void OnPreRender()
@@ -277,10 +278,14 @@ public class VolumetricFogRenderer : MonoBehaviour
                 {
                     directionalLight = lights[i];
                     cbGrabCascadeShadowMap.Clear();
-                    // copy cascade shadowmap
+                    // copy cascade shadowmap and worldToShadow matrices
                     RenderTargetIdentifier shadowmap = BuiltinRenderTextureType.CurrentActive;
                     cbGrabCascadeShadowMap.SetGlobalTexture("_CascadeShadowMapCopy", shadowmap);
+                    
                     directionalLight.AddCommandBuffer(LightEvent.AfterShadowMap, cbGrabCascadeShadowMap);
+
+                    cbGrabWorldToShadow.DrawProcedural(Matrix4x4.identity, lightDataCopyMaterial, 0, MeshTopology.Points, 1);
+                    directionalLight.AddCommandBuffer(LightEvent.BeforeScreenspaceMask, cbGrabWorldToShadow);
                 }
                 continue;
             }
@@ -340,7 +345,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         //TODO: release buffers correctly (might be the reason for some crashes)
 
         // render volumetric fog
-        directionalLightData.setComputeBuffer(fogDensityLightingKernel, densityLightingShader);
+        densityLightingShader.SetBuffer(fogDensityLightingKernel, "lightData", worldToShadowBuffer);
         densityLightingShader.SetVector("lightSplitsNear", Shader.GetGlobalVector("_LightSplitsNear"));
         densityLightingShader.SetVector("lightSplitsFar", Shader.GetGlobalVector("_LightSplitsFar"));
         densityLightingShader.SetVector("dirLightColor", directionalLight.color * directionalLight.intensity);
@@ -355,7 +360,6 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloat("g", anisotropy);
         densityLightingShader.SetFloat("fogHeight", fogHeight);
         densityLightingShader.SetFloat("fogFalloff", fogFalloff);
-        densityLightingShader.SetFloat("transmittance", 1 - transmittance);
         densityLightingShader.SetFloats("sliceDepths", jitteredSliceDepths[jitterIndex]);
         densityLightingShader.SetVector("scatterColor", scatterColor);
         densityLightingShader.SetFloat("time", Time.time);
@@ -388,17 +392,16 @@ public class VolumetricFogRenderer : MonoBehaviour
         scatteringShader.SetTexture(fogScatteringKernel, "fogVolume", filteredFogVolume);
         scatteringShader.SetFloats("sliceDepths", sliceDepths);
         scatteringShader.SetVector("scatterColor", scatterColor);
+        scatteringShader.SetInt("depthSliceCount", volumeResolution.z);
         scatteringShader.Dispatch(fogScatteringKernel, (volumeResolution.x + 7) / 8, (volumeResolution.y + 7) / 8, 1);
 
         // render atmosphere
-        //TODO: fix variables
         densityLightingShader.SetTexture(atmoDensityLightingKernel, "fogVolume", atmosphereVolume);
         densityLightingShader.SetVector("dirLightColor", Color.white * directionalLight.intensity);
         densityLightingShader.SetVectorArray("frustumRays", frustumRays);
         densityLightingShader.SetFloat("scattering", atmosphereScattering);
         densityLightingShader.SetFloat("fogHeight", atmosphereHeight);
         densityLightingShader.SetFloat("fogFalloff", atmosphereFalloff);
-        densityLightingShader.SetFloat("transmittance", 1);
         densityLightingShader.SetFloats("sliceDepths", atmoSliceDepths);
         densityLightingShader.SetVector("scatterColor", atmosphereScatterColor);
         densityLightingShader.SetVector("ambientLightColor", Color.black);
@@ -410,8 +413,10 @@ public class VolumetricFogRenderer : MonoBehaviour
         scatteringShader.SetTexture(atmoScatteringKernel, "fogVolume", atmosphereVolume);
         scatteringShader.SetFloats("sliceDepths", atmoSliceDepths);
         scatteringShader.SetVector("scatterColor", atmosphereScatterColor);
+        scatteringShader.SetInt("depthSliceCount", 32);
         scatteringShader.Dispatch(atmoScatteringKernel, 4, 4, 1);
 
+        // apply fog and atmosphere to scene
         applyFogMaterial.SetTexture("_MainTex", source);
         applyFogMaterial.SetTexture("fogVolume", accumulatedFogVolume);
         applyFogMaterial.SetTexture("atmoVolume", accumulatedAtmoVol);
@@ -431,6 +436,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogMaterial.SetFloat("logfarOverNearInv", 1 / Mathf.Log(cam.farClipPlane / cam.nearClipPlane));
         applyFogMaterial.SetVector("volumeResolutionWH", new Vector4(volRes.x, volRes.y, 1.0f / volRes.x, 1.0f / volRes.y));
         applyFogMaterial.SetTexture("blueNoiseTex", blueNoise4D);
+        applyFogMaterial.SetInt("ditherIndex", ditherIndex);
         Shader.EnableKeyword("FOG_FALLBACK");
 
         Graphics.Blit(source, destination, applyFogMaterial);

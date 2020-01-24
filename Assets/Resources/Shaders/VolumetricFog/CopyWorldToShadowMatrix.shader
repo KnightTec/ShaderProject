@@ -1,4 +1,4 @@
-﻿Shader "Hidden/DirectionalLightData"
+﻿Shader "Hidden/CopyWorldToShadowMatrix"
 {
     SubShader
     {

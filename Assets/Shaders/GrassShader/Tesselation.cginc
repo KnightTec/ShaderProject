@@ -20,12 +20,13 @@ tessFactors patch(InputPatch<v2g, 3> ip) {
     clip[1] = UnityObjectToClipPos ( ip[1].vertex );    clip[1] /= clip[1].w; 
     clip[2] = UnityObjectToClipPos ( ip[2].vertex );    clip[2] /= clip[2].w;
 
+	float dist = distance(mul(unity_ObjectToWorld, avg), _WorldSpaceCameraPos);
     float fac;
-    if ( ! inside(clip[0]) && ! inside(clip[1]) && ! ! inside(clip[2]) ) {
+    if ( ! inside(clip[0]) && ! inside(clip[1]) && ! inside(clip[2])) {
         fac = 0;
     }
     else {   
-        float dist = distance(mul(unity_ObjectToWorld, avg), _WorldSpaceCameraPos);
+        
         float x = lerp (0, 1, min( _MaxDistance, dist) / _MaxDistance);
         
         fac = lerp(_TessFactor, 1, x );

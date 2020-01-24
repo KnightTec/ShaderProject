@@ -1,6 +1,6 @@
 ﻿#include "UnityCG.cginc"
 #include "FogCommon.cginc"
-#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE SELF_SHADOW
 #pragma kernel CSMain SELF_SHADOW ATMOSPHERE
 
 #define PI 3.14159
@@ -27,7 +27,6 @@ float scattering;
 float g;
 float fogHeight;
 float fogFalloff;
-float transmittance;
 float4 sliceDepths[32];
 float4 scatterColor;
 float time;
@@ -91,7 +90,7 @@ float3 calcTransmittance(float3 position, float3 viewDirection, float distance)
 	opticalDepth -= EXP(-fogFalloff * position.y + fogHeight);
 	opticalDepth /= -fogFalloff * viewDirection.y;
 	// return transmittance
-	return EXP(-opticalDepth * scattering * transmittance * scatterColor);
+	return EXP(-opticalDepth * scattering * scatterColor);
 }
 
 #ifdef NOISE
@@ -167,7 +166,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 volCoord = float3(float3(id) * volumeResolution + 0.5f * volumeResolution);
 	float z = sliceDepths[id.z >> 2][id.z & 3];
 #ifdef JITTER
-	float off = blueNoise.Load(int3(id.x % 64, id.y % 64, 0))[ditherIndex] * 0.95f;
+	float off = blueNoise.Load(int3(id.xy, 0)).r;
 	z *= (1 + off * sliceProportion);
 #endif
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
@@ -185,14 +184,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	shadowDepth = cascadeShadowMap.GatherRed(MyPointClampSampler, shadowCoord.xy, int2(2, 2));
 	visibility += float4(shadowDepth < shadowCoord.z);
 	visibility.r = dot(visibility, 0.0625f);
-
 #else
 	visibility.r = 1;
 #endif	
 
 #ifdef NOISE
-	float noise = saturate(perlinNoise((worldPosition + noiseDirection.xyz * time) * noiseSize));
-	noise = noise * 0.6 + 0.4 *saturate(perlinNoise((worldPosition + noiseDirection.xyz * time)));
+	float noise = saturate(perlinNoise((worldPosition - noiseDirection.xyz * time) * noiseSize));
+	noise = noise * 0.7 + 0.3 *saturate(perlinNoise((worldPosition - noiseDirection.xyz * time)));
 	noise = noise * noiseIntensity + (1 - noiseIntensity);
 
 	scattering *= saturate(EXP(-(worldPosition.y * fogFalloff - fogHeight)) * noise);
@@ -227,8 +225,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 		float3 lightVector = light.position.xyz - worldPosition;
 		float3 lightVecNorm = normalize(lightVector);
 		float lightDist = length(lightVector);
-		float attentuation = 5 * lightDist / light.range;
-		attentuation = 1 / (attentuation * attentuation + 1);
+		float attentuation = light.range * 0.4f / max(lightDist, 0.2f);
+		attentuation *= attentuation;
 		phase = PHASE(worldPosition, lightVecNorm);
 		result.rgb += light.color.rgb * attentuation * phase 
 			* light.intensity;

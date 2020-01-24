@@ -10,7 +10,7 @@ float4 scatterColor;
 #ifdef ATMOPSHERE
 #define DEPTH 32
 #else
-#define DEPTH 128
+#define DEPTH 96
 #endif
 
 float4 accumulateScattering(float3 accumScattering, float accumOpticalDepth, float3 scattering, float opticalDepth, float sliceDepth) 
@@ -28,6 +28,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	currentValue *= lastSliceDepth;
 	currentValue.rgb *= exp(-currentValue.a * scatterColor.rgb);
 	accumulatedFogVolume[uint3(id.xy, 0)] = half4(currentValue.xyz, exp(-currentValue.a));
+	[unroll]
     for (uint i = 1; i < DEPTH; i++) 
 	{
 		float4 nextValue = fogVolume[uint3(id.xy, i)];
