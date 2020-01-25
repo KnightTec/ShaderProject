@@ -10,7 +10,7 @@ float4 scatterColor;
 #ifdef ATMOPSHERE
 #define DEPTH 32
 #else
-#define DEPTH 96
+#define DEPTH 128
 #endif
 
 float4 accumulateScattering(float3 accumScattering, float accumOpticalDepth, float3 scattering, float opticalDepth, float sliceDepth) 

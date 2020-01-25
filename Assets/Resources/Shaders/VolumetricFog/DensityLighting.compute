@@ -1,6 +1,6 @@
 ﻿#include "UnityCG.cginc"
 #include "FogCommon.cginc"
-#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE SELF_SHADOW
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE
 #pragma kernel CSMain SELF_SHADOW ATMOSPHERE
 
 #define PI 3.14159
@@ -46,7 +46,8 @@ struct FogPointLight
 };
 RWStructuredBuffer<FogPointLight> pointLights;
 #endif
-int pointLightCount;
+uint pointLightCount;
+
 
 float3 volumeResolution;
 Texture2D<float4> blueNoise;
@@ -218,18 +219,18 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 #ifdef LOCAL_LIGHTS
 	// point light lighting
-	for (int i = 0; i < pointLightCount; i++) 
+	for (uint i = 0; i < pointLightCount; i++) 
 	{
 		FogPointLight light = pointLights[i];
 		//inverse-square light attenuation
 		float3 lightVector = light.position.xyz - worldPosition;
 		float3 lightVecNorm = normalize(lightVector);
 		float lightDist = length(lightVector);
-		float attentuation = light.range * 0.4f / max(lightDist, 0.2f);
+		float attentuation = 10 / max(lightDist, 0.2f);
 		attentuation *= attentuation;
 		phase = PHASE(worldPosition, lightVecNorm);
 		result.rgb += light.color.rgb * attentuation * phase 
-			* light.intensity;
+			* light.intensity * calcTransmittance(light.position, lightVecNorm, lightDist);
 	}
 #endif
 	result.rgb *= scattering * scatterColor;

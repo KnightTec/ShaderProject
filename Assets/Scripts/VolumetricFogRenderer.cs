@@ -64,12 +64,16 @@ public class VolumetricFogRenderer : MonoBehaviour
     private RenderTexture exponentialHistoryFogVolume;
     private RenderTexture filteredFogVolume;
     private RenderTexture accumulatedFogVolume;
-
     private RenderTexture atmosphereVolume;
     private RenderTexture accumulatedAtmoVol;
 
     private ComputeBuffer pointLightBuffer;
+    private ComputeBuffer spotLightBuffer;
     private ComputeBuffer worldToShadowBuffer;
+
+    private CommandBuffer cbGrabCascadeShadowMap;
+    private CommandBuffer cbGrabWorldToShadow;
+
     private Material lightDataCopyMaterial;
 
     private Vector4[] frustumRays;
@@ -95,9 +99,6 @@ public class VolumetricFogRenderer : MonoBehaviour
     private Vector3 volRes;
     private Vector4 clipPlanes;
     private Matrix4x4 projectiomMatrix;
-
-    private CommandBuffer cbGrabCascadeShadowMap;
-    private CommandBuffer cbGrabWorldToShadow;
 
     private Material skyMaterial;
 
@@ -125,12 +126,15 @@ public class VolumetricFogRenderer : MonoBehaviour
         atmoSliceDepths = new float[32];
         jitteredSliceDepths = new float[15][];
         calculateSliceDepths();
+
         pointLightBuffer = new ComputeBuffer(64, 40);
+        spotLightBuffer = new ComputeBuffer(64, 64);
+        pointLights = new FogPointLight[64];
+
         float logfarOverNearInv = 1 / Mathf.Log(distance / cam.nearClipPlane);
         float logNearPlane = Mathf.Log(cam.nearClipPlane);
         clipPlanes = new Vector4(cam.nearClipPlane, distance, logfarOverNearInv, logNearPlane);
         volRes = new Vector3(volumeResolution.x, volumeResolution.y, volumeResolution.z);
-
         float farPlane = cam.farClipPlane;
         cam.farClipPlane = distance;
         projectiomMatrix = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true);
@@ -145,7 +149,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         lightDataCopyMaterial = new Material(Shader.Find("Hidden/CopyWorldToShadowMatrix"));
         Graphics.SetRandomWriteTarget(1, worldToShadowBuffer);
 
-        skyMaterial = Resources.Load<Material>("Mateials/Skybox");
+        skyMaterial = Resources.Load<Material>("Materials/Skybox");
     }
 
     void OnDestroy()
@@ -268,8 +272,7 @@ public class VolumetricFogRenderer : MonoBehaviour
     private void getLightData()
     {
         Light[] lights = FindObjectsOfType(typeof(Light)) as Light[];
-        pointLights = new FogPointLight[lights.Length];
-        pointLightCount = 0; ;
+        pointLightCount = 0;
         for (int i = 0, j = 0; i < lights.Length; i++)
         {
             if (lights[i].type == LightType.Directional)
@@ -287,17 +290,15 @@ public class VolumetricFogRenderer : MonoBehaviour
                     cbGrabWorldToShadow.DrawProcedural(Matrix4x4.identity, lightDataCopyMaterial, 0, MeshTopology.Points, 1);
                     directionalLight.AddCommandBuffer(LightEvent.BeforeScreenspaceMask, cbGrabWorldToShadow);
                 }
-                continue;
-            }
-            if (lights[i].type != LightType.Point)
+            } 
+            else if (lights[i].type == LightType.Point)
             {
-                continue;
+                pointLights[j].position = lights[i].transform.position;
+                pointLights[j].color = lights[i].color;
+                pointLights[j].range = lights[i].range;
+                pointLights[j].intensity = lights[i].intensity;
+                j = ++pointLightCount;
             }
-            pointLights[j].position = lights[i].transform.position;
-            pointLights[j].color = lights[i].color;
-            pointLights[j].range = lights[i].range;
-            pointLights[j].intensity = lights[i].intensity;
-            j = ++pointLightCount;
         }
     }
 
@@ -344,14 +345,17 @@ public class VolumetricFogRenderer : MonoBehaviour
 
         //TODO: release buffers correctly (might be the reason for some crashes)
 
+        pointLightBuffer.SetData(pointLights);
+
         // render volumetric fog
         densityLightingShader.SetBuffer(fogDensityLightingKernel, "lightData", worldToShadowBuffer);
         densityLightingShader.SetVector("lightSplitsNear", Shader.GetGlobalVector("_LightSplitsNear"));
         densityLightingShader.SetVector("lightSplitsFar", Shader.GetGlobalVector("_LightSplitsFar"));
         densityLightingShader.SetVector("dirLightColor", directionalLight.color * directionalLight.intensity);
         densityLightingShader.SetVector("dirLightDirection", dirLightDirection);
-        pointLightBuffer.SetData(pointLights);
         densityLightingShader.SetBuffer(fogDensityLightingKernel, "pointLights", pointLightBuffer);
+        densityLightingShader.SetInt("pointLightCount", pointLightCount);
+        densityLightingShader.SetBuffer(fogDensityLightingKernel, "spotLights", spotLightBuffer);
         densityLightingShader.SetVector("cameraPosition", transform.position);
         densityLightingShader.SetTextureFromGlobal(fogDensityLightingKernel, "cascadeShadowMap", "_CascadeShadowMapCopy");
         densityLightingShader.SetTexture(fogDensityLightingKernel, "fogVolume", currentfogVolume);
@@ -364,8 +368,6 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetVector("scatterColor", scatterColor);
         densityLightingShader.SetFloat("time", Time.time);
         densityLightingShader.SetFloat("noiseIntensity", noiseIntensity);
-        densityLightingShader.SetBuffer(fogDensityLightingKernel, "pointLights", pointLightBuffer);
-        densityLightingShader.SetInt("pointLightCount", pointLightCount);
         densityLightingShader.SetVector("ambientLightColor", RenderSettings.ambientLight * ambientIntensity);
         densityLightingShader.SetFloat("noiseSize", 1.0f / noiseSize);
         densityLightingShader.SetVector("noiseDirection", noiseDirection);
@@ -382,7 +384,8 @@ public class VolumetricFogRenderer : MonoBehaviour
         temporalFilterShader.SetVectorArray("frustumRays", frustumRays);
         temporalFilterShader.SetFloats("sliceDepths", sliceDepths);
         temporalFilterShader.SetVector("clipPlanes", clipPlanes);
-        temporalFilterShader.SetVector("volumeResolution", volResInv);
+        temporalFilterShader.SetVector("volumeResolutionInv", volResInv);
+        temporalFilterShader.SetVector("volumeRes", volRes);
         temporalFilterShader.SetFloat("farPlane", cam.farClipPlane);
         temporalFilterShader.SetFloat("distance", distance);
         temporalFilterShader.Dispatch(temporalFilterKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);

@@ -77,7 +77,7 @@
 				float2 pixCoord = i.uv * _ScreenParams.xy;
 
 				// dithered sampling
-				float4 noise = blueNoiseTex.Load(int3(pixCoord, 0) & 1023);
+				float4 noise = blueNoiseTex.Load(int3(pixCoord, 0) & 1023) * 1.5f;
 				float3 off0 = float3(noise[ditherIndex] * volumeResolutionWH.zw, 0);
 				uint noiseIndex1 = (ditherIndex + 1) & 3;
 				float3 off1 = float3(float2(-noise[noiseIndex1], noise[noiseIndex1]) * volumeResolutionWH.zw, 0);
@@ -90,7 +90,6 @@
 				fogSample += tex3D(fogVolume, fogCoord + off2);
 				fogSample += tex3D(fogVolume, fogCoord + off3);
 				fogSample *= 0.25f;
-
 
 				half4 atmoSample = tex3D(atmoVolume, atmoCoord);
 

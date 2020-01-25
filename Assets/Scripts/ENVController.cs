@@ -45,7 +45,7 @@ public class ENVController : MonoBehaviour
 
         // Insert other controls here
 
-        time += Time.deltaTime * Input.GetAxis("Jump") * 0.01f;
+        time += Input.GetAxis("Jump") * Time.deltaTime * 0.01f;
         if (time > 1)
         {
             time = 0;
