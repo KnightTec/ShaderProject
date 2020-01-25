@@ -5949,22 +5949,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e9bca6c17670f49ac8bfcf51d00799, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  atmosphereScattering: 0.0001
+  atmosphereScattering: 0
   atmosphereScatterColor: {r: 0.2509804, g: 0.5019608, b: 1, a: 1}
   atmosphereHeight: 0
   atmosphereFalloff: 0.001
   sunLightMultiplier: 30
   distance: 300
   volumeResolution: {x: 240, y: 135, z: 128}
-  scattering: 0.093777865
+  selfShadow: 0
+  scattering: 0.7617307
   scatterColor: {r: 1, g: 1, b: 1, a: 1}
   anisotropy: 0.6
-  fogHeight: 0
-  fogFalloff: 0.046940602
+  fogHeight: -1.5
+  fogFalloff: 0.1681474
   ambientIntensity: 0.5
-  noiseIntensity: 0
-  noiseSize: 0.1
-  noiseDirection: {x: 2, y: -0.5, z: 4}
+  noiseIntensity: 0.95
+  noiseSize: 16
+  noiseDirection: {x: 0.5, y: 1, z: 0.2}
   jitterStrength: 1
 --- !u!4 &626589489 stripped
 Transform:
@@ -13985,22 +13986,22 @@ PrefabInstance:
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 4.88e-43
+      value: 1.0388e-41
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 4.40442e-40
+      value: 6e-44
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 4.88e-43
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 4.240831e-20
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3d43ddd4bb61e284e9bac68916ecb159, type: 3}
@@ -21732,6 +21733,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
+      propertyPath: fogScattering.m_Curve.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
       propertyPath: directionalLight
       value: 
       objectReference: {fileID: 1010265233}
@@ -21743,7 +21749,7 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScatteringMultiplier
-      value: 2
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -21763,12 +21769,12 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].value
-      value: 0.22644103
+      value: 0.011366695
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].time
-      value: 0.25205493
+      value: 0.3484071
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -21779,6 +21785,196 @@ PrefabInstance:
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[0].value
       value: 0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[1].time
+      value: 0.25205493
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[1].value
+      value: 0.17524254
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[1].inSlope
+      value: -1.0988936
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[1].outSlope
+      value: -1.0988936
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[1].inWeight
+      value: 0.10167681
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[1].outWeight
+      value: 0.30721632
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[2].inSlope
+      value: -0.28792277
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[2].outSlope
+      value: -0.28792277
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[2].inWeight
+      value: 0.33333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[2].outWeight
+      value: 0.13722226
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[3].time
+      value: 0.5607391
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[3].value
+      value: 0.024753712
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[3].inSlope
+      value: -0.30069005
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[3].outSlope
+      value: -0.30069005
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[3].inWeight
+      value: 0.096528366
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[3].outWeight
+      value: 0.26614723
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[4].time
+      value: 0.7070253
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[4].value
+      value: 0.008964092
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[4].inSlope
+      value: 0.1025524
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[4].outSlope
+      value: 0.1025524
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[4].inWeight
+      value: 0.33333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[4].outWeight
+      value: 0.23893252
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[5].time
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[5].value
+      value: 0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[5].inSlope
+      value: 0.010976701
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[5].outSlope
+      value: 0.010976701
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[5].inWeight
+      value: 0.18727843
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogScattering.m_Curve.Array.data[5].outWeight
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogFalloff.m_Curve.Array.data[0].value
+      value: 0.16291067
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogFalloff.m_Curve.Array.data[1].value
+      value: 0.17977747
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogFalloff.m_Curve.Array.data[2].value
+      value: 0.14564726
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogFalloff.m_Curve.Array.data[3].value
+      value: 0.16291067
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogFalloff.m_Curve.Array.data[0].time
+      value: -0.0066886544
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogFalloff.m_Curve.Array.data[1].time
+      value: 0.2596677
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogFalloff.m_Curve.Array.data[2].time
+      value: 0.42810938
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogFalloff.m_Curve.Array.data[3].time
+      value: 0.99331135
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogFalloff.m_Curve.Array.data[1].inSlope
+      value: -0.06964957
+      objectReference: {fileID: 0}
+    - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
+        type: 3}
+      propertyPath: fogFalloff.m_Curve.Array.data[1].outSlope
+      value: -0.06964957
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c148567e76a2c0242bf341a3c6a3790c, type: 3}

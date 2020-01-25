@@ -107,10 +107,10 @@
 				viewDir = normalize(viewDir);
 				float3 fallbackFogStart = viewDir * distance + camPos;
 				float fallbackDistance = max(dist - (distance), 0);
-				float opticalDepth = exp(-fogFalloff * (fallbackFogStart.y + fallbackDistance * viewDir.y) + fogHeight);
-				opticalDepth -= exp(-fogFalloff * fallbackFogStart.y + fogHeight);
+				float opticalDepth = EXP(-fogFalloff * (fallbackFogStart.y + fallbackDistance * viewDir.y) + fogHeight);
+				opticalDepth -= EXP(-fogFalloff * fallbackFogStart.y + fogHeight);
 				opticalDepth /= -fogFalloff * viewDir.y;
-				float3 transmittance = exp(-opticalDepth * scattering * scatterColor * (1 - noiseIntensity));
+				float3 transmittance = EXP(-opticalDepth * scattering * scatterColor * (1 - noiseIntensity));
 				float3 scatteredColor = dirLightColor;
 				scatteredColor *= henyeyGreensteinPhaseFunction(worldPos, dirLightDirection, camPos, g);
 				scatteredColor += ambientColor;

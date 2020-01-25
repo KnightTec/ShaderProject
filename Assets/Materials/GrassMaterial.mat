@@ -92,7 +92,7 @@ Material:
     - _GrassColorOffset: 0.189
     - _GrassCutOff: 0.792
     - _MaxDistance: 30
-    - _MaxGrassHeight: 0.23
+    - _MaxGrassHeight: 0.5
     - _MaxGrassWidth: 0.0292
     - _Metallic: 0
     - _MinGrassHeight: 0.1

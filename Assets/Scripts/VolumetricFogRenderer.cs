@@ -19,15 +19,16 @@ public class VolumetricFogRenderer : MonoBehaviour
     public float sunLightMultiplier = 30;
 
     [Header("Fog")]
-    public float distance = 200;
+    public float distance = 150; // should not be higher than shadow distance
     public Vector3Int volumeResolution = new Vector3Int(240, 135, 128);
+    public bool selfShadow = false;
     [Range(0, 10)]
-    public float scattering = 0.1f;
+    public float scattering = 0.05f;
     public Color scatterColor = Color.white;
     [Range(-0.99f, 0.99f)]
     public float anisotropy = 0.6f;
     public float fogHeight;
-    [Range(0.00001f, 0.2f)]
+    [Range(0.00001f, 0.5f)]
     public float fogFalloff = 0.1f;
     [Range(0, 1)]
     public float ambientIntensity = 0.5f;
@@ -174,6 +175,15 @@ public class VolumetricFogRenderer : MonoBehaviour
         ditherIndex = (ditherIndex + 1) % 4;
 
         skyMaterial.SetMatrix("_rotationMatrix", Matrix4x4.Rotate(directionalLight.transform.rotation));
+
+        if (selfShadow)
+        {
+            fogDensityLightingKernel = 0;
+        } 
+        else
+        {
+            fogDensityLightingKernel = 2;
+        }
     }
 
     private void OnPreRender()
@@ -375,7 +385,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetTexture(fogDensityLightingKernel, "blueNoise", blueNoise4D);
         densityLightingShader.SetFloat("sliceProportion", sliceProportion);
         densityLightingShader.SetInt("ditherIndex", ditherIndex);
-        densityLightingShader.Dispatch(fogDensityLightingKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);
+        densityLightingShader.Dispatch(fogDensityLightingKernel, (volumeResolution.x + 7) / 8, (volumeResolution.y + 7) / 8, (volumeResolution.z));
         
         temporalFilterShader.SetVector("cameraPosition", transform.position);
         temporalFilterShader.SetTexture(temporalFilterKernel, "exponentialHistory", exponentialHistoryFogVolume);
@@ -410,7 +420,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetVector("ambientLightColor", Color.black);
         densityLightingShader.SetVector("volumeResolution", new Vector3(1, 1, 1) * 1.0f / 32.0f);
         densityLightingShader.SetFloat("sunLightIntensityMultiplier", sunLightMultiplier);
-        densityLightingShader.Dispatch(atmoScatteringKernel, 8, 8, 8);
+        densityLightingShader.Dispatch(atmoScatteringKernel, 4, 4, 32);
 
         scatteringShader.SetTexture(atmoScatteringKernel, "accumulatedFogVolume", accumulatedAtmoVol);
         scatteringShader.SetTexture(atmoScatteringKernel, "fogVolume", atmosphereVolume);
