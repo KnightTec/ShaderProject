@@ -1,6 +1,8 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
+//Nach cs.toronto.edu/~dt/siggraph97-course/cwr87/
+
 struct Boid {
 	float4x4 m;
 	float3 heading;

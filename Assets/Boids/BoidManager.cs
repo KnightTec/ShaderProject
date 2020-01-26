@@ -7,7 +7,7 @@ public class BoidManager : MonoBehaviour
 	[System.Serializable]
 	public struct Size {
 		public float x, y, z;
-	}
+    }
 
 	[System.Serializable]
 	public struct BoidSettings {

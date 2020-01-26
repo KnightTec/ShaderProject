@@ -241,7 +241,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boidSettings:
-    amount: 200
+    amount: 20
     model: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
     material: {fileID: 2100000, guid: 27c957ef10afc1f40ad685a9e7a9c66b, type: 2}
     size:
@@ -249,9 +249,9 @@ MonoBehaviour:
       y: 0.1
       z: 0.1
   size:
-    x: 10
-    y: 10
-    z: 10
+    x: 20
+    y: 5
+    z: 20
   logic: {fileID: 7200000, guid: 5c5e4f8d1b815e54e8d83d850af076b1, type: 3}
 --- !u!4 &1207789547
 Transform:
