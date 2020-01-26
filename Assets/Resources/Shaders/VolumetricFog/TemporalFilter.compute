@@ -2,7 +2,7 @@
 #pragma kernel CSMain
 
 Texture3D<half4> exponentialHistory;
-RWTexture3D<half4> blendedFogVolume;
+RWTexture3D<half4> fogVolume;
 RWTexture3D<half4> result;
 
 SamplerState MyLinearClampSampler;
@@ -16,13 +16,7 @@ float4 clipPlanes;
 float farPlane;
 float distance;
 float3 volumeRes;
-
-float3 getFrustumRay(float2 uv)
-{
-	float3 upperRay = lerp(frustumRays[1].xyz, frustumRays[2].xyz, uv.x);
-	float3 lowerRay = lerp(frustumRays[0].xyz, frustumRays[3].xyz, uv.x);
-	return lerp(lowerRay, upperRay, uv.y);
-}
+float3 historyNdcCorners[8];
 
 [numthreads(4,4,4)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -31,7 +25,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	// calculate position in history volume
 	float z = sliceDepths[id.z >> 2][id.z & 3];
-	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
+	float3 upperRay = lerp(frustumRays[1].xyz, frustumRays[2].xyz, volCoord.x);
+	float3 lowerRay = lerp(frustumRays[0].xyz, frustumRays[3].xyz, volCoord.x);
+	float3 frustrumRay = lerp(lowerRay, upperRay, volCoord.y);
+	float3 worldPosition = cameraPosition.xyz + z * frustrumRay;
 
 	float4 historyNdc = mul(historyViewProjection, float4(worldPosition, 1));
 	historyNdc /= historyNdc.w;
@@ -40,14 +37,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	z = clipPlanes.x + (farPlane - clipPlanes.x) * Linear01Depth(historyNdc.z);
 	z = min(z, distance);
 	historyVolumeCoord.z = (log(z) - clipPlanes.w) * clipPlanes.z;
-	
+
 	half4 historySample = exponentialHistory.SampleLevel(MyLinearClampSampler, historyVolumeCoord, 0);
 
 	// neighborhood clamping
 	half4 minSample = half4(1, 1, 1, 1);
 	half4 maxSample = half4(0, 0, 0, 0);
-	half4 samp;
-	samp = blendedFogVolume[uint3(id.x, id.y, id.z)];
+	half4 samp = fogVolume[uint3(id.x, id.y, id.z)];
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
 	uint xPlusOne = min(id.x + 1, volumeRes.x - 1);
@@ -56,37 +52,36 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	uint yMinusOne = max(id.y - 1, 0);
 	uint zPlusOne = min(id.z + 1, volumeRes.z - 1);
 	uint zMinusOne = max(id.z - 1, 0);
-	samp = blendedFogVolume[uint3(xPlusOne, yPlusOne, zPlusOne)];
+	samp = fogVolume[uint3(xPlusOne, yPlusOne, zPlusOne)];
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(xPlusOne, yPlusOne, zMinusOne)];
+	samp = fogVolume[uint3(xPlusOne, yPlusOne, zMinusOne)];
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(xPlusOne, yMinusOne, zPlusOne)];
+	samp = fogVolume[uint3(xPlusOne, yMinusOne, zPlusOne)];
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(xMinusOne, yPlusOne, zPlusOne)];
+	samp = fogVolume[uint3(xMinusOne, yPlusOne, zPlusOne)];
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(xPlusOne, yMinusOne, zMinusOne)];
+	samp = fogVolume[uint3(xPlusOne, yMinusOne, zMinusOne)];
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(xMinusOne, yPlusOne, zMinusOne)];
+	samp = fogVolume[uint3(xMinusOne, yPlusOne, zMinusOne)];
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(xMinusOne, yMinusOne, zPlusOne)];
+	samp = fogVolume[uint3(xMinusOne, yMinusOne, zPlusOne)];
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = blendedFogVolume[uint3(xMinusOne, yMinusOne, zMinusOne)];
+	samp = fogVolume[uint3(xMinusOne, yMinusOne, zMinusOne)];
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
 
 	half4 clampedHistory = clamp(historySample, minSample, maxSample);
 		
-	// slice depths are large further away -> more flickering -> clamp less
-	// ghosting less noticable at larger distance
+	// trade less flickering for more ghosting
 	clampedHistory = lerp(clampedHistory, historySample, 0.2f);
 
 	// exponential moving average
-	result[id] = lerp(blendedFogVolume[id], clampedHistory, 0.92f);
+	result[id] = lerp(fogVolume[id], clampedHistory, 0.92f);
 }
