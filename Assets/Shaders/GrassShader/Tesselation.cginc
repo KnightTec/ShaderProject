@@ -33,8 +33,8 @@ tessFactors patch(InputPatch<v2g, 3> ip) {
 
         float h = (
             tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r +
-            tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r +
-            tex2Dlod ( _HeightTex, float4 ( ip[0].uv, 0, 0) ).r ) / 3.;
+            tex2Dlod ( _HeightTex, float4 ( ip[1].uv, 0, 0) ).r +
+            tex2Dlod ( _HeightTex, float4 ( ip[2].uv, 0, 0) ).r ) / 3.;
         if ( h <= _MinGrassHeight )
             fac = 0;
     }
