@@ -52,7 +52,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _HeightTex:
-        m_Texture: {fileID: 2800000, guid: 3bc4da38f000f9a4895024f5fa295e1f, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8ba06ae52121417468bb5f7b987c6e1f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -84,15 +84,15 @@ Material:
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DiffSpec: 0.029
+    - _DiffSpec: 0.026
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _GrassColorOffset: 0.189
     - _GrassCutOff: 0.792
-    - _MaxDistance: 30
-    - _MaxGrassHeight: 0.5
+    - _MaxDistance: 50
+    - _MaxGrassHeight: 0.33
     - _MaxGrassWidth: 0.0292
     - _Metallic: 0
     - _MinGrassHeight: 0.1
@@ -103,9 +103,9 @@ Material:
     - _SpecularExp: 40
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TessFactor: 7
+    - _TessFactor: 9
     - _UVSec: 0
-    - _WindDepth: 100
+    - _WindDepth: 27.1
     - _WindSpeed: 0.8
     - _ZWrite: 1
     m_Colors:

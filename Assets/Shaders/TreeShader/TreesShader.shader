@@ -6,16 +6,17 @@
         _DistributionTex ("Tree Distibution tex", 2D) = "white" {}
         _WindTex ("Wind Tex", 2D) = "white" {}
         _Scale ("Tree Scale", Range(0,10)) = 1 
-        _Random("Tree Density", Range (1,0.99)) = 0.99
+        _Random("Tree Density", Range (1,0.0)) = 0.5
         _WindDepth("WindDepth", Range (0,5)) = 3
         _WindSpeed("WindSpeed", Range (0,1)) = 0.02
+        _VerticalSize ("Vetical Size", Range(0,1)) = 1
     }
     SubShader
     {
         Tags { "Queue"="Opaque" "RenderType"="Transparent" }
         Cull Back
         Blend SrcAlpha OneMinusSrcAlpha
-        ZWrite Off
+        ZWrite On
         
         Pass {
             CGPROGRAM
@@ -55,6 +56,7 @@
             float _Random;
             float _WindDepth;
             float _WindSpeed;
+            float _VerticalSize;
 
             v2g vert ( appdata IN ) {
                 v2g OUT;
@@ -80,7 +82,7 @@
                         random == 2 ? float2 (.5, 0) :
                         random >= 3 ? float2 (.5, .5) : float2 (.5, .5);
 
-                    float wind = tex2Dlod ( _WindTex, float4( IN[1].uv,0,0 ) + _WindSpeed * float4 (_Time.y, _Time.y, 0, 0) ).r;
+                    float wind = _WindDepth * tex2Dlod ( _WindTex, float4(IN[1].uv, 0, 0) + _WindSpeed * float4 (_Time.y, _Time.y,0,0) );
                     float4 middlePos = mul ( UNITY_MATRIX_V, o.worldPos );
 
                     o.normal = _WorldSpaceCameraPos - o.worldPos;
@@ -94,7 +96,7 @@
                     o.normal = float3(0,1,0);
                     o.uv = uvStart + float2 (0,.5);
                     o.pos = mul ( UNITY_MATRIX_P,
-                        middlePos + _Scale * float4 (-1 + wind,1,0,0) 
+                        middlePos + _Scale * float4 (-1 + wind,1 * _VerticalSize,0,0) 
                     );
                     TRANSFER_VERTEX_TO_FRAGMENT(o);
                     tristream.Append(o);
@@ -110,7 +112,7 @@
                     o.normal = float3(0,1,0);
                     o.uv = uvStart + float2 (.5, .5);
                     o.pos = mul ( UNITY_MATRIX_P,
-                        middlePos + _Scale * float4 (1 + wind,1,0,0)
+                        middlePos + _Scale * float4 (1 + wind,1 * _VerticalSize,0,0)
                     );
                     tristream.Append(o);
                     TRANSFER_VERTEX_TO_FRAGMENT(o);
@@ -119,16 +121,18 @@
             }
 
             fixed4 frag ( g2f IN ) : SV_TARGET {
-                float4 col = tex2Dlod (
+                float4 col = tex2D (
                     _MainTex,
-                    float4( IN.uv , 0, 0 )
+                    IN.uv
                 );
+                if ( col.a < 0.65f) 
+                    discard;
 
                 float3 L = normalize ( _WorldSpaceLightPos0 - IN.worldPos );
                 float3 N = normalize ( IN.normal );
 
                 float attenuation = SHADOW_ATTENUATION(IN);
-                float diffuse = dot ( N, L );
+                float diffuse = max ( dot (L, N), 0. ) / 3.1415;
 
                 float3 diffuseTerm = col.rgb * diffuse * _LightColor0;
 

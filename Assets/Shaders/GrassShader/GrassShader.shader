@@ -59,40 +59,37 @@
             float _DiffSpec;
 
             fixed4 frag (g2f IN) : SV_Target{
-               
-                float3 N = normalize(IN.normal);
+                float3  tex = tex2D ( _MainTexture, IN.blendFactors );
+                float   alpha = IN.blendFactors.y == 0 ? 0.1 : tex.b;
+                if (alpha  < 0.05 ) discard;
+
+                float3 N = IN.normal;
                 float3 L = normalize(_WorldSpaceLightPos0 - IN.worldPos);
                 float3 V = normalize(_WorldSpaceCameraPos - IN.worldPos);
                 float3 H = normalize( L + V );
 
-                if ( dot (L, N) < 0)
-                    N = -N;
-
-                float energy = (8. + _SpecularExp) / (8. * 3.1415); 
-                float specular = energy * pow ( max ( dot ( N, H), 0.), _SpecularExp);
-                float3 specularTerm = _LightColor0 * specular;
+                float3 specularTerm = float3 (0,0,0);
+                if ( _DiffSpec > 0.05 ) {
+                    float energy        = (8. + _SpecularExp) / (8. * 3.1415); 
+                    float specular      = energy * pow ( max ( dot ( N, H), 0.), _SpecularExp);
+                    specularTerm        = _LightColor0 * specular;
+                }
 
                 UNITY_LIGHT_ATTENUATION(attenuation, IN, IN.worldPos);
 
-                float fac = tex2Dlod (_DryGrassTex, float4 (IN.uv, 0, 0)).r;
-                float dist = distance (_WorldSpaceCameraPos, IN.worldPos);
+                float   fac     = tex2D     (_DryGrassTex, IN.uv ).r;
 
-                float4 GrassColor = lerp (_GrassColor, _DryGrassColor, fac);
-                float4 BottomColor = lerp (_GrassBottomColor, _DryBottomColor, fac);
+                float4  GrassColor  = lerp   (_GrassColor, _DryGrassColor, fac);
+                float4  BottomColor = lerp  (_GrassBottomColor, _DryBottomColor, fac);
 
-                float3 FragColor = lerp( BottomColor, GrassColor, clamp(0,1,IN.blendFactors.y) ).rgb;
-                float diffuse = max ( dot (L, N), 0. ) / 3.1415;
-                float3 diffuseTerm = FragColor * diffuse * _LightColor0;
+                float3  FragColor   = lerp( BottomColor, GrassColor, IN.blendFactors.y ).rgb;
+                
+                float   diffuse     = max ( dot (L, N), 0. ) / 3.1415;
+                float3  diffuseTerm = FragColor * diffuse * _LightColor0;
+                
+                float3  ambientTerm  = FragColor * _Ambient;
 
-                float3 tex = tex2D ( _MainTexture, IN.blendFactors );
-
-                FragColor = FragColor - tex.r;
-                float3 ambientTerm = FragColor * _Ambient;
-                float alpha = 1. * tex.b *
-                    ( dist > _MaxDistance / 2. ? 1.0 :
-                      IN.blendFactors.y == 0 ? 0.5: 1.0 );
-
-                return fixed4( ( attenuation < 2. ? attenuation : 1. ) * (lerp ( diffuseTerm, specularTerm, _DiffSpec ) + ambientTerm ), alpha);
+                return fixed4( ( attenuation < 2. ? attenuation : 1. ) * (lerp ( diffuseTerm, specularTerm, _DiffSpec ) + ambientTerm ), alpha );
             }
 
             ENDCG
