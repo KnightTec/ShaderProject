@@ -91,7 +91,7 @@ Material:
     - _GlossyReflections: 1
     - _GrassColorOffset: 0.189
     - _GrassCutOff: 0.792
-    - _MaxDistance: 40
+    - _MaxDistance: 30
     - _MaxGrassHeight: 0.33
     - _MaxGrassWidth: 0.0292
     - _Metallic: 0
