@@ -1,8 +1,8 @@
 ﻿#include "UnityCG.cginc"
 #include "FogCommon.cginc"
-#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE SELF_SHADOW
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE_SCHLICK SELF_SHADOW
 #pragma kernel CSMain SELF_SHADOW ATMOSPHERE
-#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE_SCHLICK
 
 #define PI 3.14159
 
@@ -26,6 +26,7 @@ float4 cameraPosition;
 float4 frustumRays[4];
 float scattering;
 float g;
+float k;
 float fogHeight;
 float fogFalloff;
 float4 sliceDepths[32];
@@ -49,21 +50,19 @@ RWStructuredBuffer<FogPointLight> pointLights;
 #endif
 uint pointLightCount;
 
-
 float3 volumeResolution;
-Texture2D<float4> blueNoise;
+Texture2D<float> blueNoise;
 float sliceProportion;
-uint ditherIndex;
 
 #ifdef SHADOWS
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
-	float distToCam = length(worldPosition - cameraPosition.xyz);
+	float distToCam = distance(worldPosition, cameraPosition.xyz);
 	float4 near = float4(distToCam >= lightSplitsNear); 
 	float4 far = float4(distToCam < lightSplitsFar);
 	float4 weights = (near * far);
 
-	uint cascadeIndex = weights.y + 2 * weights.z + 3 * weights.w;
+	uint cascadeIndex = dot(weights, float4(0, 1, 2, 3));
 	return mul(lightData[0].worldToShadow[cascadeIndex], float4(worldPosition, 1)).xyz; 
 }
 #endif
@@ -145,9 +144,11 @@ float perlinNoise(float3 value){
 }
 #endif
 
-#ifdef MIE
+#ifdef MIE_HENYEY
 #define PHASE(pointPosition, lightDirection) henyeyGreensteinPhaseFunction(pointPosition, lightDirection, cameraPosition, g) 
-#else 
+#elif MIE_SCHLICK
+#define PHASE(pointPosition, lightDirection) henyeyGreensteinPhaseFunctionSchlick(pointPosition, lightDirection, cameraPosition, k) 
+#else
 #define PHASE(pointPosition, lightDirection) rayleighPhaseFunction(pointPosition, lightDirection, cameraPosition)
 #endif
 
@@ -159,8 +160,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 volCoord = float3(float3(id) * volumeResolution + 0.5f * volumeResolution);
 	float z = sliceDepths[id.z >> 2][id.z & 3];
 #ifdef JITTER
-	float off = blueNoise.Load(int3(id.xy, 0)).r;
-	z *= (1 + off * sliceProportion);
+	z *= (1 + blueNoise.Load(int3(id.xy & 63, 0)) * sliceProportion);
 #endif
 	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
 

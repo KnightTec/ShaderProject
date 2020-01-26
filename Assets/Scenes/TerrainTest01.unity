@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.113688596, g: 0.22515233, b: 0.27625677, a: 0.17741057}
+  m_AmbientSkyColor: {r: 0.16241229, g: 0.32164618, b: 0.39465255, a: 0.2534437}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 0
@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 0}
+  m_Sun: {fileID: 567682392}
   m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
@@ -3738,10 +3738,10 @@ MonoBehaviour:
     serializedVersion: 2
     key0: {r: 1, g: 0.7596622, b: 0.4481132, a: 0}
     key1: {r: 1, g: 0.68235296, b: 0.27058825, a: 0.5019608}
-    key2: {r: 1, g: 0.977111, b: 0.8632076, a: 1}
-    key3: {r: 1, g: 0.5952023, b: 0.27058828, a: 0.49411765}
-    key4: {r: 1, g: 1, b: 1, a: 0}
-    key5: {r: 1, g: 1, b: 1, a: 0}
+    key2: {r: 1, g: 0.977111, b: 0.8632076, a: 0.78431374}
+    key3: {r: 1, g: 0.5952023, b: 0.27058828, a: 1}
+    key4: {r: 1, g: 1, b: 1, a: 0.78431374}
+    key5: {r: 1, g: 1, b: 1, a: 0.5019608}
     key6: {r: 1, g: 1, b: 1, a: 0}
     key7: {r: 0, g: 0, b: 0, a: 0}
     ctime0: 0
@@ -3753,16 +3753,16 @@ MonoBehaviour:
     ctime6: 65535
     ctime7: 0
     atime0: 15728
-    atime1: 17039
-    atime2: 32768
-    atime3: 49151
-    atime4: 49807
-    atime5: 65535
-    atime6: 0
+    atime1: 16384
+    atime2: 19661
+    atime3: 32768
+    atime4: 45875
+    atime5: 49151
+    atime6: 49807
     atime7: 0
     m_Mode: 0
     m_NumColorKeys: 5
-    m_NumAlphaKeys: 5
+    m_NumAlphaKeys: 7
   sunIntensityMultiplier: 2.5
   ambient:
     serializedVersion: 2
@@ -3793,7 +3793,7 @@ MonoBehaviour:
     m_Mode: 0
     m_NumColorKeys: 5
     m_NumAlphaKeys: 5
-  ambientIntensityMultiplier: 0.7
+  ambientIntensityMultiplier: 1
   fogFalloff:
     serializedVersion: 2
     m_Curve:
@@ -7078,6 +7078,56 @@ PrefabInstance:
       propertyPath: m_Name
       value: Main Camera
       objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: selfShadow
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: atmosphereScattering
+      value: 0.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: atmosphereHeight
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: atmosphereFalloff
+      value: 0.001
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: volumeResolution.x
+      value: 320
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: volumeResolution.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: jitterStrength
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: scattering
+      value: 0.297358
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: anisotropy
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1441816301043392159, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -7133,26 +7183,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0.07
       objectReference: {fileID: 0}
-    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
-        type: 3}
-      propertyPath: selfShadow
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
-        type: 3}
-      propertyPath: atmosphereScattering
-      value: 0.0001
-      objectReference: {fileID: 0}
-    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
-        type: 3}
-      propertyPath: atmosphereHeight
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
-        type: 3}
-      propertyPath: atmosphereFalloff
-      value: 0.001
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d60e110bba26456448f1fb5d3d959466, type: 3}
 --- !u!1001 &8062356315474327462
@@ -7166,6 +7196,46 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Sun
+      objectReference: {fileID: 0}
+    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
+        type: 3}
+      propertyPath: m_BoundingSphereOverride.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
+        type: 3}
+      propertyPath: m_BoundingSphereOverride.y
+      value: 1.12e-43
+      objectReference: {fileID: 0}
+    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
+        type: 3}
+      propertyPath: m_BoundingSphereOverride.z
+      value: 6.541e-42
+      objectReference: {fileID: 0}
+    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
+        type: 3}
+      propertyPath: m_BoundingSphereOverride.w
+      value: 1.05e-43
+      objectReference: {fileID: 0}
+    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.6895789
+      objectReference: {fileID: 0}
+    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.28511623
+      objectReference: {fileID: 0}
+    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
+        type: 3}
+      propertyPath: m_Color.a
+      value: 0.56405216
+      objectReference: {fileID: 0}
+    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
+        type: 3}
+      propertyPath: m_Intensity
+      value: 1.4111304
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316014140517, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
@@ -7231,46 +7301,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.99940294
-      objectReference: {fileID: 0}
-    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
-        type: 3}
-      propertyPath: m_BoundingSphereOverride.x
-      value: 4.88e-43
-      objectReference: {fileID: 0}
-    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
-        type: 3}
-      propertyPath: m_BoundingSphereOverride.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
-        type: 3}
-      propertyPath: m_BoundingSphereOverride.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
-        type: 3}
-      propertyPath: m_BoundingSphereOverride.w
-      value: 9.2e-44
-      objectReference: {fileID: 0}
-    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
-        type: 3}
-      propertyPath: m_Color.g
-      value: 0.6895789
-      objectReference: {fileID: 0}
-    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
-        type: 3}
-      propertyPath: m_Color.b
-      value: 0.28511623
-      objectReference: {fileID: 0}
-    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
-        type: 3}
-      propertyPath: m_Color.a
-      value: 0.50403905
-      objectReference: {fileID: 0}
-    - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
-        type: 3}
-      propertyPath: m_Intensity
-      value: 1.2610977
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3d43ddd4bb61e284e9bac68916ecb159, type: 3}

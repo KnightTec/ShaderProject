@@ -97,6 +97,7 @@
 
 #ifdef FOG_FALLBACK
 				// analytic fog beyond volumetric fog distance
+
 				float3 ndc = float3((i.uv * 2) - 1, depth);
 				ndc.y *= -1;
 				float4 worldPos = mul(viewProjectionInv, float4(ndc, 1));

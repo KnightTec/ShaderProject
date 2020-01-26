@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
 
+
 //https://bartwronski.files.wordpress.com/2014/08/bwronski_volumetric_fog_siggraph2014.pdf
 
 // Renders volumetric fog and atmosphere
@@ -21,11 +22,12 @@ public class VolumetricFogRenderer : MonoBehaviour
     [Header("Fog")]
     public float distance = 150; // should not be higher than shadow distance
     public Vector3Int volumeResolution = new Vector3Int(240, 135, 128);
+    // Note: 
     public bool selfShadow = false;
     [Range(0, 10)]
     public float scattering = 0.05f;
     public Color scatterColor = Color.white;
-    [Range(-0.99f, 0.99f)]
+    [Range(-0.9f, 0.9f)]
     public float anisotropy = 0.6f;
     public float fogHeight;
     [Range(0.00001f, 0.5f)]
@@ -372,6 +374,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetVectorArray("frustumRays", jitteredFrustumRays[jitterIndex]);
         densityLightingShader.SetFloat("scattering", scattering);
         densityLightingShader.SetFloat("g", anisotropy);
+        densityLightingShader.SetFloat("k", -1.55f * anisotropy + 0.55f * Mathf.Pow(anisotropy, 3));
         densityLightingShader.SetFloat("fogHeight", fogHeight);
         densityLightingShader.SetFloat("fogFalloff", fogFalloff);
         densityLightingShader.SetFloats("sliceDepths", jitteredSliceDepths[jitterIndex]);
@@ -382,14 +385,13 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetFloat("noiseSize", 1.0f / noiseSize);
         densityLightingShader.SetVector("noiseDirection", noiseDirection);
         densityLightingShader.SetVector("volumeResolution", volResInv);
-        densityLightingShader.SetTexture(fogDensityLightingKernel, "blueNoise", blueNoise4D);
+        densityLightingShader.SetTexture(fogDensityLightingKernel, "blueNoise", blueNoise1D);
         densityLightingShader.SetFloat("sliceProportion", sliceProportion);
-        densityLightingShader.SetInt("ditherIndex", ditherIndex);
         densityLightingShader.Dispatch(fogDensityLightingKernel, (volumeResolution.x + 7) / 8, (volumeResolution.y + 7) / 8, (volumeResolution.z));
         
         temporalFilterShader.SetVector("cameraPosition", transform.position);
         temporalFilterShader.SetTexture(temporalFilterKernel, "exponentialHistory", exponentialHistoryFogVolume);
-        temporalFilterShader.SetTexture(temporalFilterKernel, "blendedFogVolume", currentfogVolume);
+        temporalFilterShader.SetTexture(temporalFilterKernel, "fogVolume", currentfogVolume);
         temporalFilterShader.SetTexture(temporalFilterKernel, "result", filteredFogVolume);
         temporalFilterShader.SetVectorArray("frustumRays", frustumRays);
         temporalFilterShader.SetFloats("sliceDepths", sliceDepths);
