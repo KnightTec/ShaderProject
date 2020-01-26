@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.09987332, g: 0.18240047, b: 0.21973205, a: 0.14389826}
+  m_AmbientSkyColor: {r: 0.09937415, g: 0.18183024, b: 0.219143, a: 0.14344423}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
@@ -446,11 +446,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_StickToGroundForce
-      value: 10
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_GravityMultiplier
-      value: 4
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_RunstepLenghten
@@ -479,6 +479,10 @@ PrefabInstance:
     - target: {fileID: 400002, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400002, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2000000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_BackGroundColor.a
@@ -5947,9 +5951,9 @@ MonoBehaviour:
     m_Bits: 4294967295
   stopNaNPropagation: 1
   finalBlitToCameraTarget: 0
-  antialiasingMode: 2
+  antialiasingMode: 3
   temporalAntialiasing:
-    jitterSpread: 0.298
+    jitterSpread: 0.4
     sharpness: 0.25
     stationaryBlending: 0.99
     motionBlending: 0.85
@@ -5959,7 +5963,7 @@ MonoBehaviour:
     fastMode: 0
     keepAlpha: 0
   fog:
-    enabled: 1
+    enabled: 0
     excludeSkybox: 1
   debugLayer:
     lightMeter:
@@ -6007,13 +6011,13 @@ MonoBehaviour:
   atmosphereFalloff: 0.001
   sunLightMultiplier: 30
   distance: 300
-  volumeResolution: {x: 240, y: 135, z: 128}
+  volumeResolution: {x: 320, y: 180, z: 128}
   selfShadow: 0
-  scattering: 0.5570998
+  scattering: 0.5698525
   scatterColor: {r: 1, g: 1, b: 1, a: 1}
   anisotropy: 0.6
-  fogHeight: 0
-  fogFalloff: 0.17368096
+  fogHeight: 0.5
+  fogFalloff: 0.17389673
   ambientIntensity: 0.5
   noiseIntensity: 0.95
   noiseSize: 16
@@ -13954,22 +13958,22 @@ PrefabInstance:
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_Color.g
-      value: 0.73649687
+      value: 0.73529387
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_Color.b
-      value: 0.3794461
+      value: 0.3770274
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_Color.a
-      value: 0.43018317
+      value: 0.4273342
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_Intensity
-      value: 1.076458
+      value: 1.0693355
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
@@ -14054,12 +14058,12 @@ PrefabInstance:
     - target: {fileID: 8062356316031505151, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.1564345
+      value: 0.15333076
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505151, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.98768836
+      value: 0.9881749
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505151, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
@@ -21817,7 +21821,7 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: time
-      value: 0.3
+      value: 0.299
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -21907,7 +21911,7 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[3].value
-      value: 0.024753712
+      value: 0.038894832
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
