@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
 
-
-//https://bartwronski.files.wordpress.com/2014/08/bwronski_volumetric_fog_siggraph2014.pdf
+// References:
+// https://bartwronski.files.wordpress.com/2014/08/bwronski_volumetric_fog_siggraph2014.pdf
+// https://www.ea.com/frostbite/news/physically-based-unified-volumetric-rendering-in-frostbite
+// Volumetric Light Effects in Killzone: Shadow Fall (GPU Pro 6)
+// Creating the Atmospheric World of Red Dead Redemption 2: A Complete and Integrated Solution (http://advances.realtimerendering.com/s2019/index.htm)
 
 // Renders volumetric fog and atmosphere
 [RequireComponent(typeof(Camera))]
@@ -451,7 +454,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogMaterial.SetFloat("logfarOverNearInv", 1 / Mathf.Log(cam.farClipPlane / cam.nearClipPlane));
         applyFogMaterial.SetVector("volumeResolutionWH", new Vector4(volRes.x, volRes.y, 1.0f / volRes.x, 1.0f / volRes.y));
         applyFogMaterial.SetTexture("blueNoiseTex", blueNoise4D);
-        applyFogMaterial.SetInt("ditherIndex", ditherIndex);
+        applyFogMaterial.SetInt("ditherIndex", 0);
         Shader.EnableKeyword("FOG_FALLBACK");
 
         Graphics.Blit(source, destination, applyFogMaterial);

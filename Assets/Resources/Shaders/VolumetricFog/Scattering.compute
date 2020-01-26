@@ -13,13 +13,14 @@ float4 scatterColor;
 #define DEPTH 128
 #endif
 
+// ray marching
+
 float4 accumulateScattering(float3 accumScattering, float accumOpticalDepth, float3 scattering, float opticalDepth, float sliceDepth) 
 {
 	float newOpticalDepth = accumOpticalDepth + opticalDepth * sliceDepth;
 	float3 newScattering = accumScattering + sliceDepth * scattering * exp(-newOpticalDepth * scatterColor.rgb);
 	return float4(newScattering, newOpticalDepth);
 }
-
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {

@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.16241229, g: 0.32164618, b: 0.39465255, a: 0.2534437}
+  m_AmbientSkyColor: {r: 0.16299868, g: 0.3138813, b: 0.3830818, a: 0.25174084}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 0
@@ -3107,7 +3107,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!108 &976439090
 Light:
   m_ObjectHideFlags: 0
@@ -3733,7 +3733,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db806be28db1ce14b9de0dfeee427327, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  time: 0.261
+  time: 0.259
   sun:
     serializedVersion: 2
     key0: {r: 1, g: 0.7596622, b: 0.4481132, a: 0}
@@ -3896,7 +3896,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  fogScatteringMultiplier: 1
+  fogScatteringMultiplier: 4
   directionalLight: {fileID: 567682392}
   fogRenderer: {fileID: 984287395}
   grassMaterial: {fileID: 0}
@@ -7101,12 +7101,12 @@ PrefabInstance:
     - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
       propertyPath: volumeResolution.x
-      value: 320
+      value: 240
       objectReference: {fileID: 0}
     - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
       propertyPath: volumeResolution.y
-      value: 180
+      value: 135
       objectReference: {fileID: 0}
     - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
@@ -7116,7 +7116,7 @@ PrefabInstance:
     - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
       propertyPath: scattering
-      value: 0.297358
+      value: 0.30443475
       objectReference: {fileID: 0}
     - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
@@ -7127,6 +7127,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Enabled
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: fogFalloff
+      value: 0.057315394
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: noiseIntensity
+      value: 0.9
       objectReference: {fileID: 0}
     - target: {fileID: 1441816301043392159, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
@@ -7205,37 +7215,37 @@ PrefabInstance:
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 1.12e-43
+      value: 8e-45
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 6.541e-42
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 1.05e-43
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_Color.g
-      value: 0.6895789
+      value: 0.68717283
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_Color.b
-      value: 0.28511623
+      value: 0.28027877
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_Color.a
-      value: 0.56405216
+      value: 0.5527589
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_Intensity
-      value: 1.4111304
+      value: 1.3828971
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316014140517, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
@@ -7295,12 +7305,12 @@ PrefabInstance:
     - target: {fileID: 8062356316031505151, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.034550667
+      value: 0.028270578
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505151, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.99940294
+      value: 0.9996003
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3d43ddd4bb61e284e9bac68916ecb159, type: 3}

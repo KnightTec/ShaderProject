@@ -77,6 +77,8 @@
 				float2 pixCoord = i.uv * _ScreenParams.xy;
 
 				// dithered sampling
+				// see "Creating the Atmospheric World of Red Dead Redemption 2: A Complete and Integrated Solution"
+				// slide 56
 				float4 noise = blueNoiseTex.Load(int3(pixCoord, 0) & 1023) * 1.5f;
 				float3 off0 = float3(noise[ditherIndex] * volumeResolutionWH.zw, 0);
 				uint noiseIndex1 = (ditherIndex + 1) & 3;
@@ -97,7 +99,7 @@
 
 #ifdef FOG_FALLBACK
 				// analytic fog beyond volumetric fog distance
-
+				// based on https://iquilezles.org/www/articles/fog/fog.htm
 				float3 ndc = float3((i.uv * 2) - 1, depth);
 				ndc.y *= -1;
 				float4 worldPos = mul(viewProjectionInv, float4(ndc, 1));
