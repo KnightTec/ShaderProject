@@ -132,7 +132,7 @@
                 float3 N = normalize ( IN.normal );
 
                 float attenuation = SHADOW_ATTENUATION(IN);
-                float diffuse = dot ( N, L );
+                float diffuse = max ( dot (L, N), 0. ) / 3.1415;
 
                 float3 diffuseTerm = col.rgb * diffuse * _LightColor0;
 
