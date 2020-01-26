@@ -6,7 +6,7 @@
         _DistributionTex ("Tree Distibution tex", 2D) = "white" {}
         _WindTex ("Wind Tex", 2D) = "white" {}
         _Scale ("Tree Scale", Range(0,10)) = 1 
-        _Random("Tree Density", Range (1,0.2)) = 0.5
+        _Random("Tree Density", Range (1,0.0)) = 0.5
         _WindDepth("WindDepth", Range (0,5)) = 3
         _WindSpeed("WindSpeed", Range (0,1)) = 0.02
         _VerticalSize ("Vetical Size", Range(0,1)) = 1

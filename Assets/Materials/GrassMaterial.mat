@@ -91,7 +91,7 @@ Material:
     - _GlossyReflections: 1
     - _GrassColorOffset: 0.189
     - _GrassCutOff: 0.792
-    - _MaxDistance: 30
+    - _MaxDistance: 50
     - _MaxGrassHeight: 0.33
     - _MaxGrassWidth: 0.0292
     - _Metallic: 0
@@ -103,7 +103,7 @@ Material:
     - _SpecularExp: 40
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TessFactor: 2.5
+    - _TessFactor: 9
     - _UVSec: 0
     - _WindDepth: 27.1
     - _WindSpeed: 0.8

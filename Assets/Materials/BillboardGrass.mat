@@ -75,13 +75,13 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Random: 0.926
-    - _Scale: 5.77
+    - _Random: 0
+    - _Scale: 4.32
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _VerticalSize: 0.245
+    - _VerticalSize: 0.31
     - _WindDepth: 0.47
     - _WindSpeed: 0.081
     - _ZWrite: 1
