@@ -6011,7 +6011,7 @@ MonoBehaviour:
   atmosphereFalloff: 0.001
   sunLightMultiplier: 30
   distance: 300
-  volumeResolution: {x: 320, y: 180, z: 128}
+  volumeResolution: {x: 240, y: 135, z: 128}
   selfShadow: 0
   scattering: 0.5698525
   scatterColor: {r: 1, g: 1, b: 1, a: 1}
