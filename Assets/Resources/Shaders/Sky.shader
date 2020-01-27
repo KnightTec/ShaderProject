@@ -54,7 +54,7 @@
 			float sun = calcSunSpot(_WorldSpaceLightPos0.xyz, input.texcoord.xyz);
 			float3 texCoord = mul(input.texcoord.xyz, _rotationMatrix);
 			float3 stars = texCUBE(_Cube, texCoord);
-			float3 outerSpaceColor = lerp(stars * 0.2f, float3(1, 1, 1) * 500, sun);
+			float3 outerSpaceColor = lerp(stars * 0.5f, float3(1, 1, 1) * 500, sun);
 
 			return float4(outerSpaceColor, 1.0);
          }

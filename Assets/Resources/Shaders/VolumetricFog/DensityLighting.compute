@@ -215,12 +215,20 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	for (uint i = 0; i < pointLightCount; i++) 
 	{
 		FogPointLight light = pointLights[i];
-		//inverse-square light attenuation
 		float3 lightVector = light.position.xyz - worldPosition;
-		float3 lightVecNorm = normalize(lightVector);
 		float lightDist = length(lightVector);
-		float attentuation = 10 / max(lightDist, 0.2f);
+		if (lightDist > light.range)
+		{
+			continue;
+		}
+		float3 lightVecNorm = normalize(lightVector);
+		//inverse-square light attenuation
+		float attentuation = 10 / max(lightDist, 0.5f);
 		attentuation *= attentuation;
+		// windowing function
+		float wnd = max(1 - pow(lightDist / light.range, 4), 0);
+		attentuation *= wnd * wnd;
+
 		phase = PHASE(worldPosition, lightVecNorm);
 		result.rgb += light.color.rgb * attentuation * phase 
 			* light.intensity;

@@ -113,7 +113,7 @@
 				float opticalDepth = EXP(-fogFalloff * (fallbackFogStart.y + fallbackDistance * viewDir.y) + fogHeight);
 				opticalDepth -= EXP(-fogFalloff * fallbackFogStart.y + fogHeight);
 				opticalDepth /= -fogFalloff * viewDir.y;
-				float3 transmittance = EXP(-opticalDepth * scattering * scatterColor * (1 - noiseIntensity));
+				float3 transmittance = EXP(-opticalDepth * scattering * scatterColor * (1 - noiseIntensity * 0.9));
 				float3 scatteredColor = dirLightColor;
 				scatteredColor *= henyeyGreensteinPhaseFunction(worldPos, dirLightDirection, camPos, g);
 				scatteredColor += ambientColor;

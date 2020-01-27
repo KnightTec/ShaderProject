@@ -103,7 +103,7 @@ public class VolumetricFogRenderer : MonoBehaviour
     private Light directionalLight;
 
     private Vector3 volRes;
-    private Vector4 clipPlanes;
+    private Vector4 clipParams;
     private Matrix4x4 projectiomMatrix;
 
     private Material skyMaterial;
@@ -139,7 +139,7 @@ public class VolumetricFogRenderer : MonoBehaviour
 
         float logfarOverNearInv = 1 / Mathf.Log(distance / cam.nearClipPlane);
         float logNearPlane = Mathf.Log(cam.nearClipPlane);
-        clipPlanes = new Vector4(cam.nearClipPlane, distance, logfarOverNearInv, logNearPlane);
+        clipParams = new Vector4(cam.nearClipPlane, distance, logfarOverNearInv, logNearPlane);
         volRes = new Vector3(volumeResolution.x, volumeResolution.y, volumeResolution.z);
         float farPlane = cam.farClipPlane;
         cam.farClipPlane = distance;
@@ -398,12 +398,12 @@ public class VolumetricFogRenderer : MonoBehaviour
         temporalFilterShader.SetTexture(temporalFilterKernel, "result", filteredFogVolume);
         temporalFilterShader.SetVectorArray("frustumRays", frustumRays);
         temporalFilterShader.SetFloats("sliceDepths", sliceDepths);
-        temporalFilterShader.SetVector("clipPlanes", clipPlanes);
+        temporalFilterShader.SetVector("clipParams", clipParams);
         temporalFilterShader.SetVector("volumeResolutionInv", volResInv);
         temporalFilterShader.SetVector("volumeRes", volRes);
         temporalFilterShader.SetFloat("farPlane", cam.farClipPlane);
         temporalFilterShader.SetFloat("distance", distance);
-        temporalFilterShader.Dispatch(temporalFilterKernel, (volumeResolution.x + 3) / 4, (volumeResolution.y + 3) / 4, (volumeResolution.z + 3) / 4);
+        temporalFilterShader.Dispatch(temporalFilterKernel, (volumeResolution.x + 7) / 8, (volumeResolution.y + 7) / 8, (volumeResolution.z + 7) / 8);
         temporalFilterShader.SetMatrix("historyViewProjection", viewProjectionMatrix);
         
         scatteringShader.SetTexture(fogScatteringKernel, "accumulatedFogVolume", accumulatedFogVolume);
@@ -438,7 +438,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogMaterial.SetTexture("_MainTex", source);
         applyFogMaterial.SetTexture("fogVolume", accumulatedFogVolume);
         applyFogMaterial.SetTexture("atmoVolume", accumulatedAtmoVol);
-        applyFogMaterial.SetVector("clipPlanes", clipPlanes);
+        applyFogMaterial.SetVector("clipPlanes", clipParams);
         applyFogMaterial.SetFloat("farPlane", cam.farClipPlane);
         applyFogMaterial.SetFloat("distance", distance);
         applyFogMaterial.SetMatrix("viewProjectionInv", viewProjectionMatrix.inverse);
