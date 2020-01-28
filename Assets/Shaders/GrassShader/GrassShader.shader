@@ -29,7 +29,7 @@
     }
 
     CGINCLUDE
-    #include "Tesselation.cginc"
+    #include "GrassTessellation.cginc"
     ENDCG
 
     SubShader

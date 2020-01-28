@@ -90,12 +90,12 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _GrassColorOffset: 0.189
-    - _GrassCutOff: 0.084
-    - _MaxDistance: 50
-    - _MaxGrassHeight: 3.58
+    - _GrassCutOff: 1
+    - _MaxDistance: 32
+    - _MaxGrassHeight: 0.53
     - _MaxGrassWidth: 0.0292
     - _Metallic: 0
-    - _MinGrassHeight: 0.1
+    - _MinGrassHeight: 0.01
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
@@ -103,9 +103,9 @@ Material:
     - _SpecularExp: 40
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TessFactor: 8
+    - _TessFactor: 14.9
     - _UVSec: 0
-    - _WindDepth: 13.7
+    - _WindDepth: 26.5
     - _WindSpeed: 1.61
     - _ZWrite: 1
     m_Colors:
