@@ -2,7 +2,7 @@
 #pragma kernel CSMain
 
 Texture3D<half4> exponentialHistory;
-RWTexture3D<half4> fogVolume;
+Texture3D<half4> fogVolume;
 RWTexture3D<half4> result;
 
 SamplerState MyLinearClampSampler;
@@ -12,19 +12,20 @@ float4 frustumRays[4];
 float4 sliceDepths[32];
 matrix historyViewProjection;
 float3 volumeResolutionInv;
-float4 clipPlanes;
+float4 clipParams;
 float farPlane;
 float distance;
 float3 volumeRes;
 float3 historyNdcCorners[8];
 
-[numthreads(4,4,4)]
+[numthreads(8,8,8)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	float3 volCoord = float3(float3(id) * volumeResolutionInv + 0.5f * volumeResolutionInv);
 
 	// calculate position in history volume
 	float z = sliceDepths[id.z >> 2][id.z & 3];
+	
 	float3 upperRay = lerp(frustumRays[1].xyz, frustumRays[2].xyz, volCoord.x);
 	float3 lowerRay = lerp(frustumRays[0].xyz, frustumRays[3].xyz, volCoord.x);
 	float3 frustrumRay = lerp(lowerRay, upperRay, volCoord.y);
@@ -34,46 +35,45 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	historyNdc /= historyNdc.w;
 	float3 historyVolumeCoord = float3((historyNdc.xy + 1) * 0.5, 0);
 	historyVolumeCoord.y = 1 - historyVolumeCoord.y;
-	z = clipPlanes.x + (farPlane - clipPlanes.x) * Linear01Depth(historyNdc.z);
-	z = min(z, distance);
-	historyVolumeCoord.z = (log(z) - clipPlanes.w) * clipPlanes.z;
+	z = clipParams.x + (farPlane - clipParams.x) * Linear01Depth(historyNdc.z);
+	historyVolumeCoord.z = (log(min(z, distance)) - clipParams.w) * clipParams.z;
 
 	half4 historySample = exponentialHistory.SampleLevel(MyLinearClampSampler, historyVolumeCoord, 0);
 
 	// neighborhood clamping
 	half4 minSample = half4(1, 1, 1, 1);
 	half4 maxSample = half4(0, 0, 0, 0);
-	half4 samp = fogVolume[uint3(id.x, id.y, id.z)];
-	minSample = min(minSample, samp);
-	maxSample = max(maxSample, samp);
+	half4 center = fogVolume.Load(uint4(id, 0));
+	minSample = min(minSample, center);
+	maxSample = max(maxSample, center);
 	uint xPlusOne = min(id.x + 1, volumeRes.x - 1);
 	uint xMinusOne = max(id.x - 1, 0);
-	uint yPlusOne = min(id.y + 1, volumeRes.y);
+	uint yPlusOne = min(id.y + 1, volumeRes.y - 1);
 	uint yMinusOne = max(id.y - 1, 0);
 	uint zPlusOne = min(id.z + 1, volumeRes.z - 1);
 	uint zMinusOne = max(id.z - 1, 0);
-	samp = fogVolume[uint3(xPlusOne, yPlusOne, zPlusOne)];
+	half4 samp = fogVolume.Load(uint4(xPlusOne, yPlusOne, zPlusOne, 0));
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = fogVolume[uint3(xPlusOne, yPlusOne, zMinusOne)];
+	samp = fogVolume.Load(uint4(xPlusOne, yPlusOne, zMinusOne, 0));
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = fogVolume[uint3(xPlusOne, yMinusOne, zPlusOne)];
+	samp = fogVolume.Load(uint4(xPlusOne, yMinusOne, zPlusOne, 0));
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = fogVolume[uint3(xMinusOne, yPlusOne, zPlusOne)];
+	samp = fogVolume.Load(uint4(xMinusOne, yPlusOne, zPlusOne, 0));
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = fogVolume[uint3(xPlusOne, yMinusOne, zMinusOne)];
+	samp = fogVolume.Load(uint4(xPlusOne, yMinusOne, zMinusOne, 0));
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = fogVolume[uint3(xMinusOne, yPlusOne, zMinusOne)];
+	samp = fogVolume.Load(uint4(xMinusOne, yPlusOne, zMinusOne, 0));
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = fogVolume[uint3(xMinusOne, yMinusOne, zPlusOne)];
+	samp = fogVolume.Load(uint4(xMinusOne, yMinusOne, zPlusOne, 0));
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
-	samp = fogVolume[uint3(xMinusOne, yMinusOne, zMinusOne)];
+	samp = fogVolume.Load(uint4(xMinusOne, yMinusOne, zMinusOne, 0));
 	minSample = min(minSample, samp);
 	maxSample = max(maxSample, samp);
 
@@ -83,5 +83,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	clampedHistory = lerp(clampedHistory, historySample, 0.2f);
 
 	// exponential moving average
-	result[id] = lerp(fogVolume[id], clampedHistory, 0.92f);
+	result[id] = lerp(center, clampedHistory, 0.92f);
 }

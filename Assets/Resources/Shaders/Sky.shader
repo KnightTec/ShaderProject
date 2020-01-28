@@ -31,10 +31,10 @@
             float4 vertex : SV_POSITION;
             float3 texcoord : TEXCOORD0;
          };
-
-		 // source: https://medium.com/@cyrilltoboe/simplest-gradient-skybox-with-moon-8581610c86c0
+		
 		float calcSunSpot(float3 sunDirPos, float3 skyDirPos)
 		{
+		 // source: https://medium.com/@cyrilltoboe/simplest-gradient-skybox-with-moon-8581610c86c0
 			float3 delta = sunDirPos - skyDirPos;
 			float dist = length(delta);
 			half spot = 1.0 - smoothstep(0.0, 0.025, dist);
@@ -52,9 +52,10 @@
          float4 frag(v2f input) : SV_Target
          {
 			float sun = calcSunSpot(_WorldSpaceLightPos0.xyz, input.texcoord.xyz);
+			// rotate skybox(stars) with light source(sun)
 			float3 texCoord = mul(input.texcoord.xyz, _rotationMatrix);
 			float3 stars = texCUBE(_Cube, texCoord);
-			float3 outerSpaceColor = lerp(stars * 0.2f, float3(1, 1, 1) * 500, sun);
+			float3 outerSpaceColor = lerp(stars * 0.5f, float3(1, 1, 1) * 500, sun);
 
 			return float4(outerSpaceColor, 1.0);
          }

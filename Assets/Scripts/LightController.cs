@@ -7,6 +7,6 @@ public class LightController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.Rotate(0, Time.deltaTime * 50, 0);
+        transform.Rotate(0, Time.deltaTime * 30, 0);
     }
 }

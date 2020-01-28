@@ -77,13 +77,15 @@
 				float2 pixCoord = i.uv * _ScreenParams.xy;
 
 				// dithered sampling
+				// see "Creating the Atmospheric World of Red Dead Redemption 2: A Complete and Integrated Solution"
+				// slide 56
 				float4 noise = blueNoiseTex.Load(int3(pixCoord, 0) & 1023) * 1.5f;
-				float3 off0 = float3(noise[ditherIndex] * volumeResolutionWH.zw, 0);
-				uint noiseIndex1 = (ditherIndex + 1) & 3;
+				float3 off0 = float3(noise[0] * volumeResolutionWH.zw, 0);
+				uint noiseIndex1 = (1) & 3;
 				float3 off1 = float3(float2(-noise[noiseIndex1], noise[noiseIndex1]) * volumeResolutionWH.zw, 0);
-				uint noiseIndex2 = (ditherIndex + 2) & 3;
+				uint noiseIndex2 = (2) & 3;
 				float3 off2 = float3(float2(noise[noiseIndex2], -noise[noiseIndex2]) * volumeResolutionWH.zw, 0);
-				float3 off3 = float3(-noise[(ditherIndex + 3) & 3] * volumeResolutionWH.zw, 0);
+				float3 off3 = float3(-noise[(3) & 3] * volumeResolutionWH.zw, 0);
 				
 				half4 fogSample = tex3D(fogVolume, fogCoord + off0);
 				fogSample += tex3D(fogVolume, fogCoord + off1);
@@ -97,7 +99,7 @@
 
 #ifdef FOG_FALLBACK
 				// analytic fog beyond volumetric fog distance
-
+				// based on https://iquilezles.org/www/articles/fog/fog.htm
 				float3 ndc = float3((i.uv * 2) - 1, depth);
 				ndc.y *= -1;
 				float4 worldPos = mul(viewProjectionInv, float4(ndc, 1));
@@ -111,7 +113,7 @@
 				float opticalDepth = EXP(-fogFalloff * (fallbackFogStart.y + fallbackDistance * viewDir.y) + fogHeight);
 				opticalDepth -= EXP(-fogFalloff * fallbackFogStart.y + fogHeight);
 				opticalDepth /= -fogFalloff * viewDir.y;
-				float3 transmittance = EXP(-opticalDepth * scattering * scatterColor * (1 - noiseIntensity));
+				float3 transmittance = EXP(-opticalDepth * scattering * scatterColor * (1 - noiseIntensity * 0.9));
 				float3 scatteredColor = dirLightColor;
 				scatteredColor *= henyeyGreensteinPhaseFunction(worldPos, dirLightDirection, camPos, g);
 				scatteredColor += ambientColor;
