@@ -25,3 +25,6 @@ sampler2D _WindTex;
 float4 _WindTex_ST;
 float _WindSpeed;
 float _WindDepth;
+
+// Collision 
+sampler2D _CollisionTexture;

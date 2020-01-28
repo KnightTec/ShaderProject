@@ -13,8 +13,8 @@
     }
     SubShader
     {
-        Tags { "Queue"="Opaque" "RenderType"="Transparent" }
-        Cull Back
+        Tags { "Queue"="AlphaTest" "RenderType"="Transparent" }
+        Cull Off
         Blend SrcAlpha OneMinusSrcAlpha
         ZWrite On
         
@@ -131,7 +131,7 @@
                 float3 L = normalize ( _WorldSpaceLightPos0 - IN.worldPos );
                 float3 N = normalize ( IN.normal );
 
-                float attenuation = SHADOW_ATTENUATION(IN);
+                UNITY_LIGHT_ATTENUATION(attenuation, IN, IN.worldPos);
                 float diffuse = max ( dot (L, N), 0. ) / 3.1415;
 
                 float3 diffuseTerm = col.rgb * diffuse * _LightColor0;

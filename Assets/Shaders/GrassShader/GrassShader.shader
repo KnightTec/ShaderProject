@@ -26,6 +26,8 @@
         _WindTex        ("Wind Texture", 2D) = "black" {}
         _WindSpeed      ("Wind Speed", range(0, 20)) = 1
         _WindDepth      ("Wind Depth", range(0, 100)) = 1
+
+        _CollisionTexture ("Collision Texture", 2D) = "white" {}
     }
 
     CGINCLUDE
@@ -60,7 +62,7 @@
 
             fixed4 frag (g2f IN) : SV_Target{
                 float3  tex = tex2D ( _MainTexture, IN.blendFactors );
-                float   alpha = IN.blendFactors.y == 0 ? 0.1 : tex.b;
+                float   alpha = IN.blendFactors.y == 0 ? 0.25: tex.b;
                 if (alpha  < 0.05 ) discard;
 
                 float3 N = IN.normal;

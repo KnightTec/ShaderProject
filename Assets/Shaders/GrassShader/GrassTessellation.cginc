@@ -20,7 +20,7 @@ tessFactors patch(InputPatch<v2g, 3> IN) {
         (   mul (unity_ObjectToWorld, IN[0].vertex ),
             mul (unity_ObjectToWorld, IN[1].vertex ),
             mul (unity_ObjectToWorld, IN[2].vertex ), 
-            0 ) ) 
+            0.25 ) ) 
     {
         fac = 0;
     }
@@ -91,7 +91,7 @@ v2g dom (tessFactors tf, OutputPatch<appdata, 3> op, float3 dl : SV_DomainLocati
         triStream.Append(o);
 
 #define APPEND_ADDITIVE(summand,uvx,uvy) \
-        if (sizefac > 0 ) { \
+        if (sizeFac > 0 ) { \
             o.worldPos =    mul ( unity_ObjectToWorld, avg + (summand) ); \
             o.pos =         UnityObjectToClipPos ( avg + (summand) ); \
             o.blendFactors = float2(uvx, uvy); \
@@ -101,7 +101,7 @@ v2g dom (tessFactors tf, OutputPatch<appdata, 3> op, float3 dl : SV_DomainLocati
         }
 
 #define APPEND_ADDITIVE_BOTTOM(summand,uvx,uvy) \
-        if (sizefac > 0 ) { \
+        if (sizeFac > 0 ) { \
             o.worldPos =        mul ( unity_ObjectToWorld, avg + (summand) ); \
             o.pos =             UnityObjectToClipPos (avg + (summand)); \
             o.blendFactors =    float2(uvx, uvy); \
@@ -123,9 +123,9 @@ void geom (triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
     float2 sizeUV =     TRANSFORM_TEX(UV, _HeightTex);
 
     float3  wind =      tex2Dlod (_WindTex, float4(windUV, 0, 0)).xyz;
-    float   sizefac =   tex2Dlod (_HeightTex, float4(sizeUV, 0, 0)).r;
+    float   sizeFac =   tex2Dlod (_HeightTex, float4(sizeUV, 0, 0)).r;
     
-    if ( sizefac < _MinGrassHeight )
+    if ( sizeFac < _MinGrassHeight )
         return;
 
     APPEND(0);
@@ -145,29 +145,42 @@ void geom (triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
     
 
     for ( int i = 0; i < 3; i++ ) {
-        sizefac = tex2Dlod (_HeightTex,
+        sizeFac = tex2Dlod (_HeightTex,
             float4( lerp ( sizeUV, TRANSFORM_TEX( IN[i].uv, _HeightTex), 0.5), 0, 0) 
         ).r;
 
-        if ( sizefac < _MinGrassHeight )
+        if ( sizeFac < _MinGrassHeight )
             continue;
 
+        float heightFac = sizeFac * _GrassCutOff;
         avg      =   lerp ( avgPos, IN[i].vertex, 0.5);
         o.uv    =    lerp ( UV, IN[i].uv, 0.5);
 
+        float collDist = tex2Dlod (_CollisionTexture, float4(o.uv,0,0)).r;
+
+        float collDepth = 0;
+        if ( collDist < heightFac ) {
+            collDepth = 1. - ( collDist / heightFac);
+        }
+
         right    =   normalize ( float4( rand[2-i], 0, rand[i], 1. ) );
         forward  =   right.zyxw;
-        up       =   normalize ( float4( avgNorm, 0 ) + float4( wind, 0 ) * _WindDepth );
+        up       =   normalize ( float4( avgNorm, 0 ) + float4( wind, 0 ) * _WindDepth);
+        
+        if (collDepth != 0 ) {
+            up = normalize ( float4(avgNorm, 0) * float4 (1,collDepth,1,1) + right);
+        }
+
         o.normal =   normalize ( float3 (forward.x, ( - forward.x * up.x - forward.z * up.z ) / up.y, forward.z));
         V       =  normalize(_WorldSpaceCameraPos - avg);
-        o.normal *= ( dot (V, o.normal ) > 0 ) ? 1  : -1 ;
+        o.normal *= ( dot (V, o.normal ) > 0 ) ? 1  : -1;
 
         o.tangent = up.xyz;
 
         APPEND_ADDITIVE_BOTTOM(right * _MaxGrassWidth, 0, 0);
-        APPEND_ADDITIVE(sizefac * (up * _MaxGrassHeight * _GrassCutOff + right * _MaxGrassWidth * (1-_GrassCutOff)), 0, 1);
+        APPEND_ADDITIVE(sizeFac * (up * _MaxGrassHeight * _GrassCutOff + right * _MaxGrassWidth * (1-_GrassCutOff)), 0, 1);
         APPEND_ADDITIVE_BOTTOM(- right * _MaxGrassWidth, 1, 0);
-        APPEND_ADDITIVE(sizefac * (up * _MaxGrassHeight * _GrassCutOff - right * _MaxGrassWidth * (1-_GrassCutOff)), 1, 1);
+        APPEND_ADDITIVE(sizeFac * (up * _MaxGrassHeight * _GrassCutOff - right * _MaxGrassWidth * (1-_GrassCutOff)), 1, 1);
         
         triStream.RestartStrip();
     }
