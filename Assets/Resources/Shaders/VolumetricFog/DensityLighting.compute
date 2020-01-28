@@ -61,7 +61,6 @@ float3 getCascadeShadowCoords(float3 worldPosition)
 	float4 near = float4(distToCam >= lightSplitsNear); 
 	float4 far = float4(distToCam < lightSplitsFar);
 	float4 weights = (near * far);
-
 	uint cascadeIndex = dot(weights, float4(0, 1, 2, 3));
 	return mul(lightData[0].worldToShadow[cascadeIndex], float4(worldPosition, 1)).xyz; 
 }
@@ -154,7 +153,6 @@ float perlinNoise(float3 value){
 
 float sunLightIntensityMultiplier;
 
-// 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
@@ -225,7 +223,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 		//inverse-square light attenuation
 		float attentuation = 10 / max(lightDist, 0.5f);
 		attentuation *= attentuation;
-		// windowing function
+		// windowing function to prevent fog from being lit beyond light.range
 		float wnd = max(1 - pow(lightDist / light.range, 4), 0);
 		attentuation *= wnd * wnd;
 

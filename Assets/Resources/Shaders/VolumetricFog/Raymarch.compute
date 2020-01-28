@@ -10,7 +10,7 @@ float4 scatterColor;
 #ifdef ATMOPSHERE
 #define DEPTH 32
 #else
-#define DEPTH 128
+#define DEPTH 96
 #endif
 
 // ray marching

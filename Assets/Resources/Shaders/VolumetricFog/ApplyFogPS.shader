@@ -80,12 +80,12 @@
 				// see "Creating the Atmospheric World of Red Dead Redemption 2: A Complete and Integrated Solution"
 				// slide 56
 				float4 noise = blueNoiseTex.Load(int3(pixCoord, 0) & 1023) * 1.5f;
-				float3 off0 = float3(noise[ditherIndex] * volumeResolutionWH.zw, 0);
-				uint noiseIndex1 = (ditherIndex + 1) & 3;
+				float3 off0 = float3(noise[0] * volumeResolutionWH.zw, 0);
+				uint noiseIndex1 = (1) & 3;
 				float3 off1 = float3(float2(-noise[noiseIndex1], noise[noiseIndex1]) * volumeResolutionWH.zw, 0);
-				uint noiseIndex2 = (ditherIndex + 2) & 3;
+				uint noiseIndex2 = (2) & 3;
 				float3 off2 = float3(float2(noise[noiseIndex2], -noise[noiseIndex2]) * volumeResolutionWH.zw, 0);
-				float3 off3 = float3(-noise[(ditherIndex + 3) & 3] * volumeResolutionWH.zw, 0);
+				float3 off3 = float3(-noise[(3) & 3] * volumeResolutionWH.zw, 0);
 				
 				half4 fogSample = tex3D(fogVolume, fogCoord + off0);
 				fogSample += tex3D(fogVolume, fogCoord + off1);
