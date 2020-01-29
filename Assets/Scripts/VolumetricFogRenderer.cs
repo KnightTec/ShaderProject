@@ -378,7 +378,6 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetBuffer(fogDensityLightingKernel, "lightData", worldToShadowBuffer);
         Vector4 splitsNear = Shader.GetGlobalVector("_LightSplitsNear");
         splitsNear = Vector4.Scale(splitsNear, splitsNear);
-       // splitsNear = new Vector4(splitsNear.x * splitsNear.x, splitsNear.y * splitsNear.y, splitsNear.z * splitsNear.z, splitsNear.w * splitsNear.w);
         densityLightingShader.SetVector("lightSplitsNear", splitsNear);
         Vector4 splitsFar = Shader.GetGlobalVector("_LightSplitsFar");
         splitsFar = Vector4.Scale(splitsFar, splitsFar);
@@ -392,7 +391,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         densityLightingShader.SetTexture(fogDensityLightingKernel, "fogVolume", currentfogVolume);
         if (taa)
         {
-            densityLightingShader.SetVectorArray("frustumRays", frustumRays);
+            densityLightingShader.SetVectorArray("frustumRays", jitteredFrustumRays[jitterIndex]);
             densityLightingShader.SetFloats("sliceDepths", jitteredSliceDepths[jitterIndex]);
         }
         else

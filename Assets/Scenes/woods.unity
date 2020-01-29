@@ -434,11 +434,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_WalkSpeed
-      value: 5
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_RunSpeed
-      value: 10
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_JumpSpeed
@@ -454,7 +454,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_RunstepLenghten
-      value: 0.301
+      value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_HeadBob.HorizontalBobRange
@@ -466,7 +466,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_StepInterval
-      value: 10
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -523,6 +523,10 @@ PrefabInstance:
     - target: {fileID: 2000000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_CullingMask.m_Bits
       value: 823
+      objectReference: {fileID: 0}
+    - target: {fileID: 8200000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
+      propertyPath: m_Volume
+      value: 0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
@@ -6114,10 +6118,10 @@ MonoBehaviour:
   atmosphereFalloff: 0.001
   sunLightMultiplier: 30
   distance: 150
-  volumeResolution: {x: 240, y: 135, z: 96}
+  volumeResolution: {x: 240, y: 180, z: 96}
   selfShadow: 0
   taa: 1
-  scattering: 0.8378044
+  scattering: 0.5046232
   scatterColor: {r: 1, g: 1, b: 1, a: 1}
   anisotropy: 0.6
   fogHeight: -1
@@ -14430,22 +14434,22 @@ PrefabInstance:
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 7.074e-42
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 1.02e-43
+      value: 8.13964e-40
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 0
+      value: 6.47e-43
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 0
+      value: -0.000000006608552
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
@@ -22783,7 +22787,7 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScatteringMultiplier
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -22803,12 +22807,12 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].value
-      value: 0.05596116
+      value: 0.052441165
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].time
-      value: 0.72521377
+      value: 0.45405817
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -22833,12 +22837,12 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[1].inSlope
-      value: -0.28925666
+      value: -0.08494461
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[1].outSlope
-      value: -0.28925666
+      value: -0.08494461
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -22848,27 +22852,27 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[1].outWeight
-      value: 0.07166681
+      value: 0.1259315
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].inSlope
-      value: 0.1025524
+      value: 0.19136105
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].outSlope
-      value: 0.1025524
+      value: 0.19136105
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].inWeight
-      value: 0.33333334
+      value: 0.08529236
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].outWeight
-      value: 0.23893252
+      value: 0.049984258
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -25324,6 +25328,21 @@ PrefabInstance:
     - target: {fileID: 9138727852567496850, guid: c048a8d8051962146b11f02ad60fe391,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 108082236955208880, guid: c048a8d8051962146b11f02ad60fe391,
+        type: 3}
+      propertyPath: m_Range
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 108082236955208880, guid: c048a8d8051962146b11f02ad60fe391,
+        type: 3}
+      propertyPath: m_Lightmapping
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 108082236955208880, guid: c048a8d8051962146b11f02ad60fe391,
+        type: 3}
+      propertyPath: m_Shadows.m_Type
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
