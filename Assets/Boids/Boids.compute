@@ -43,16 +43,16 @@ void CSMain ( uint3 id : SV_DispatchThreadID )
 		float3 temp = pow(((other_pos - pos) * 0.3), float3(3, 3, 3));
 		flock += (abs(temp) > 1.0 * (1.0 / temp));
 	}
-	avoid_collision = avoid_collision / boid_amount * 0.01;
+	avoid_collision = avoid_collision / boid_amount * 0.1;
 	
 	//Avoid box boundries
 	float3 boundaryDistances = pow((position.xyz - pos) * 5 / size, float3(3, 3, 3));
-	avoid_collision += boundaryDistances * 0.01;
+	avoid_collision += boundaryDistances * 0.1;
 
 	float3 oh = normalize(Boids[id.x].heading);
 
 	//Sum
-	Boids[id.x].heading = normalize( Boids[id.x].heading + avoid_collision + (matchSpeed * 0.1 + flock) * 0.1 / boid_amount ) * speed;
+	Boids[id.x].heading = normalize( Boids[id.x].heading + avoid_collision + (matchSpeed * 0.1 + flock) / boid_amount ) * speed;
 
 	float3 nz = normalize(cross(oh, Boids[id.x].heading));
 	float3 nu = normalize(cross(nz, oh));
