@@ -43,8 +43,7 @@ Shader "Custom/DepthShader"
 
             fixed4 frag ( v2f i ) : SV_TARGET {
                 float depth = tex2D (_CameraDepthTexture, float2 (i.uv.x, 1 - i.uv.y) ).r;
-            
-                return (1 - depth ) * _ProjectionParams.z;
+                return ( 1. - depth );
             }
 
             ENDCG

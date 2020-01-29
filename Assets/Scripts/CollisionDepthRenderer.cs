@@ -21,9 +21,6 @@ public class CollisionDepthRenderer : MonoBehaviour
             new Texture2D (textureSize,textureSize,TextureFormat.RGBA32,false));
         texMat = mat.GetTexture("_CollisionTexture");
 
-        Debug.Log(mat.name);
-        Debug.Log(texMat.name);
-
         depthCamera = gameObject.GetComponent<Camera>();
         depthCamera.depthTextureMode = depthCamera.depthTextureMode |DepthTextureMode.Depth;
         depthCamera.aspect = 1;
@@ -45,7 +42,8 @@ public class CollisionDepthRenderer : MonoBehaviour
     private void OnRenderImage ( RenderTexture src, RenderTexture dest ) {
         if ( depthMat != null ) {
             depthMat.SetFloat("_DepthLevel", depthLevel);
-            Graphics.Blit (src,tex,depthMat);
+            mat.SetFloat("_CollisionFar", depthCamera.farClipPlane);
+            Graphics.Blit (src,tex, depthMat);
             Graphics.CopyTexture(tex, texMat);
         }
     }

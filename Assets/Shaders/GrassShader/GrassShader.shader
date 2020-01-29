@@ -28,6 +28,7 @@
         _WindDepth      ("Wind Depth", range(0, 100)) = 1
 
         _CollisionTexture ("Collision Texture", 2D) = "white" {}
+        _TerrainTexture ("Collision Texture", 2D) = "black" {}
     }
 
     CGINCLUDE
