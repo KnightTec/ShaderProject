@@ -40,7 +40,7 @@
         // Grass Pass
         Pass 
         {
-            Tags {"LightMode" = "ForwardBase"}
+            Tags {"LightMode" = "ForwardBase" "RenderType"="Transparent"}
             Cull Off
             Blend SrcAlpha OneMinusSrcAlpha
             Lighting On
@@ -62,10 +62,6 @@
             float _DiffSpec;
 
             fixed4 frag (g2f IN) : SV_Target{
-                float3  tex = tex2D ( _MainTexture, IN.blendFactors );
-                float   alpha = IN.blendFactors.y == 0 ? 0.25: tex.b;
-                if (alpha  < 0.05 ) discard;
-
                 float3 N = IN.normal;
                 float3 L = normalize(_WorldSpaceLightPos0 - IN.worldPos);
                 float3 V = normalize(_WorldSpaceCameraPos - IN.worldPos);
@@ -91,13 +87,14 @@
                 float3  diffuseTerm = FragColor * diffuse * _LightColor0;
                 
                 float3  ambientTerm  = FragColor * _Ambient;
-
-                return fixed4( ( attenuation < 2. ? attenuation : 1. ) * (lerp ( diffuseTerm, specularTerm, _DiffSpec ) + ambientTerm ), alpha );
+                //( attenuation < 2. ? attenuation : 1. ) * 
+                return fixed4( attenuation * (lerp ( diffuseTerm, specularTerm, _DiffSpec ) + ambientTerm ), 1 );
             }
 
             ENDCG
         }
-
+        
+        // Shadow Casting Pass
         Pass
         {
             Tags

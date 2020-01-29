@@ -89,18 +89,6 @@ v2g dom (tessFactors tf, OutputPatch<appdata, 3> op, float3 dl : SV_DomainLocati
 #define RANDOM_ABS(fieldname) abs( sin ( 23.512 * dot ( 13.513323 * fieldname.yzx, fixed4 (4.3754, 5.299, 6.2851, 3.4103) * 93.03) ) )
 #define RANDOM(fieldname) sin ( 23.512 * dot ( 123.51323 * fieldname.yzx, fixed4 (423.754, 52.299, 63.22851, 3.24103) * 92.03) ) 
 
-// Append ground patch vertex
-#define APPEND(index)   \
-        v = IN[index]; \
-        o.worldPos =        mul ( unity_ObjectToWorld, IN[index].vertex ); \
-        o.pos =             mul(UNITY_MATRIX_VP, o.worldPos); \
-        o.tangent =         float3(0,0,0); \
-        o.normal =          IN[index].normal; \
-        o.uv =              IN[index].uv; \
-        o.blendFactors =    float2( tex2Dlod(_HeightTex, float4(IN[index].uv,0,0)).r, 0); \
-        TRANSFER_SHADOW(o); \
-        triStream.Append(o);
-
 // Append top grass vertex
 #define APPEND_ADDITIVE(summand,uvx,uvy) \
         if (sizeFac > 0 ) { \
@@ -140,12 +128,6 @@ void geom (triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
     
     if ( sizeFac < _MinGrassHeight )
         return;
-
-    // Append ground patch
-    //APPEND(0);
-    //APPEND(1);
-    //APPEND(2);
-    triStream.RestartStrip();
 
     // Dont append grass blade if the distance is too high
     if ( distance ( avgPos, _WorldSpaceCameraPos ) >= _MaxDistance )

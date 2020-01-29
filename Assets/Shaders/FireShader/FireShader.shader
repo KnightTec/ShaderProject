@@ -2,17 +2,17 @@
 {
     Properties
     {
-        _Peak ("Peak Color", Color) = (1,1,1,1)
-        _Top ("Top Color", Color) = (1,0,0,0)
-        _Bottom ("Bottom Color", Color) = ( 1,1,1,1)
-        _Noise ("NoiseTexture", 2D) = "white" {}
-        _Flutter ("Flutter speed", range(0.1,10)) = 1
-        _Depth ("Flutter depth", range(0.0001,0.1)) = 0.0001
-        _AlphaPow ("Alpha pow", Int) = 1
+        _Peak       ("Peak Color", Color) = (1,1,1,1)
+        _Top        ("Top Color", Color) = (1,0,0,0)
+        _Bottom     ("Bottom Color", Color) = ( 1,1,1,1)
+        _Noise      ("NoiseTexture", 2D) = "white" {}
+        _Flutter    ("Flutter speed", range(0.1,10)) = 1
+        _Depth      ("Flutter Depth", range(0.0001,0.1)) = 0.0001
+        _AlphaPow   ("Alpha POW", Int) = 1
         _NoiseSpeed ("Noise Speed", range(-10,10) ) = 1
-
-        _Cutoff ("Cutoff val", range (1,0)) = 0.15
-        _Seed ("Random Seed", range(1,2) )= 1
+        _Cutoff     ("Cutoff val", range (1,0)) = 0.15
+        _Seed       ("Random Seed", range(1,2) )= 1
+        _Offset     ("Intial UV Offset", range(0,10) ) = 0
     }
     SubShader
     {
@@ -27,9 +27,9 @@
             #pragma vertex vert
             #pragma fragment frag
 
+            float4 _Peak;
             float4 _Top;
             float4 _Bottom;
-            float4 _Peak;
 
             sampler2D _Noise;
             float4 _Noise_ST;
@@ -39,6 +39,8 @@
             float _Cutoff;
             float _Seed;
             float _NoiseSpeed;
+            float _Offset;
+
             int _AlphaPow;
 
             struct appdata {
@@ -62,13 +64,14 @@
                         (_Depth ) * float3 ( sin ( i.vertex.x + _Flutter * _Time.y), 0, sin ( i.vertex.z + _Flutter * _Time.y));
 
                 o.vertex = UnityObjectToClipPos (float4 ( position, 1 ));
-                o.uv = TRANSFORM_TEX(i.uv, _Noise);
+                // Unaltered uv.y needed for gradient, Transform upon sampling
+                o.uv = i.uv;
  
                 return o;
             }
 
             fixed4 frag ( v2f i ) : SV_TARGET {
-                float noise = tex2D (_Noise, i.uv - _NoiseSpeed * _Time.y * float2 (0,1)).r;
+                float noise = tex2D (_Noise, TRANSFORM_TEX(i.uv, _Noise) - _NoiseSpeed * (_Offset + _Time.y) * float2 (0,1)).r;
 
                 if ( noise < _Cutoff * i.uv.y)
                     discard;
@@ -89,7 +92,7 @@
                     step2 - step3
                 );
 
-                return float4 (final.rgb, 1. - pow(i.uv.y, _AlphaPow));
+                return float4 (final.rgb, abs( 1. - pow(i.uv.y, _AlphaPow )));
             }
 
             ENDCG

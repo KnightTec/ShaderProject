@@ -1,6 +1,7 @@
 ﻿// This shader is a copy of the shader postet at 
 // https://answers.unity.com/questions/877170/render-scene-depth-to-a-texture.html
-// and is included for reference only.
+// that was adjusted for orthographic cameras. 
+// It is used to render the depth textures for grass <> object collision.
 
 Shader "Custom/DepthShader"
 {
