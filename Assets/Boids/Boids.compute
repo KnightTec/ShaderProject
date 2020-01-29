@@ -24,14 +24,16 @@ void CSMain ( uint3 id : SV_DispatchThreadID )
 	float3 matchSpeed = float3(0, 0, 0);
 	float3 flock = float3(0, 0, 0);
 
-	float3 pos = mul(Boids[id.x].m, float4(0, 0, 0, 1)).xyz;
+//	float3 pos = mul(Boids[id.x].m, float4(0, 0, 0, 1)).xyz;
+	float3 pos = Boids[id.x].m._m03_m13_m23;
 
 	//Avoid other boids
 	for (uint i = 0; i < boid_amount; ++i) {
 		if (i == id.x)
 			continue;
 		
-		float3 other_pos = mul(Boids[i].m, float4(0, 0, 0, 1)).xyz;
+		//float3 other_pos = mul(Boids[i].m, float4(0, 0, 0, 1)).xyz;
+		float3 other_pos = Boids[i].m._m03_m13_m23;
 		float3 boundaryDistances = pow(max(-1, min( 1, size / (pos - other_pos))) * 1.3, float3(7, 7, 7));
 
 		avoid_collision += boundaryDistances;
