@@ -52,13 +52,7 @@ void CSMain ( uint3 id : SV_DispatchThreadID )
 	float3 oh = normalize(Boids[id.x].heading);
 
 	//Sum
-	Boids[id.x].heading += avoid_collision;
-	Boids[id.x].heading += matchSpeed / boid_amount * 0.01;
-	Boids[id.x].heading += flock / boid_amount * 0.1;
-
-
-	 
-	Boids[id.x].heading = normalize( Boids[id.x].heading ) * speed;
+	Boids[id.x].heading = normalize( Boids[id.x].heading + avoid_collision + (matchSpeed * 0.1 + flock) * 0.1 / boid_amount ) * speed;
 
 	float3 nz = normalize(cross(oh, Boids[id.x].heading));
 	float3 nu = normalize(cross(nz, oh));
