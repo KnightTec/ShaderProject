@@ -142,9 +142,9 @@ void geom (triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
         return;
 
     // Append ground patch
-    APPEND(0);
-    APPEND(1);
-    APPEND(2);
+    //APPEND(0);
+    //APPEND(1);
+    //APPEND(2);
     triStream.RestartStrip();
 
     // Dont append grass blade if the distance is too high
@@ -175,8 +175,8 @@ void geom (triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
         avg      =   lerp ( avgPos, IN[i].vertex, 0.5);
         o.uv    =    lerp ( UV, IN[i].uv, 0.5);
 
-        float terrainRaw = _CameraDistance - tex2Dlod (_TerrainTexture, float4(o.uv, 0,0)).r * _TerrainFar;
-        collRaw = tex2Dlod (_CollisionTexture, float4(o.uv,0,0)).r * _CollisionFar + 0.02 * terrainRaw;
+        float terrainRaw = _CameraDistance - tex2Dlod (_TerrainTexture, float4(o.uv, 0,0)).r * _TerrainFar - 0.1;
+        collRaw = tex2Dlod (_CollisionTexture, float4(o.uv,0,0)).r * _CollisionFar + terrainRaw - 0.1;
         
         collDepth = 1.;
 
@@ -193,7 +193,7 @@ void geom (triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
         
         if ( collDepth < 1. ) {
            float3 forwardNorm = normalize( forward - dot(forward, avgNorm) * avgNorm );
-            up = normalize ( (float4(avgNorm, 0) * float4 (1,collDepth,1,1) + float4(forwardNorm,0) - 0.2f * float4(avgNorm, 0) ) );
+            up = normalize ( (float4(avgNorm, 0) * float4 (1, max(0.25, collDepth) ,1,1) + float4(forwardNorm,0) - 0.2f * float4(avgNorm, 0) ) );
         }
 
         o.normal =   normalize ( float3 (forward.x, ( - forward.x * up.x - forward.z * up.z ) / up.y, forward.z));

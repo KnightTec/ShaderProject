@@ -12,8 +12,12 @@ public class CollisionDepthRenderer : MonoBehaviour
     Material depthMat;
     RenderTexture tex;
     Texture texMat;
+    int i = 0;
+    
+    public int timeOut;
     void Start()
     {
+        i = timeOut;
         tex = new RenderTexture(textureSize,textureSize,24);
 
         mat = obj.GetComponent<MeshRenderer>().materials[0];
@@ -40,11 +44,12 @@ public class CollisionDepthRenderer : MonoBehaviour
     }
 
     private void OnRenderImage ( RenderTexture src, RenderTexture dest ) {
-        if ( depthMat != null ) {
+        if ( depthMat != null && (i ++ % timeOut == 0) ) {
             depthMat.SetFloat("_DepthLevel", depthLevel);
             mat.SetFloat("_CollisionFar", depthCamera.farClipPlane);
             Graphics.Blit (src,tex, depthMat);
             Graphics.CopyTexture(tex, texMat);
+            i = 0;
         }
     }
 }
