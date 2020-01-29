@@ -81,8 +81,8 @@ public class BoidManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		logic.Dispatch( logicHandel, boidSettings.amount, 1, 1 );
-		Graphics.DrawMeshInstancedIndirect( boidSettings.model, 0, boidSettings.material, bounds, argBuffer, 0, null, ShadowCastingMode.Off, false );
+		logic.Dispatch( logicHandel, boidSettings.amount, 1, 1);
+		Graphics.DrawMeshInstancedIndirect( boidSettings.model, 0, boidSettings.material, bounds, argBuffer, 0, null, ShadowCastingMode.Off, false);
     }
 
 	void OnDisable()
