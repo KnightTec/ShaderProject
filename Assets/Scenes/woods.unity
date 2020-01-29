@@ -6112,14 +6112,14 @@ MonoBehaviour:
   atmosphereHeight: 0
   atmosphereFalloff: 0.001
   sunLightMultiplier: 30
-  distance: 200
+  distance: 150
   volumeResolution: {x: 240, y: 135, z: 96}
   selfShadow: 0
   taa: 1
   scattering: 0.7617307
   scatterColor: {r: 1, g: 1, b: 1, a: 1}
   anisotropy: 0.6
-  fogHeight: -0.5
+  fogHeight: -1.5
   fogFalloff: 0.1681474
   ambientIntensity: 0.5
   noiseIntensity: 0.95
@@ -11580,46 +11580,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1401443575}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1253581222
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1253581223}
-  - component: {fileID: 1253581226}
-  m_Layer: 0
-  m_Name: Plane
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1253581223
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253581222}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.1, z: -0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 1414052453}
-  m_Father: {fileID: 4419781141999528675}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &1253581226
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253581222}
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &1256290197 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -927199367670048503, guid: e7f0df97fbf6c1b41bcefd0b41f5b76f,
@@ -24899,49 +24859,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startAtSecond: 1
   speed: 1
---- !u!1 &2089473285
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2089473286}
-  - component: {fileID: 2089473287}
-  m_Layer: 0
-  m_Name: ShadowConfig
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2089473286
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2089473285}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -118.78264, y: -286.05136, z: -402.14072}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2089473287
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2089473285}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e948211da5843fd4d91876f334661727, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &2089512995 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 883063692370896820, guid: 10dfc11dca0d72b4bb2ef2bac0c387f1,
