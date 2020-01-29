@@ -75,7 +75,6 @@ public class VolumetricFogRenderer : MonoBehaviour
     private RenderTexture atmosphereVolume;
     private RenderTexture accumulatedAtmoVol;
     private ComputeBuffer pointLightBuffer;
-    private ComputeBuffer spotLightBuffer;
     private ComputeBuffer worldToShadowBuffer;
     private CommandBuffer cbGrabCascadeShadowMap;
     private CommandBuffer cbGrabWorldToShadow;
@@ -135,7 +134,6 @@ public class VolumetricFogRenderer : MonoBehaviour
         calculateSliceDepths();
 
         pointLightBuffer = new ComputeBuffer(64, 40);
-        spotLightBuffer = new ComputeBuffer(64, 64);
         pointLights = new FogPointLight[64];
 
         float logfarOverNearInv = 1 / Mathf.Log(distance / cam.nearClipPlane);
@@ -159,8 +157,20 @@ public class VolumetricFogRenderer : MonoBehaviour
         skyMaterial = Resources.Load<Material>("Materials/Skybox");
     }
 
-    void OnDestroy()
+    private void OnApplicationQuit()
     {
+        fogVolume0.Release();
+        fogVolume4.Release();
+        fogVolume5.Release();
+        accumulatedAtmoVol.Release();
+        atmosphereVolume.Release();
+        accumulatedAtmoVol.Release();
+
+        pointLightBuffer.Release();
+        worldToShadowBuffer.Release();
+
+        cbGrabCascadeShadowMap.Release();
+        cbGrabWorldToShadow.Release();
     }
 
     private void Update()
@@ -180,7 +190,10 @@ public class VolumetricFogRenderer : MonoBehaviour
 
         ditherIndex = (ditherIndex + 1) % 4;
 
-        skyMaterial.SetMatrix("_rotationMatrix", Matrix4x4.Rotate(directionalLight.transform.rotation));
+        if (directionalLight != null)
+        {
+            skyMaterial.SetMatrix("_rotationMatrix", Matrix4x4.Rotate(directionalLight.transform.rotation));
+        }
 
         if (selfShadow)
         {
@@ -363,13 +376,17 @@ public class VolumetricFogRenderer : MonoBehaviour
 
         // render volumetric fog
         densityLightingShader.SetBuffer(fogDensityLightingKernel, "lightData", worldToShadowBuffer);
-        densityLightingShader.SetVector("lightSplitsNear", Shader.GetGlobalVector("_LightSplitsNear"));
-        densityLightingShader.SetVector("lightSplitsFar", Shader.GetGlobalVector("_LightSplitsFar"));
+        Vector4 splitsNear = Shader.GetGlobalVector("_LightSplitsNear");
+        splitsNear = Vector4.Scale(splitsNear, splitsNear);
+       // splitsNear = new Vector4(splitsNear.x * splitsNear.x, splitsNear.y * splitsNear.y, splitsNear.z * splitsNear.z, splitsNear.w * splitsNear.w);
+        densityLightingShader.SetVector("lightSplitsNear", splitsNear);
+        Vector4 splitsFar = Shader.GetGlobalVector("_LightSplitsFar");
+        splitsFar = Vector4.Scale(splitsFar, splitsFar);
+        densityLightingShader.SetVector("lightSplitsFar", splitsFar);
         densityLightingShader.SetVector("dirLightColor", directionalLight.color * directionalLight.intensity);
         densityLightingShader.SetVector("dirLightDirection", dirLightDirection);
         densityLightingShader.SetBuffer(fogDensityLightingKernel, "pointLights", pointLightBuffer);
         densityLightingShader.SetInt("pointLightCount", pointLightCount);
-        densityLightingShader.SetBuffer(fogDensityLightingKernel, "spotLights", spotLightBuffer);
         densityLightingShader.SetVector("cameraPosition", transform.position);
         densityLightingShader.SetTextureFromGlobal(fogDensityLightingKernel, "cascadeShadowMap", "_CascadeShadowMapCopy");
         densityLightingShader.SetTexture(fogDensityLightingKernel, "fogVolume", currentfogVolume);
