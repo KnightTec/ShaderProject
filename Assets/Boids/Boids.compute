@@ -38,9 +38,9 @@ void CSMain ( uint3 id : SV_DispatchThreadID )
 		//Fly together with other boids
 		matchSpeed += Boids[i].heading * length(avoid_collision);
 		//Flocking
-		flock += pow((other_pos - pos) / size, float3(3, 3, 3));
+		flock += pow((other_pos - pos), float3(9, 9, 9));
 	}
-	avoid_collision = normalize(avoid_collision) * 0.2;
+	avoid_collision = avoid_collision / boid_amount * 0.1;
 	
 	//Avoid box boundries
 	float3 boundaryDistances = pow((position.xyz - pos) * 5 / size, float3(3, 3, 3));
@@ -50,8 +50,8 @@ void CSMain ( uint3 id : SV_DispatchThreadID )
 
 	//Sum
 	Boids[id.x].heading += avoid_collision;
-	Boids[id.x].heading += normalize(matchSpeed) * 0.1;
-	Boids[id.x].heading += normalize(flock) * 0.08;
+	Boids[id.x].heading += normalize(matchSpeed) * 0.000001;
+	Boids[id.x].heading += flock / boid_amount * 0.001;
 
 
 	 
