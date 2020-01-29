@@ -10,7 +10,7 @@ struct DirLightData
 {
 	float4x4 worldToShadow[4];
 };
-RWStructuredBuffer<DirLightData> lightData;
+RWStructuredBuffer<DirLightData> lightData : register(u1);
 float3 dirLightColor;
 float3 dirLightDirection;
 float4 lightSplitsNear;
