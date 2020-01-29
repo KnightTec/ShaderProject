@@ -6,6 +6,15 @@
 
 #define PI 3.14159
 
+// References:
+// https://bartwronski.files.wordpress.com/2014/08/bwronski_volumetric_fog_siggraph2014.pdf
+// https://www.ea.com/frostbite/news/physically-based-unified-volumetric-rendering-in-frostbite
+// Volumetric Light Effects in Killzone: Shadow Fall (GPU Pro 6)
+// Creating the Atmospheric World of Red Dead Redemption 2: A Complete and Integrated Solution (http://advances.realtimerendering.com/s2019/index.htm)
+// http://developer.download.nvidia.com/gameworks/events/GDC2016/msalvi_temporal_supersampling.pdf
+// http://www.klayge.org/material/4_11/Filmic%20SMAA%20v7.pdf
+// 
+
 struct DirLightData 
 {
 	float4x4 worldToShadow[4];
