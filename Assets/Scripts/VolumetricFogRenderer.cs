@@ -473,7 +473,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogMaterial.SetVector("volumeResolutionWH", new Vector4(volRes.x, volRes.y, 1.0f / volRes.x, 1.0f / volRes.y));
         applyFogMaterial.SetTexture("blueNoiseTex", blueNoise4D);
         applyFogMaterial.SetInt("ditherIndex", 0);
-        Shader.EnableKeyword("FOG_FALLBACK");
+        Shader.DisableKeyword("FOG_FALLBACK");
 
         Graphics.Blit(source, destination, applyFogMaterial);
     }
