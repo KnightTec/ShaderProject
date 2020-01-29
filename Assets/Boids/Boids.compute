@@ -1,0 +1,72 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+//Nach cs.toronto.edu/~dt/siggraph97-course/cwr87/
+
+struct Boid {
+	float4x4 m;
+	float3 heading;
+};
+
+RWStructuredBuffer<Boid> Boids;
+
+cbuffer CB{
+	uint boid_amount;
+	float4 size;
+	float4 position;
+	float speed;
+};
+
+[numthreads(64,1,1)]
+void CSMain ( uint3 id : SV_DispatchThreadID )
+{
+	float3 avoid_collision = float3(0, 0, 0);
+	float3 matchSpeed = float3(0, 0, 0);
+	float3 flock = float3(0, 0, 0);
+
+	float3 pos = mul(Boids[id.x].m, float4(0, 0, 0, 1)).xyz;
+
+	//Avoid other boids
+	for (uint i = 0; i < boid_amount; ++i) {
+		if (i == id.x)
+			continue;
+		
+		float3 other_pos = mul(Boids[i].m, float4(0, 0, 0, 1)).xyz;
+		float3 boundaryDistances = pow(max(-1, min( 1, size / (pos - other_pos))) * 1.3, float3(7, 7, 7));
+
+		avoid_collision += boundaryDistances;
+		//Fly together with other boids
+		matchSpeed += Boids[i].heading;
+		//Flocking 
+		float3 temp = pow(((other_pos - pos) * 0.3), float3(3, 3, 3));
+		flock += (abs(temp) > 1.0 * (1.0 / temp));
+	}
+	avoid_collision = avoid_collision / boid_amount * 0.01;
+	
+	//Avoid box boundries
+	float3 boundaryDistances = pow((position.xyz - pos) * 5 / size, float3(3, 3, 3));
+	avoid_collision += boundaryDistances * 0.01;
+
+	float3 oh = normalize(Boids[id.x].heading);
+
+	//Sum
+	Boids[id.x].heading += avoid_collision;
+	Boids[id.x].heading += matchSpeed / boid_amount * 0.01;
+	Boids[id.x].heading += flock / boid_amount * 0.1;
+
+
+	 
+	Boids[id.x].heading = normalize( Boids[id.x].heading ) * speed;
+
+	float3 nz = normalize(cross(oh, Boids[id.x].heading));
+	float3 nu = normalize(cross(nz, oh));
+
+	float4x4 rot_towards = { oh.x, oh.y, oh.z, 0, nu.x, nu.y, nu.z, 0, nz.x, nz.y, nz.z, 0, 0, 0, 0, 1 };
+	//float4x4 rot_towards = { oh.x, nu.x, nz.x, 0, oh.y, nu.y, nz.y, 0, oh.z, nu.z, nz.z, 0, 0, 0, 0, 1};
+
+	Boids[id.x].m = mul(Boids[id.x].m, rot_towards);
+
+	Boids[id.x].m._14 += Boids[id.x].heading.x;
+	Boids[id.x].m._24 += Boids[id.x].heading.y;
+	Boids[id.x].m._34 += Boids[id.x].heading.z;
+}
