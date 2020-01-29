@@ -14,6 +14,7 @@ cbuffer CB{
 	uint boid_amount;
 	float4 size;
 	float4 position;
+	float speed;
 };
 
 [numthreads(64,1,1)]
@@ -37,12 +38,12 @@ void CSMain ( uint3 id : SV_DispatchThreadID )
 		//Fly together with other boids
 		matchSpeed += Boids[i].heading * length(avoid_collision);
 		//Flocking
-		flock += pow(other_pos - pos / size, float3(3, 3, 3));
+		flock += pow((other_pos - pos) / size, float3(3, 3, 3));
 	}
-	avoid_collision = normalize(avoid_collision) * 0.1;
+	avoid_collision = normalize(avoid_collision) * 0.2;
 	
 	//Avoid box boundries
-	float3 boundaryDistances = pow((position.xyz - pos) * 2.4 / size, float3(3, 3, 3));
+	float3 boundaryDistances = pow((position.xyz - pos) * 5 / size, float3(3, 3, 3));
 	avoid_collision += boundaryDistances * 0.1;
 
 
@@ -50,11 +51,11 @@ void CSMain ( uint3 id : SV_DispatchThreadID )
 	//Sum
 	Boids[id.x].heading += avoid_collision;
 	Boids[id.x].heading += normalize(matchSpeed) * 0.1;
-	Boids[id.x].heading += normalize(flock) * 0.1;
+	Boids[id.x].heading += normalize(flock) * 0.08;
 
 
 	 
-	Boids[id.x].heading = normalize( Boids[id.x].heading ) * 0.4;
+	Boids[id.x].heading = normalize( Boids[id.x].heading ) * speed;
 
 	Boids[id.x].m._14 += Boids[id.x].heading.x;
 	Boids[id.x].m._24 += Boids[id.x].heading.y;

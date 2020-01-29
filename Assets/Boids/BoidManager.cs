@@ -15,6 +15,7 @@ public class BoidManager : MonoBehaviour
 		public Mesh model;
 		public Material material;
 		public Size size;
+        public float speed;
 
 	}
 
@@ -71,6 +72,7 @@ public class BoidManager : MonoBehaviour
         logic.SetInt("boid_amount", boidSettings.amount * 64);
         logic.SetVector("size", new Vector4(size.x, size.y, size.z, 0));
         logic.SetVector("position", transform.position);
+        logic.SetFloat("speed", boidSettings.speed);
 
 		boidSettings.material.SetBuffer( "dataBuffer", dataBuffer );
     }

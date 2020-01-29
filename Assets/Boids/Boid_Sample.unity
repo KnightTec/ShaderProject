@@ -241,13 +241,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boidSettings:
-    amount: 20
+    amount: 200
     model: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
     material: {fileID: 2100000, guid: 27c957ef10afc1f40ad685a9e7a9c66b, type: 2}
     size:
-      x: 0.1
-      y: 0.1
-      z: 0.1
+      x: 0.05
+      y: 0.05
+      z: 0.05
+    speed: 0.2
   size:
     x: 20
     y: 5

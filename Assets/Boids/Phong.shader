@@ -68,7 +68,7 @@
 			{
 				float3 n = normalize( i.norm );
 				float light = dot( n, normalize( _WorldSpaceLightPos0 ));
-				float diffuse = tex2D( _MainTex, i.uv ) * max( light, _Ambient ) * _LightColor0;
+				float4 diffuse = tex2D( _MainTex, i.uv ) * max( light, _Ambient ) * _LightColor0;
 
 				float3 v = normalize( UnityWorldSpaceViewDir( i.worldPos ));
 				float3 l = normalize( UnityWorldSpaceLightDir( i.worldPos ));
