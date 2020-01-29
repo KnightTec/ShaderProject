@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.11165225, g: 0.19576204, b: 0.23349172, a: 0.15453953}
+  m_AmbientSkyColor: {r: 0.1786436, g: 0.31321928, b: 0.37358674, a: 0.24726324}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
@@ -442,7 +442,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_JumpSpeed
-      value: 30
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 5e9e851c0e142814dac026a256ba2ac0, type: 3}
       propertyPath: m_StickToGroundForce
@@ -6053,11 +6053,11 @@ MonoBehaviour:
     m_Bits: 4294967295
   stopNaNPropagation: 1
   finalBlitToCameraTarget: 0
-  antialiasingMode: 2
+  antialiasingMode: 3
   temporalAntialiasing:
-    jitterSpread: 0.298
+    jitterSpread: 0.5
     sharpness: 0.25
-    stationaryBlending: 0.99
+    stationaryBlending: 0.9
     motionBlending: 0.85
   subpixelMorphologicalAntialiasing:
     quality: 2
@@ -6116,14 +6116,14 @@ MonoBehaviour:
   volumeResolution: {x: 240, y: 135, z: 96}
   selfShadow: 0
   taa: 1
-  scattering: 0.7617307
+  scattering: 0.8378044
   scatterColor: {r: 1, g: 1, b: 1, a: 1}
   anisotropy: 0.6
-  fogHeight: -1.5
+  fogHeight: -1
   fogFalloff: 0.1681474
   ambientIntensity: 0.5
   noiseIntensity: 0.95
-  noiseSize: 16
+  noiseSize: 12
   noiseDirection: {x: 0.5, y: 1, z: 0.2}
   jitterStrength: 1
 --- !u!4 &626589489 stripped
@@ -13046,8 +13046,8 @@ Light:
   serializedVersion: 9
   m_Type: 2
   m_Color: {r: 0, g: 1, b: 0.9712162, a: 1}
-  m_Intensity: 0.05
-  m_Range: 1
+  m_Intensity: 0.03
+  m_Range: 5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
@@ -14429,22 +14429,22 @@ PrefabInstance:
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 2.556e-42
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 1.02e-43
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: NaN
+      value: 9.1835e-41
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 0
+      value: 5.877472e-37
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
@@ -22767,7 +22767,7 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.size
-      value: 6
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -22797,17 +22797,17 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: ambientIntensityMultiplier
-      value: 0.5
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].value
-      value: 0.011366695
+      value: 0.05596116
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].time
-      value: 0.3484071
+      value: 0.72521377
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -22822,22 +22822,22 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[1].time
-      value: 0.25205493
+      value: 0.25570583
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[1].value
-      value: 0.17524254
+      value: 0.057085544
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[1].inSlope
-      value: -1.0988936
+      value: -0.28925666
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[1].outSlope
-      value: -1.0988936
+      value: -0.28925666
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -22847,17 +22847,17 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[1].outWeight
-      value: 0.30721632
+      value: 0.07166681
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].inSlope
-      value: -0.28792277
+      value: 0.1025524
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].outSlope
-      value: -0.28792277
+      value: 0.1025524
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
@@ -22867,67 +22867,67 @@ PrefabInstance:
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[2].outWeight
-      value: 0.13722226
+      value: 0.23893252
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[3].time
-      value: 0.5607391
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[3].value
-      value: 0.024753712
+      value: 0.02
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[3].inSlope
-      value: -0.30069005
+      value: 0.010976701
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[3].outSlope
-      value: -0.30069005
+      value: 0.010976701
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[3].inWeight
-      value: 0.096528366
+      value: 0.18727843
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[3].outWeight
-      value: 0.26614723
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[4].time
-      value: 0.7070253
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[4].value
-      value: 0.008964092
+      value: 0.02
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[4].inSlope
-      value: 0.1025524
+      value: 0.010976701
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[4].outSlope
-      value: 0.1025524
+      value: 0.010976701
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[4].inWeight
-      value: 0.33333334
+      value: 0.18727843
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
       propertyPath: fogScattering.m_Curve.Array.data[4].outWeight
-      value: 0.23893252
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2896922333730386369, guid: c148567e76a2c0242bf341a3c6a3790c,
         type: 3}
