@@ -37,21 +37,22 @@ void CSMain ( uint3 id : SV_DispatchThreadID )
 		avoid_collision += boundaryDistances;
 		//Fly together with other boids
 		matchSpeed += Boids[i].heading * length(avoid_collision);
-		//Flocking
-		flock += pow((other_pos - pos), float3(9, 9, 9));
+		//Flocking 
+		float3 temp = pow(((other_pos - pos) * 0.3), float3(3, 3, 3));
+		flock += (abs(temp) > 1.0 * (1.0 / temp));
 	}
-	avoid_collision = avoid_collision / boid_amount * 0.1;
+	avoid_collision = avoid_collision / boid_amount * 0.01;
 	
 	//Avoid box boundries
 	float3 boundaryDistances = pow((position.xyz - pos) * 5 / size, float3(3, 3, 3));
-	avoid_collision += boundaryDistances * 0.1;
+	avoid_collision += boundaryDistances * 0.01;
 
 
 
 	//Sum
 	Boids[id.x].heading += avoid_collision;
-	Boids[id.x].heading += normalize(matchSpeed) * 0.000001;
-	Boids[id.x].heading += flock / boid_amount * 0.001;
+	Boids[id.x].heading += normalize(matchSpeed) * 0.01;
+	Boids[id.x].heading += flock / boid_amount * 0.1;
 
 
 	 
