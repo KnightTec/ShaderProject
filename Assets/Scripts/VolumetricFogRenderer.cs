@@ -67,7 +67,6 @@ public class VolumetricFogRenderer : MonoBehaviour
     private Camera cam;
     private Vector4 resolution;
 
-    //TODO: release those 
     private RenderTexture fogVolume0;
     private RenderTexture fogVolume4;
     private RenderTexture fogVolume5;
