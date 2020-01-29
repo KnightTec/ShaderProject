@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CollisionDepthRenderer : MonoBehaviour
+public class CollisionTerrainRenderer : MonoBehaviour
 {
     public GameObject obj;
     public int textureSize;
@@ -12,30 +12,24 @@ public class CollisionDepthRenderer : MonoBehaviour
     Material depthMat;
     RenderTexture tex;
     Texture texMat;
-    int i = 0;
-    
-    public int timeOut;
     void Start()
     {
-        i = timeOut;
         tex = new RenderTexture(textureSize,textureSize,24);
 
         mat = obj.GetComponent<MeshRenderer>().materials[0];
-        mat.SetTexture("_CollisionTexture", 
+        mat.SetTexture("_TerrainTexture", 
             new Texture2D (textureSize,textureSize,TextureFormat.RGBA32,false));
-        texMat = mat.GetTexture("_CollisionTexture");
+        texMat = mat.GetTexture("_TerrainTexture");
 
         depthCamera = gameObject.GetComponent<Camera>();
-        depthCamera.depthTextureMode = depthCamera.depthTextureMode |DepthTextureMode.Depth;
+        depthCamera.depthTextureMode = depthCamera.depthTextureMode | DepthTextureMode.Depth;
         depthCamera.aspect = 1;
-
+        depthCamera.targetTexture = tex;
 
         depthMat = new Material(
             Shader.Find("Custom/DepthShader")
         );
         depthMat.hideFlags = HideFlags.HideAndDontSave;
-        
-        depthCamera.targetTexture = tex;
     }
 
     private void OnDisable () {
@@ -44,12 +38,13 @@ public class CollisionDepthRenderer : MonoBehaviour
     }
 
     private void OnRenderImage ( RenderTexture src, RenderTexture dest ) {
-        if ( depthMat != null && (i ++ % timeOut == 0) ) {
+        if ( depthMat != null ) {
             depthMat.SetFloat("_DepthLevel", depthLevel);
-            mat.SetFloat("_CollisionFar", depthCamera.farClipPlane);
+            mat.SetFloat("_TerrainFar", 50);
+            mat.SetFloat("_CameraDistance", transform.localPosition.y);
             Graphics.Blit (src,tex, depthMat);
             Graphics.CopyTexture(tex, texMat);
-            i = 0;
+            Destroy(gameObject);
         }
     }
 }

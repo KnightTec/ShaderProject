@@ -2,6 +2,11 @@
 #include "GrassVars.cginc"
 #include "Tessellation.cginc"
 
+float _CameraDistance;
+float _CollisionFar;
+float _TerrainFar;
+const float _magicFactor = 0.025;
+
 v2g vert (appdata IN) {
     v2g OUT;
     OUT.vertex  = IN.vertex;
@@ -14,9 +19,12 @@ v2g vert (appdata IN) {
 
 tessFactors patch(InputPatch<v2g, 3> IN) {
     tessFactors t;
-
+ 
     float fac;
-    if ( UnityWorldViewFrustumCull 
+    // Set factors to 0 if the triangle is out of view.
+    // Min distance non zero as grass can be visible even if 
+    // the ground patch is out of viesw
+   if ( UnityWorldViewFrustumCull 
         (   mul (unity_ObjectToWorld, IN[0].vertex ),
             mul (unity_ObjectToWorld, IN[1].vertex ),
             mul (unity_ObjectToWorld, IN[2].vertex ), 
@@ -25,15 +33,17 @@ tessFactors patch(InputPatch<v2g, 3> IN) {
         fac = 0;
     }
     else {   
+        // Get average height of grass on this patch, and discard if too small
         float h = (
             tex2Dlod ( _HeightTex, float4(IN[0].uv, 0, 0) ).r +
             tex2Dlod ( _HeightTex, float4(IN[1].uv, 0, 0)).r +
-            tex2Dlod ( _HeightTex, float4(IN[2].uv, 0, 0) ).r ) / 3.;
+            tex2Dlod ( _HeightTex, float4(IN[2].uv, 0, 0) ).r ) / 3. * _GrassCutOff;
             
         if ( h <= _MinGrassHeight ) {
             fac = 0;
         }
         else {
+            // Calculate actual tess factor from distance to viewer.
             float dist = distance (mul(unity_ObjectToWorld, AVG (vertex) ), _WorldSpaceCameraPos);
             float x = lerp (0, 1, min( _MaxDistance, dist) / _MaxDistance);
             
@@ -79,6 +89,7 @@ v2g dom (tessFactors tf, OutputPatch<appdata, 3> op, float3 dl : SV_DomainLocati
 #define RANDOM_ABS(fieldname) abs( sin ( 23.512 * dot ( 13.513323 * fieldname.yzx, fixed4 (4.3754, 5.299, 6.2851, 3.4103) * 93.03) ) )
 #define RANDOM(fieldname) sin ( 23.512 * dot ( 123.51323 * fieldname.yzx, fixed4 (423.754, 52.299, 63.22851, 3.24103) * 92.03) ) 
 
+// Append ground patch vertex
 #define APPEND(index)   \
         v = IN[index]; \
         o.worldPos =        mul ( unity_ObjectToWorld, IN[index].vertex ); \
@@ -90,6 +101,7 @@ v2g dom (tessFactors tf, OutputPatch<appdata, 3> op, float3 dl : SV_DomainLocati
         TRANSFER_SHADOW(o); \
         triStream.Append(o);
 
+// Append top grass vertex
 #define APPEND_ADDITIVE(summand,uvx,uvy) \
         if (sizeFac > 0 ) { \
             o.worldPos =    mul ( unity_ObjectToWorld, avg + (summand) ); \
@@ -100,6 +112,7 @@ v2g dom (tessFactors tf, OutputPatch<appdata, 3> op, float3 dl : SV_DomainLocati
             triStream.Append(o); \
         }
 
+// Append bottom grass vertex
 #define APPEND_ADDITIVE_BOTTOM(summand,uvx,uvy) \
         if (sizeFac > 0 ) { \
             o.worldPos =        mul ( unity_ObjectToWorld, avg + (summand) ); \
@@ -128,11 +141,13 @@ void geom (triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
     if ( sizeFac < _MinGrassHeight )
         return;
 
-    APPEND(0);
-    APPEND(1);
-    APPEND(2);
+    // Append ground patch
+    //APPEND(0);
+    //APPEND(1);
+    //APPEND(2);
     triStream.RestartStrip();
 
+    // Dont append grass blade if the distance is too high
     if ( distance ( avgPos, _WorldSpaceCameraPos ) >= _MaxDistance )
         return;
 
@@ -142,41 +157,54 @@ void geom (triangle v2g IN[3], inout TriangleStream<g2f> triStream) {
     rand[2] = RANDOM(IN[2].vertex);
     float4 right, forward, up, avg;
     float3 V;
+    float collRaw, collDepth, heightFac;
     
-
+    // Create 3 grass blades for each triangle, position is interpolated between
+    // middle position and the i-th vertex.
+    // This is not as temporaly stable compared to single blade creation, 
+    // as positions of blades shift if tess factors change, 
+    // but more performant.
     for ( int i = 0; i < 3; i++ ) {
+        // Get size factor from height texture
         sizeFac = tex2Dlod (_HeightTex,
             float4( lerp ( sizeUV, TRANSFORM_TEX( IN[i].uv, _HeightTex), 0.5), 0, 0) 
         ).r;
 
-        if ( sizeFac < _MinGrassHeight )
-            continue;
-
-        float heightFac = sizeFac * _GrassCutOff;
+        // Height is cut off with cutoff factor, size factor still needed for blade width
+        heightFac = sizeFac * _GrassCutOff;
         avg      =   lerp ( avgPos, IN[i].vertex, 0.5);
         o.uv    =    lerp ( UV, IN[i].uv, 0.5);
 
-        float collDist = tex2Dlod (_CollisionTexture, float4(o.uv,0,0)).r;
+        float terrainRaw = _CameraDistance - tex2Dlod (_TerrainTexture, float4(o.uv, 0,0)).r * _TerrainFar - 0.1;
+        collRaw = tex2Dlod (_CollisionTexture, float4(o.uv,0,0)).r * _CollisionFar + terrainRaw - 0.1;
+        
+        collDepth = 1.;
 
-        float collDepth = 0;
-        if ( collDist < heightFac ) {
-            collDepth = 1. - ( collDist / heightFac);
+        // Calculate collision depth 
+        // 1: collision <= height -> No effect
+        // 0: distance = 0 -> Press down blade completely 
+        if ( collRaw <= heightFac ) {
+            collDepth = ( collRaw / heightFac );
         }
 
         right    =   normalize ( float4( rand[2-i], 0, rand[i], 1. ) );
         forward  =   right.zyxw;
         up       =   normalize ( float4( avgNorm, 0 ) + float4( wind, 0 ) * _WindDepth);
         
-        if (collDepth != 0 ) {
-            up = normalize ( float4(avgNorm, 0) * float4 (1,collDepth,1,1) + right);
+        if ( collDepth < 1. ) {
+           float3 forwardNorm = normalize( forward - dot(forward, avgNorm) * avgNorm );
+            up = normalize ( (float4(avgNorm, 0) * float4 (1, max(0.25, collDepth) ,1,1) + float4(forwardNorm,0) - 0.2f * float4(avgNorm, 0) ) );
         }
 
         o.normal =   normalize ( float3 (forward.x, ( - forward.x * up.x - forward.z * up.z ) / up.y, forward.z));
+        
+        // Flip normal if it faces away from the player
         V       =  normalize(_WorldSpaceCameraPos - avg);
-        o.normal *= ( dot (V, o.normal ) > 0 ) ? 1  : -1;
+        o.normal *= ( dot (V, o.normal ) > 0 ) ? 1 : -1;
 
         o.tangent = up.xyz;
 
+        // Append verticies
         APPEND_ADDITIVE_BOTTOM(right * _MaxGrassWidth, 0, 0);
         APPEND_ADDITIVE(sizeFac * (up * _MaxGrassHeight * _GrassCutOff + right * _MaxGrassWidth * (1-_GrassCutOff)), 0, 1);
         APPEND_ADDITIVE_BOTTOM(- right * _MaxGrassWidth, 1, 0);

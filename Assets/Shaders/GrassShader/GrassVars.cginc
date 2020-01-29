@@ -28,3 +28,4 @@ float _WindDepth;
 
 // Collision 
 sampler2D _CollisionTexture;
+sampler2D _TerrainTexture;
