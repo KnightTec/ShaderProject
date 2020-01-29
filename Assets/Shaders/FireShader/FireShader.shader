@@ -64,7 +64,7 @@
                         (_Depth ) * float3 ( sin ( i.vertex.x + _Flutter * _Time.y), 0, sin ( i.vertex.z + _Flutter * _Time.y));
 
                 o.vertex = UnityObjectToClipPos (float4 ( position, 1 ));
-                // Unaltered uv.y needed for gradient, Transform uppon sampling
+                // Unaltered uv.y needed for gradient, Transform upon sampling
                 o.uv = i.uv;
  
                 return o;

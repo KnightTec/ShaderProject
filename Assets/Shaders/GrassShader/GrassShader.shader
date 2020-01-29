@@ -87,8 +87,8 @@
                 float3  diffuseTerm = FragColor * diffuse * _LightColor0;
                 
                 float3  ambientTerm  = FragColor * _Ambient;
-
-                return fixed4( ( attenuation < 2. ? attenuation : 1. ) * (lerp ( diffuseTerm, specularTerm, _DiffSpec ) + ambientTerm ), 1 );
+                //( attenuation < 2. ? attenuation : 1. ) * 
+                return fixed4( attenuation * (lerp ( diffuseTerm, specularTerm, _DiffSpec ) + ambientTerm ), 1 );
             }
 
             ENDCG

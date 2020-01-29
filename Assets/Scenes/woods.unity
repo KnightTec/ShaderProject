@@ -4874,7 +4874,7 @@ MonoBehaviour:
   exploder: {fileID: 0}
   activator: {fileID: 158379206}
   interactText: Free the wand.
-  tipText: An old wand is embedded in the tree.
+  tipText: An old wand is embedded in the tree
 --- !u!135 &512122994
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -11608,7 +11608,7 @@ MonoBehaviour:
   next: {fileID: 512122993}
   exploder: {fileID: 0}
   activator: {fileID: 704013403}
-  interactText: This could be helpfull.
+  interactText: This could be helpful
   tipText: 
 --- !u!135 &1256290199
 SphereCollider:
