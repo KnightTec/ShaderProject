@@ -47,7 +47,7 @@ public class BoidManager : MonoBehaviour
 		argBuffer = new ComputeBuffer( 1, 5 * sizeof( uint ), ComputeBufferType.IndirectArguments );
 		argBuffer.SetData( new uint[]{ boidSettings.model.GetIndexCount( 0 ), (uint)boidSettings.amount * 64, boidSettings.model.GetIndexStart( 0 ), boidSettings.model.GetBaseVertex( 0 ), (uint)0});
 
-		bounds = new Bounds( new Vector3( -size.x * 0.5f, -size.y * 0.5f, -size.z * 0.5f ), new Vector3( size.x * 0.5f, size.y * 0.5f, size.z * 0.5f ));
+		bounds = new Bounds( transform.position, new Vector3( size.x, size.y, size.z ));
 
         List<Boid> boids = new List<Boid>();
 		for( int i = 0; i < boidSettings.amount * 64; ++i ){
