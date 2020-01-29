@@ -11,9 +11,10 @@
             #pragma vertex vert
             #pragma fragment frag
 			#pragma multi_compile __ FOG_FALLBACK
+			#pragma multi_compile __ DITHERED_SAMPLING
 
             #include "UnityCG.cginc"
-			#include "FogCommon.cginc"
+			#include "Phase.cginc"
 
             struct appdata
             {
@@ -55,6 +56,7 @@
 			float logfarOverNearInv;
 			float4 volumeResolutionWH;
 
+			// contains a different blue noise in each color channel
 			Texture2D<float4> blueNoiseTex;
 			uint ditherIndex;
 
@@ -76,27 +78,26 @@
 
 				float2 pixCoord = i.uv * _ScreenParams.xy;
 
+#ifdef DITHERED_SAMPLING
 				// dithered sampling
 				// see "Creating the Atmospheric World of Red Dead Redemption 2: A Complete and Integrated Solution"
 				// slide 56
 				float4 noise = blueNoiseTex.Load(int3(pixCoord, 0) & 1023) * 1.5f;
 				float3 off0 = float3(noise[0] * volumeResolutionWH.zw, 0);
-				uint noiseIndex1 = (1) & 3;
-				float3 off1 = float3(float2(-noise[noiseIndex1], noise[noiseIndex1]) * volumeResolutionWH.zw, 0);
-				uint noiseIndex2 = (2) & 3;
-				float3 off2 = float3(float2(noise[noiseIndex2], -noise[noiseIndex2]) * volumeResolutionWH.zw, 0);
-				float3 off3 = float3(-noise[(3) & 3] * volumeResolutionWH.zw, 0);
+				float3 off1 = float3(float2(-noise[1], noise[1]) * volumeResolutionWH.zw, 0);
+				float3 off2 = float3(float2(noise[2], -noise[2]) * volumeResolutionWH.zw, 0);
+				float3 off3 = float3(-noise[3] * volumeResolutionWH.zw, 0);
 				
 				half4 fogSample = tex3D(fogVolume, fogCoord + off0);
 				fogSample += tex3D(fogVolume, fogCoord + off1);
 				fogSample += tex3D(fogVolume, fogCoord + off2);
 				fogSample += tex3D(fogVolume, fogCoord + off3);
 				fogSample *= 0.25f;
-
+#else
+				half4 fogSample = tex3D(fogVolume, fogCoord);
+#endif
 				half4 atmoSample = tex3D(atmoVolume, atmoCoord);
-
 				float3 combinedColor = sceneColor * atmoSample.a + atmoSample.rgb;
-
 #ifdef FOG_FALLBACK
 				// analytic fog beyond volumetric fog distance
 				// based on https://iquilezles.org/www/articles/fog/fog.htm

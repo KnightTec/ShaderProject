@@ -7410,7 +7410,7 @@ PrefabInstance:
     - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
       propertyPath: jitterStrength
-      value: 1
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
@@ -7461,6 +7461,11 @@ PrefabInstance:
         type: 3}
       propertyPath: volumeResolution.z
       value: 96
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392154, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: ditherDepth
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1441816301043392159, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
@@ -7535,7 +7540,12 @@ PrefabInstance:
     - target: {fileID: 1441816301043392152, guid: d60e110bba26456448f1fb5d3d959466,
         type: 3}
       propertyPath: temporalAntialiasing.jitterSpread
-      value: 1
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1441816301043392152, guid: d60e110bba26456448f1fb5d3d959466,
+        type: 3}
+      propertyPath: temporalAntialiasing.stationaryBlending
+      value: 0.97
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d60e110bba26456448f1fb5d3d959466, type: 3}
@@ -7554,17 +7564,17 @@ PrefabInstance:
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 0
+      value: 1.946e-42
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 1.4e-44
+      value: 1.05e-43
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 0
+      value: 6.47e-43
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}

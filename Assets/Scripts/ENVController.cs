@@ -30,12 +30,20 @@ public class ENVController : MonoBehaviour
     private float noiseIntensity;
     private float noiseSpeed;
     private bool taa;
+    private float anisotropy;
+    private bool depthDither;
+    private bool sampleDither;
+    private bool analyticFog;
 
     private void Start()
     {
         noiseIntensity = fogRenderer.noiseIntensity;
         noiseSpeed = fogRenderer.noiseDirection.x;
         taa = fogRenderer.taa;
+        anisotropy = fogRenderer.anisotropy;
+        depthDither = fogRenderer.ditherDepth;
+        sampleDither = fogRenderer.ditheredSampling;
+        analyticFog = fogRenderer.analyticFog;
     }
 
     void Update()
@@ -56,6 +64,10 @@ public class ENVController : MonoBehaviour
             fogRenderer.noiseIntensity = noiseIntensity;
             fogRenderer.noiseDirection.x = noiseSpeed;
             fogRenderer.taa = taa;
+            fogRenderer.anisotropy = anisotropy;
+            fogRenderer.ditherDepth = depthDither;
+            fogRenderer.ditheredSampling = sampleDither;
+            fogRenderer.analyticFog = analyticFog;
         }
 
         // Insert other controls here
@@ -96,11 +108,11 @@ public class ENVController : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.KeypadPlus))
             {
-                fogScatteringMultiplier += Time.deltaTime * 10f;
+                fogScatteringMultiplier += Time.deltaTime * 2f;
             }
             else if (Input.GetKey(KeyCode.KeypadMinus))
             {
-                fogScatteringMultiplier -= Time.deltaTime * 10f;
+                fogScatteringMultiplier -= Time.deltaTime * 2f;
             }
         }
         fogScatteringMultiplier = Mathf.Max(fogScatteringMultiplier, 0);
@@ -130,12 +142,60 @@ public class ENVController : MonoBehaviour
             }
             noiseIntensity = Mathf.Clamp01(noiseIntensity);
         }
-        if (Input.GetKeyDown(KeyCode.Keypad7))
+        if (Input.GetKey(KeyCode.Keypad7))
+        {
+            if (Input.GetKey(KeyCode.KeypadPlus))
+            {
+                anisotropy += Time.deltaTime;
+            }
+            else if (Input.GetKey(KeyCode.KeypadMinus))
+            {
+                anisotropy -= Time.deltaTime;
+            }
+            anisotropy = Mathf.Clamp(anisotropy, -0.9f, 0.9f);
+        }
+        if (Input.GetKey(KeyCode.Keypad8))
+        {
+            if (Input.GetKey(KeyCode.KeypadPlus))
+            {
+                sunIntensityMultiplier += Time.deltaTime * 10;
+            }
+            else if (Input.GetKey(KeyCode.KeypadMinus))
+            {
+                sunIntensityMultiplier -= Time.deltaTime * 10;
+            }
+            anisotropy = Mathf.Clamp(anisotropy, -0.9f, 0.9f);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            fogRenderer.scatterColor = Color.white;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            fogRenderer.scatterColor = new Color(0.25f, 0.5f, 1);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            fogRenderer.scatterColor = new Color(0.7f, 1.0f, 0.1f);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha6))
+        {
+            analyticFog = !analyticFog;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha7))
+        {
+            sampleDither = !sampleDither;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha8))
+        {
+            depthDither = !depthDither;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha9))
         {
             taa = !taa;
         }
-
-        if (Input.GetKeyDown(KeyCode.Keypad9))
+        if (Input.GetKeyDown(KeyCode.Alpha0))
         {
             if (fogRenderer.atmosphereScattering != 0)
             {

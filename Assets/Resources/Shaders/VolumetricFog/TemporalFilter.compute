@@ -16,7 +16,6 @@ float4 clipParams;
 float farPlane;
 float distance;
 float3 volumeRes;
-float3 historyNdcCorners[8];
 
 [numthreads(8,8,8)]
 void CSMain (uint3 id : SV_DispatchThreadID)

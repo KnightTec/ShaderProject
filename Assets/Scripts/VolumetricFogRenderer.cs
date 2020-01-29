@@ -28,6 +28,9 @@ public class VolumetricFogRenderer : MonoBehaviour
     // Note: 
     public bool selfShadow = false;
     public bool taa = true;
+    public bool ditherDepth = true;
+    public bool ditheredSampling = true;
+    public bool analyticFog = true;
     [Range(0, 10)]
     public float scattering = 0.05f;
     public Color scatterColor = Color.white;
@@ -157,7 +160,7 @@ public class VolumetricFogRenderer : MonoBehaviour
         skyMaterial = Resources.Load<Material>("Materials/Skybox");
     }
 
-    private void OnApplicationQuit()
+    private void OnDisable()
     {
         fogVolume0.Release();
         fogVolume4.Release();
@@ -195,13 +198,21 @@ public class VolumetricFogRenderer : MonoBehaviour
             skyMaterial.SetMatrix("_rotationMatrix", Matrix4x4.Rotate(directionalLight.transform.rotation));
         }
 
-        if (selfShadow)
+        if (selfShadow && ditherDepth)
         {
             fogDensityLightingKernel = 0;
         } 
-        else
+        else if (!selfShadow && ditherDepth)
         {
             fogDensityLightingKernel = 2;
+        }
+        else if (selfShadow && !ditherDepth)
+        {
+            fogDensityLightingKernel = 3;
+        }
+        else
+        {
+            fogDensityLightingKernel = 4;
         }
     }
 
@@ -489,7 +500,24 @@ public class VolumetricFogRenderer : MonoBehaviour
         applyFogMaterial.SetVector("volumeResolutionWH", new Vector4(volRes.x, volRes.y, 1.0f / volRes.x, 1.0f / volRes.y));
         applyFogMaterial.SetTexture("blueNoiseTex", blueNoise4D);
         applyFogMaterial.SetInt("ditherIndex", 0);
-        Shader.DisableKeyword("FOG_FALLBACK");
+
+        if (analyticFog)
+        {
+            Shader.EnableKeyword("FOG_FALLBACK");
+        }
+        else
+        {
+            Shader.DisableKeyword("FOG_FALLBACK");
+        }
+
+        if (ditheredSampling)
+        {
+            Shader.EnableKeyword("DITHERED_SAMPLING");
+        }
+        else
+        {
+            Shader.DisableKeyword("DITHERED_SAMPLING");
+        }
 
         Graphics.Blit(source, destination, applyFogMaterial);
     }

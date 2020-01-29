@@ -1,8 +1,10 @@
 ﻿#include "UnityCG.cginc"
-#include "FogCommon.cginc"
-#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE_SCHLICK SELF_SHADOW
+#include "Phase.cginc"
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS DITHER MIE_SCHLICK SELF_SHADOW
 #pragma kernel CSMain SELF_SHADOW ATMOSPHERE
-#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS JITTER MIE_SCHLICK
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS DITHER MIE_SCHLICK
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS MIE_SCHLICK SELF_SHADOW
+#pragma kernel CSMain SHADOWS NOISE LOCAL_LIGHTS MIE_SCHLICK
 
 #define PI 3.14159
 
@@ -75,13 +77,6 @@ float3 getCascadeShadowCoords(float3 worldPosition)
 	return mul(lightData[0].worldToShadow[cascadeIndex], float4(worldPosition, 1)).xyz; 
 }
 #endif
-
-float3 getFrustumRay(float2 uv)
-{
-	float3 upperRay = lerp(frustumRays[1].xyz, frustumRays[2].xyz, uv.x);
-	float3 lowerRay = lerp(frustumRays[0].xyz, frustumRays[3].xyz, uv.x);
-	return lerp(lowerRay, upperRay, uv.y);
-}
 
 float3 calcTransmittance(float3 position, float3 viewDirection, float distance)
 {
@@ -168,10 +163,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	float3 volCoord = float3(float3(id) * volumeResolution + 0.5f * volumeResolution);
 	float z = sliceDepths[id.z >> 2][id.z & 3];
-#ifdef JITTER
+#ifdef DITHER
 	z *= (1 + blueNoise.Load(int3(id.xy & 63, 0)) * sliceProportion);
 #endif
-	float3 worldPosition = cameraPosition.xyz + z * getFrustumRay(volCoord.xy);
+	float3 upperRay = lerp(frustumRays[1].xyz, frustumRays[2].xyz, volCoord.x);
+	float3 lowerRay = lerp(frustumRays[0].xyz, frustumRays[3].xyz, volCoord.x);
+	float3 frustumRay = lerp(lowerRay, upperRay, volCoord.y);
+	float3 worldPosition = cameraPosition.xyz + z * frustumRay;
 
 	float4 visibility;
 #ifdef SHADOWS
