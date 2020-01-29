@@ -22,6 +22,7 @@ struct DirLightData
 RWStructuredBuffer<DirLightData> lightData : register(u1);
 float3 dirLightColor;
 float3 dirLightDirection;
+// actually these are the squared light splits
 float4 lightSplitsNear;
 float4 lightSplitsFar;
 
@@ -66,11 +67,11 @@ float sliceProportion;
 #ifdef SHADOWS
 float3 getCascadeShadowCoords(float3 worldPosition) 
 {
-	float distToCam = distance(worldPosition, cameraPosition.xyz);
+	float3 diff = worldPosition - cameraPosition;
+	float distToCam = dot(diff, diff);
 	float4 near = float4(distToCam >= lightSplitsNear); 
 	float4 far = float4(distToCam < lightSplitsFar);
-	float4 weights = (near * far);
-	uint cascadeIndex = dot(weights, float4(0, 1, 2, 3));
+	uint cascadeIndex = dot(near * far, float4(0, 1, 2, 3));
 	return mul(lightData[0].worldToShadow[cascadeIndex], float4(worldPosition, 1)).xyz; 
 }
 #endif
