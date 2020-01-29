@@ -1,4 +1,7 @@
-﻿Shader "Custom/FireShader"
+﻿// Based on from https://www.febucci.com/2019/05/fire-shader/
+// with some modification.
+
+Shader "Custom/FireShader"
 {
     Properties
     {
