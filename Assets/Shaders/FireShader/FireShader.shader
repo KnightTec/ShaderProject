@@ -33,7 +33,6 @@
 
             sampler2D _Noise;
             float4 _Noise_ST;
-            sampler2D _Wind;
 
             float _Flutter;
             float _Depth;
@@ -44,13 +43,11 @@
 
             struct appdata {
                 float3 vertex : POSITION;
-                float3 normal : NORMAL;
                 float2 uv : TEXCOORD0;
             };
 
             struct v2f {
                 float4 vertex : SV_POSITION;
-                float3 normal : NORMAL;
                 float2 uv : TEXCOORD1;
             };
 
@@ -65,9 +62,8 @@
                         (_Depth ) * float3 ( sin ( i.vertex.x + _Flutter * _Time.y), 0, sin ( i.vertex.z + _Flutter * _Time.y));
 
                 o.vertex = UnityObjectToClipPos (float4 ( position, 1 ));
-                o.normal = UnityObjectToWorldNormal(i.normal);
                 o.uv = TRANSFORM_TEX(i.uv, _Noise);
-
+ 
                 return o;
             }
 
