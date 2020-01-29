@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class BoidManager : MonoBehaviour
 {
@@ -81,7 +82,7 @@ public class BoidManager : MonoBehaviour
     void Update()
     {
 		logic.Dispatch( logicHandel, boidSettings.amount, 1, 1 );
-		Graphics.DrawMeshInstancedIndirect( boidSettings.model, 0, boidSettings.material, bounds, argBuffer );
+		Graphics.DrawMeshInstancedIndirect( boidSettings.model, 0, boidSettings.material, bounds, argBuffer, 0, null, ShadowCastingMode.Off, false );
     }
 
 	void OnDisable()
