@@ -179,6 +179,10 @@ public class ENVController : MonoBehaviour
         {
             fogRenderer.scatterColor = new Color(0.7f, 1.0f, 0.1f);
         }
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            fogRenderer.selfShadow = !fogRenderer.selfShadow;
+        }
         if (Input.GetKeyDown(KeyCode.Alpha6))
         {
             analyticFog = !analyticFog;

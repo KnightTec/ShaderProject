@@ -25,6 +25,7 @@
 
 		float4 vert (appdata vertex) : SV_POSITION
 		{
+			// just copy the direction light world to shadow matrix for use in the volumetric fog
 			lightData[0].worldToShadow = unity_WorldToShadow;			
 			return float4(0, 0, 0, 1);
 		}

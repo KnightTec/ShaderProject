@@ -161,18 +161,22 @@ public class VolumetricFogRenderer : MonoBehaviour
 
     private void OnDisable()
     {
-        fogVolume0.Release();
-        fogVolume4.Release();
-        fogVolume5.Release();
-        accumulatedAtmoVol.Release();
-        atmosphereVolume.Release();
-        accumulatedAtmoVol.Release();
-
-        pointLightBuffer.Release();
-        worldToShadowBuffer.Release();
-
-        cbGrabCascadeShadowMap.Release();
-        cbGrabWorldToShadow.Release();
+        if (fogVolume0 != null)
+        {
+            fogVolume0.Release();
+            fogVolume4.Release();
+            fogVolume5.Release();
+            accumulatedAtmoVol.Release();
+            atmosphereVolume.Release();
+            accumulatedAtmoVol.Release();
+        }
+        if (pointLightBuffer != null)
+        {
+            pointLightBuffer.Release();
+            worldToShadowBuffer.Release();
+            cbGrabCascadeShadowMap.Release();
+            cbGrabWorldToShadow.Release();
+        }
     }
 
     private void Update()
