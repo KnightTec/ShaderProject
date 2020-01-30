@@ -1403,7 +1403,7 @@ MonoBehaviour:
     value: {x: 64.791664, y: 89.75859}
   minLuminance:
     overrideState: 1
-    value: -0.5
+    value: -1.5
   maxLuminance:
     overrideState: 1
     value: 9
