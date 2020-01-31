@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [ExecuteAlways]
 public class ENVController : MonoBehaviour
@@ -70,6 +71,11 @@ public class ENVController : MonoBehaviour
             fogRenderer.analyticFog = analyticFog;
         }
 
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            SceneManager.LoadScene("woods", LoadSceneMode.Single);
+        }
+
         // Insert other controls here
         if (Input.GetKey(KeyCode.Keypad1))
         {
@@ -86,11 +92,11 @@ public class ENVController : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.KeypadPlus))
             {
-                time += Time.deltaTime * 0.02f;
+                time += Time.deltaTime * 0.03f;
             }
             else if (Input.GetKey(KeyCode.KeypadMinus))
             {
-                time -= Time.deltaTime * 0.02f;
+                time -= Time.deltaTime * 0.03f;
             }
         }
         if (Input.GetKey(KeyCode.Keypad3))
@@ -115,21 +121,28 @@ public class ENVController : MonoBehaviour
                 fogScatteringMultiplier -= Time.deltaTime * 2f;
             }
         }
-        fogScatteringMultiplier = Mathf.Max(fogScatteringMultiplier, 0);
-        fogFalloffMultiplier = Mathf.Max(fogFalloffMultiplier, 0);
-
         if (Input.GetKey(KeyCode.Keypad5))
         {
             if (Input.GetKey(KeyCode.KeypadPlus))
             {
                 noiseIntensity += Time.deltaTime;
+                if (noiseIntensity <= 0.98f)
+                {
+                    fogScatteringMultiplier += Time.deltaTime * 16;
+                }
             }
             else if (Input.GetKey(KeyCode.KeypadMinus))
             {
                 noiseIntensity -= Time.deltaTime;
+                if (noiseIntensity >= 0)
+                {
+                    fogScatteringMultiplier -= Time.deltaTime * 16;
+                }
             }
-            noiseIntensity = Mathf.Clamp01(noiseIntensity);
+            noiseIntensity = Mathf.Clamp(noiseIntensity, 0, 0.98f);
         }
+        fogScatteringMultiplier = Mathf.Max(fogScatteringMultiplier, 0);
+        fogFalloffMultiplier = Mathf.Max(fogFalloffMultiplier, 0);
         if (Input.GetKey(KeyCode.Keypad6))
         {
             if (Input.GetKey(KeyCode.KeypadPlus))
@@ -140,7 +153,6 @@ public class ENVController : MonoBehaviour
             {
                 noiseSpeed -= Time.deltaTime * 10;
             }
-            noiseIntensity = Mathf.Clamp01(noiseIntensity);
         }
         if (Input.GetKey(KeyCode.Keypad7))
         {
@@ -164,7 +176,6 @@ public class ENVController : MonoBehaviour
             {
                 sunIntensityMultiplier -= Time.deltaTime * 10;
             }
-            anisotropy = Mathf.Clamp(anisotropy, -0.9f, 0.9f);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
