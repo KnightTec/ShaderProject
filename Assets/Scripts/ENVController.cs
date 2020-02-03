@@ -36,6 +36,8 @@ public class ENVController : MonoBehaviour
     private bool sampleDither;
     private bool analyticFog;
 
+    private int screenShotCounter = 0;
+
     private void Start()
     {
         noiseIntensity = fogRenderer.noiseIntensity;
@@ -49,6 +51,10 @@ public class ENVController : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            ScreenCapture.CaptureScreenshot("screenshot" + screenShotCounter++ + ".png");
+        }
         if (directionalLight != null)
         {
             Color sample = sun.Evaluate(time);

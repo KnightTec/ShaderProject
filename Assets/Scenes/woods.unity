@@ -2442,10 +2442,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c344909fb369b834f97798b447327410, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  depth: 0.0002
-  speed: 2
-  firstAxis: {x: 0, y: 1, z: 0}
-  secondAxis: {x: 1, y: 0, z: 0}
+  depth: 0
+  speed: 0
+  firstAxis: {x: 0, y: 0, z: 0}
+  secondAxis: {x: 0, y: 0, z: 0}
 --- !u!1001 &160055069
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4928,12 +4928,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 10dfc11dca0d72b4bb2ef2bac0c387f1, type: 3}
---- !u!1 &497823797 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8051415255134806348, guid: 7bdf3a3357f842e4d9b1a5a1fc98fc0d,
-    type: 3}
-  m_PrefabInstance: {fileID: 1888632513}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &497823798 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -5865163338561875921, guid: 7bdf3a3357f842e4d9b1a5a1fc98fc0d,
@@ -5027,13 +5021,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8426e8afd1e210c42ba1647e9d6a0c7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textObject: {fileID: 39434661}
+  textObject: {fileID: 0}
   prerequisitMet: 0
-  next: {fileID: 1333302275}
+  next: {fileID: 0}
   exploder: {fileID: 0}
-  activator: {fileID: 158379206}
-  interactText: Free the wand.
-  tipText: An old wand is embedded in the tree
+  activator: {fileID: 0}
+  interactText: 
+  tipText: 
 --- !u!135 &512122994
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -6271,13 +6265,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e9bca6c17670f49ac8bfcf51d00799, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  atmosphereScattering: 0.0001
-  atmosphereScatterColor: {r: 0.2509804, g: 0.5019608, b: 1, a: 1}
+  atmosphereScattering: 0.01
+  atmosphereScatterColor: {r: 63, g: 127, b: 255, a: 1}
   atmosphereHeight: 0
   atmosphereFalloff: 0.001
   sunLightMultiplier: 30
   distance: 150
-  volumeResolution: {x: 240, y: 180, z: 96}
+  volumeResolution: {x: 240, y: 135, z: 96}
   selfShadow: 0
   taa: 1
   ditherDepth: 1
@@ -6288,11 +6282,11 @@ MonoBehaviour:
   anisotropy: 0.6
   fogHeight: 0
   fogFalloff: 0.18652098
-  ambientIntensity: 0.6
-  noiseIntensity: 0.95
-  noiseSize: 12
-  noiseDirection: {x: 0.5, y: 1, z: 0.2}
-  jitterStrength: 1
+  ambientIntensity: 0.5
+  noiseIntensity: 0
+  noiseSize: 8
+  noiseDirection: {x: 0, y: 0, z: 0}
+  jitterStrength: 0.5
 --- !u!4 &626589489 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 883063692370896820, guid: 10dfc11dca0d72b4bb2ef2bac0c387f1,
@@ -6317,13 +6311,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8426e8afd1e210c42ba1647e9d6a0c7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textObject: {fileID: 39434661}
+  textObject: {fileID: 0}
   prerequisitMet: 0
   next: {fileID: 0}
   exploder: {fileID: 0}
-  activator: {fileID: 497823797}
-  interactText: Pick up the magic book!
-  tipText: How did you even get in here.
+  activator: {fileID: 0}
+  interactText: 
+  tipText: 
 --- !u!135 &626592103
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -6734,8 +6728,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4966045dafdccbe4fbdd2df4bad68c0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startAtSecond: 1
-  speed: 1
+  startAtSecond: 0
+  speed: 0
 --- !u!4 &706101433 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 883063692370896820, guid: 10dfc11dca0d72b4bb2ef2bac0c387f1,
@@ -11857,12 +11851,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8426e8afd1e210c42ba1647e9d6a0c7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textObject: {fileID: 39434661}
-  prerequisitMet: 1
-  next: {fileID: 512122993}
+  textObject: {fileID: 0}
+  prerequisitMet: 0
+  next: {fileID: 0}
   exploder: {fileID: 0}
-  activator: {fileID: 704013403}
-  interactText: This could be helpful
+  activator: {fileID: 0}
+  interactText: 
   tipText: 
 --- !u!135 &1256290199
 SphereCollider:
@@ -11990,9 +11984,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 767e2194a2d95b44aa245cacda4f42bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obj: {fileID: 8966852712264276864}
-  textureSize: 2048
-  depthLevel: 1
+  obj: {fileID: 0}
+  textureSize: 0
+  depthLevel: 0
 --- !u!20 &1258549909
 Camera:
   m_ObjectHideFlags: 0
@@ -12536,13 +12530,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8426e8afd1e210c42ba1647e9d6a0c7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textObject: {fileID: 39434661}
+  textObject: {fileID: 0}
   prerequisitMet: 0
-  next: {fileID: 626592102}
-  exploder: {fileID: 1734898396}
+  next: {fileID: 0}
+  exploder: {fileID: 0}
   activator: {fileID: 0}
-  interactText: Open the magic sphere.
-  tipText: A magic aura emits from the sphere.
+  interactText: 
+  tipText: 
 --- !u!4 &1338171630 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 883063692370896820, guid: 10dfc11dca0d72b4bb2ef2bac0c387f1,
@@ -13135,10 +13129,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d4cac351bf9762428bb2669daca490d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obj: {fileID: 8966852712264276864}
-  textureSize: 2048
-  depthLevel: 1
-  timeOut: 10
+  obj: {fileID: 0}
+  textureSize: 0
+  depthLevel: 0
+  timeOut: 0
 --- !u!20 &1414052455
 Camera:
   m_ObjectHideFlags: 0
@@ -14688,17 +14682,17 @@ PrefabInstance:
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 4.455e-42
+      value: 5.02e-43
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 0
+      value: -0.2749021
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 0
+      value: 5.02e-43
       objectReference: {fileID: 0}
     - target: {fileID: 8062356316031505150, guid: 3d43ddd4bb61e284e9bac68916ecb159,
         type: 3}
@@ -20311,8 +20305,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edc86ca33be35cb47995f090e72a022f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  force: 500
-  radius: 30
+  force: 0
+  radius: 0
   upwards: 0
 --- !u!64 &1734898703
 MeshCollider:
@@ -25215,8 +25209,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4966045dafdccbe4fbdd2df4bad68c0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startAtSecond: 1
-  speed: 1
+  startAtSecond: 0
+  speed: 0
 --- !u!4 &2089512995 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 883063692370896820, guid: 10dfc11dca0d72b4bb2ef2bac0c387f1,
