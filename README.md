@@ -6,5 +6,5 @@ Final project for the course "Modern Techniques for Shader Development and Image
 ![Alt text](https://github.com/KnightTec/ShaderProject/blob/master/Images/Fog.png)
 - Dynamic Grass by Luca Türk
 ![Alt text](https://github.com/KnightTec/ShaderProject/blob/master/Images/grass.png)
-- Boids (Bird-like objects) by Orcthanc
+- Boids (Bird-like objects) by Samuel Knöthig
 ![Alt text](https://github.com/KnightTec/ShaderProject/blob/master/Images/boids.png)
